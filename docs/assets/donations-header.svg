@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="210" viewBox="0 0 960 210" role="img" aria-labelledby="title description">
+  <title id="title">A little change. A big thank you.</title>
+  <desc id="description">A warm cup with a heart, surrounded by stars. За каждую копеечку — большое спасибо.</desc>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1">
+      <stop stop-color="#17283d"/>
+      <stop offset=".55" stop-color="#262337"/>
+      <stop offset="1" stop-color="#382537"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#ffc5a8" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#ffc5a8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cup" x2="1" y2="1">
+      <stop stop-color="#ffdab2"/>
+      <stop offset="1" stop-color="#ffaccb"/>
+    </linearGradient>
+    <linearGradient id="rim">
+      <stop stop-color="#84b9ef" stop-opacity=".3"/>
+      <stop offset=".6" stop-color="#ffbbcb" stop-opacity=".4"/>
+      <stop offset="1" stop-color="#c4a5ee" stop-opacity=".2"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="958" height="208" rx="24" fill="url(#background)" stroke="url(#rim)"/>
+  <ellipse cx="151" cy="110" rx="165" ry="100" fill="url(#glow)"/>
+  <path d="M850 1v208M898 1v208M1 52h958M1 158h958" stroke="#fff" stroke-opacity=".035"/>
+  <circle cx="145" cy="105" r="72" fill="#ffcfbe" fill-opacity=".035" stroke="#ffc2c9" stroke-opacity=".18"/>
+  <circle cx="145" cy="105" r="59" fill="none" stroke="#ffc2c9" stroke-opacity=".1"/>
+  <path d="M177 88h10c21 0 21 34 0 34h-10" fill="none" stroke="#ffbdc5" stroke-width="7"/>
+  <path d="M109 83h70v38a27 27 0 0 1-27 27h-16a27 27 0 0 1-27-27Z" fill="url(#cup)"/>
+  <ellipse cx="144" cy="83" rx="35" ry="6" fill="#ffe3cb"/>
+  <path d="M144 128 132 116a8 8 0 0 1 12-11 8 8 0 0 1 12 11Z" fill="#7d3b57"/>
+  <path d="M124 67c-7-9 8-12 1-21m19 21c-7-9 8-12 1-21m19 21c-7-9 8-12 1-21" fill="none" stroke="#ffdecc" stroke-width="2.5" stroke-linecap="round" opacity=".65"/>
+  <path d="M108 157h73" stroke="#f8c3c7" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+  <g fill="#ffcfad">
+    <path d="m67 61 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/>
+    <path d="m222 135 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" opacity=".7"/>
+    <circle cx="199" cy="45" r="2" opacity=".6"/>
+    <circle cx="82" cy="151" r="2" opacity=".4"/>
+  </g>
+  <text x="270" y="65" font-family="Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="3" fill="#d9a6bd">BUILT WITH CARE. SUPPORTED BY YOU.</text>
+  <text x="268" y="108" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#fff4ed">A little change. A big thank you.</text>
+  <text x="270" y="141" font-family="Arial, sans-serif" font-size="20" fill="#d7b9c9">За каждую копеечку — большое спасибо.</text>
+  <path d="M270 165h60" stroke="#ffb9c6" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="343" cy="165" r="2" fill="#d4aceb"/>
+  <circle cx="353" cy="165" r="2" fill="#92c4df"/>
+  <path d="m916 70 2 7 7 2-7 2-2 7-2-7-7-2 7-2Z" fill="#d7b7ef" opacity=".45"/>
+  <circle cx="887" cy="145" r="3" fill="#f6bacc" opacity=".4"/>
+</svg>
