@@ -54,6 +54,8 @@ apply from: rootProject.file("gradle/android-signing.gradle")
 def rustWorkspace = rootProject.projectDir.parentFile
 def quicJniOutput = layout.buildDirectory.dir("generated/quicJni")
 tasks.register("buildReplicatorQuic") {
+    inputs.property("rustFlags", providers.environmentVariable("RUSTFLAGS").getOrElse(""))
+    inputs.property("encodedRustFlags", providers.environmentVariable("CARGO_ENCODED_RUSTFLAGS").getOrElse(""))
     inputs.files(fileTree(new File(rustWorkspace, "crates/watch-replicator-quic")) { include "**/*.rs", "Cargo.toml" })
     inputs.files(new File(rustWorkspace, "Cargo.toml"), new File(rustWorkspace, "Cargo.lock"))
     outputs.file(quicJniOutput.map { new File(it.asFile, "arm64-v8a/libwatch_replicator_quic.so") })

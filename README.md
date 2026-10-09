@@ -30,6 +30,8 @@
 
 <h2 align="center">⚠️ TESTED ONLY ON watchOS 26.2 (23S303)</h2>
 
+**Android Magisk module:** [Download Bridge 0.2.427 ZIP](https://github.com/LordixDemon/apple_watch_connector/releases/download/magisk-0.2.427/apple-watch-bridge-magisk-0.2.427.zip) · [Installation](#en-android-install)
+
 **Connect Apple Watch to Android, Linux and Windows through native Bluetooth/IDS protocols and a shared Flutter Companion. macOS uses the same interface with a limited Bluetooth backend.**
 
 This project reconstructs the path from discovery and pairing to activation, reconnection, preference exchange, and native watch-face management. Companion presents observed Watch state and submits commands on all four platforms. Android Bridge owns the phone connection and keys. Linux and Windows use a Rust desktop backend, native HCI brokers and the shared Java protocol engine; macOS uses Rust and CoreBluetooth. Linux and Windows pairing uses the six-digit Watch code; camera pairing is available on Android.
@@ -1094,6 +1096,15 @@ physical HAL. For multiple devices always retain the explicit `-s` selection.
 
 For initial deployment using the checked-in Magisk module:
 
+You can use the [published experimental ZIP](https://github.com/LordixDemon/apple_watch_connector/releases/download/magisk-0.2.427/apple-watch-bridge-magisk-0.2.427.zip)
+instead of building it. It contains Bridge **0.2.427 / code 627**, the whitelist
+and SELinux rules; Companion is installed separately with a matching signing
+certificate. Download and checksums are in the
+[release notes](https://github.com/LordixDemon/apple_watch_connector/releases/tag/magisk-0.2.427).
+The tested phone remains rooted **OnePlus CPH2653**.
+
+To build your own ZIP from the project root:
+
 ```sh
 bash apple-watch-bridge/tool/build_magisk_module.sh
 adb -s "$WATCH_ADB_SERIAL" push apple-watch-bridge/build/apple-watch-bridge-magisk.zip /sdcard/Download/
@@ -1579,6 +1590,8 @@ Third-party tree/binary licenses and provenance remain in their own `LICENSE`/`N
 ## Русский
 
 <h2 align="center">⚠️ ТЕСТИРОВАЛОСЬ ТОЛЬКО НА watchOS 26.2 (23S303)</h2>
+
+**Magisk-модуль Android:** [Скачать ZIP Bridge 0.2.427](https://github.com/LordixDemon/apple_watch_connector/releases/download/magisk-0.2.427/apple-watch-bridge-magisk-0.2.427.zip) · [Установка](#ru-android-install)
 
 <p align="center">
   <a href="#english"><img src="docs/assets/language-en.svg" alt="English" width="136" height="42"></a>
@@ -2649,6 +2662,15 @@ adb -s "$WATCH_ADB_SERIAL" shell su -c id
 HAL. При нескольких устройствах всегда сохраняйте явный выбор через `-s`.
 
 Первичная подготовка через Magisk-модуль из репозитория:
+
+Вместо сборки можно взять [опубликованный экспериментальный ZIP](https://github.com/LordixDemon/apple_watch_connector/releases/download/magisk-0.2.427/apple-watch-bridge-magisk-0.2.427.zip).
+В нём Bridge **0.2.427 / code 627**, whitelist и SELinux rules; Companion
+устанавливается отдельно с совпадающим сертификатом подписи. Загрузка и
+контрольные суммы — в
+[релизе](https://github.com/LordixDemon/apple_watch_connector/releases/tag/magisk-0.2.427).
+Проверенный телефон — rooted **OnePlus CPH2653**.
+
+Для самостоятельной сборки ZIP из корня проекта:
 
 ```sh
 bash apple-watch-bridge/tool/build_magisk_module.sh

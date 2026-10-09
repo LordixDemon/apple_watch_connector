@@ -1,6 +1,6 @@
 id=apple_watch_bridge_builtin_hal
 name=Apple Watch Bridge built-in Bluetooth HAL
-version=0.2.153
-versionCode=353
-author=Apple Watch Android research
+version=0.2.427
+versionCode=627
+author=Apple Watch Companion
 description=Installs the bridge as a hidden-API-whitelisted priv-app and permits its explicit Magisk root helper to call the built-in Bluetooth HCI HAL.

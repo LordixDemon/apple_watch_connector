@@ -159,6 +159,40 @@ notification/diagnostic/reboot probes exist only in the debug source set.
 
 ## Android signing
 
+### Experimental Magisk module
+
+The [Magisk module release](https://github.com/LordixDemon/apple_watch_connector/releases/tag/magisk-0.2.427)
+provides a prebuilt Bridge 0.2.427 / code 627 ZIP for the tested rooted OnePlus
+CPH2653. It includes the APK, hidden-API whitelist and scoped Bluetooth HAL
+SELinux rules. It does not include Companion or its optical firmware inputs.
+This is a local test-key-signed experimental artifact; it does not close the
+distribution signing or clean Companion build gates below. Companion must use
+the same APK signing certificate for IPC.
+
+To reproduce the module on macOS/Linux, from the project root with JDK/SDK set:
+
+```sh
+export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }--remap-path-prefix=$HOME=/build"
+(cd apple-watch-bridge && ./gradlew :app:assembleRelease)
+bash apple-watch-bridge/tool/build_magisk_module.sh \
+  apple-watch-bridge/app/build/outputs/apk/release/app-release.apk \
+  apple-watch-bridge/build/apple-watch-bridge-magisk-0.2.427.zip
+python3 -m unittest discover -s tools -p 'test_magisk_module.py'
+shasum -a 256 apple-watch-bridge/build/apple-watch-bridge-magisk-0.2.427.zip
+```
+
+The Rust remap removes local home-directory paths from compiled diagnostics;
+Gradle tracks changes to these compiler flags. The packager verifies the APK
+signature and package identity, takes its actual version/code for `module.prop`,
+includes only five allowlisted files, normalizes ZIP metadata and atomically
+replaces previous archives. Its outputs stay under the ignored build directory.
+Review the built APK for private strings before publishing; checksum and source
+revision belong in the release notes. Install the ZIP in Magisk and reboot the
+phone; follow [English](../README.md#en-android-install) /
+[Русский](../README.md#ru-android-install) for the remaining setup.
+
+### Companion inputs and distribution keys
+
 The camera decoder's build step currently depends on an external pinned
 `VisualPairing` firmware input and the private asset-generation tooling under
 `research-tools`. Those inputs are absent from this source checkout. A clean
