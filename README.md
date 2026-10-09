@@ -28,6 +28,8 @@
 
 ## English
 
+<h2 align="center">⚠️ TESTED ONLY ON watchOS 26.2 (23S303)</h2>
+
 **Connect Apple Watch to Android, Linux and Windows through native Bluetooth/IDS protocols and a shared Flutter Companion. macOS uses the same interface with a limited Bluetooth backend.**
 
 This project reconstructs the path from discovery and pairing to activation, reconnection, preference exchange, and native watch-face management. Companion presents observed Watch state and submits commands on all four platforms. Android Bridge owns the phone connection and keys. Linux and Windows use a Rust desktop backend, native HCI brokers and the shared Java protocol engine; macOS uses Rust and CoreBluetooth. Linux and Windows pairing uses the six-digit Watch code; camera pairing is available on Android.
@@ -1116,6 +1118,8 @@ Third-party tree/binary licenses and provenance remain in their own `LICENSE`/`N
 <a id="russian"></a>
 
 ## Русский
+
+<h2 align="center">⚠️ ТЕСТИРОВАЛОСЬ ТОЛЬКО НА watchOS 26.2 (23S303)</h2>
 
 <p align="center">
   <a href="#english"><img src="docs/assets/language-en.svg" alt="English" width="136" height="42"></a>
