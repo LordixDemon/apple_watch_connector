@@ -15,6 +15,8 @@
   &nbsp;
   <a href="#russian"><img src="docs/assets/language-ru.svg" alt="Русский" width="136" height="42"></a>
   &nbsp;
+  <a href="https://www.youtube.com/watch?v=5zvBRTuSM30"><img src="docs/assets/video.svg" alt="Watch Android demo · Видео подключения к Android" width="224" height="42"></a>
+  &nbsp;
   <a href="docs/DONATIONS.md"><img src="docs/assets/support.svg" alt="Support the developer · Поддержать разработчика" width="224" height="42"></a>
 </p>
 
@@ -1597,6 +1599,8 @@ Third-party tree/binary licenses and provenance remain in their own `LICENSE`/`N
   <a href="#english"><img src="docs/assets/language-en.svg" alt="English" width="136" height="42"></a>
   &nbsp;
   <a href="#russian"><img src="docs/assets/language-ru.svg" alt="Русский" width="136" height="42"></a>
+  &nbsp;
+  <a href="https://www.youtube.com/watch?v=5zvBRTuSM30"><img src="docs/assets/video.svg" alt="Видео подключения к Android · Watch Android demo" width="224" height="42"></a>
   &nbsp;
   <a href="docs/DONATIONS.md"><img src="docs/assets/support.svg" alt="Поддержать разработчика · Support the developer" width="224" height="42"></a>
 </p>

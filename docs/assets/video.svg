@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="42" viewBox="0 0 224 42" role="img" aria-labelledby="title">
+  <title id="title">Android connection demo · Видео подключения к Android</title>
+  <rect x=".5" y=".5" width="223" height="41" rx="10" fill="#3b2529" stroke="#b56d77"/>
+  <rect x="10" y="10" width="28" height="22" rx="5" fill="#ffb4b8"/>
+  <path d="m21 15.5 8 5.5-8 5.5Z" fill="#64252e"/>
+  <text x="129" y="26" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#fff1f2">Video demo · Видео</text>
+</svg>
