@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <a href="#en-calls">Call map</a> · <a href="#en-pairing">Pairing</a> · <a href="#en-api">API</a> · <a href="#en-build">Build</a> · <a href="#en-evidence">Evidence</a>
+  <a href="#en-start">Start here</a> · <a href="#en-calls">Call map</a> · <a href="#en-pairing">Pairing</a> · <a href="#en-api">API</a> · <a href="#en-build">Build</a> · <a href="#en-evidence">Evidence</a>
 </p>
 
 ---
@@ -71,9 +71,12 @@ Development is ongoing. The hardware journal confirms camera pairing, activation
 - [Notifications, finding devices, Wi-Fi, and Health](#en-features)
 - [Modern StateReplicator and QUIC](#en-replicator)
 - [Keys, storage, and ownership](#en-ownership)
+- [Start from a clean machine](#en-start)
 - [Build, test, and first run](#en-build)
+- [macOS discovery build](#en-macos)
 - [Linux connection and adapter selection](#en-linux)
 - [Windows connection](#en-windows)
+- [Update, backup, and rollback](#en-update)
 - [Diagnostics and research commands](#en-diagnostics)
 - [Source and evidence map](#en-evidence)
 - [Glossary](#en-glossary)
@@ -797,6 +800,152 @@ Key correlations: **pair UUID** identifies a saved pair; **epoch** the current t
 
 Keys, PINs, optical payloads, and Wi-Fi passwords are not UI data. Public snapshots contain permitted projections. Pair/epoch changes, close, or timeout invalidate pending commands and late callbacks. Interrupted native mutations must not be replayed automatically.
 
+<a id="en-start"></a>
+## Start from a clean machine
+
+Run each block on its stated host and stop if a command fails. Shell blocks use
+Bash/zsh; Windows blocks use PowerShell. Build desktop targets on their own OS.
+The current Android build scripts use the macOS/Linux NDK layout. The tested
+SDK combination is Flutter **3.47.4 / Dart 3.13.3**, Rust **1.98.1**, JDK **17**.
+The commands below install tools; they do not upgrade the project's lockfiles.
+
+### 1. Prepare your host
+
+**Linux Mint 22 / Ubuntu 24.04, x86_64:**
+
+```sh
+sudo apt-get update
+sudo apt-get install -y git curl unzip xz-utils zip python3 build-essential \
+  clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev \
+  libglu1-mesa libusb-1.0-0-dev libbluetooth-dev bluez systemd libcap2-bin openjdk-17-jdk
+sudo update-alternatives --config java
+sudo update-alternatives --config javac
+export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")"
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+Choose JDK 17 in both alternatives prompts if several JDKs are installed.
+Other distributions need equivalent
+packages and their own hardware acceptance run. Package requirements follow
+[Flutter's Linux setup](https://docs.flutter.dev/platform-integration/linux/setup),
+with the project's Java, USB and Bluetooth dependencies added.
+
+**macOS:** install full [Xcode](https://developer.apple.com/xcode/) and
+[Homebrew](https://brew.sh/) first, then:
+
+```sh
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -runFirstLaunch
+sudo xcodebuild -license
+brew install python git openjdk@17 cocoapods libusb
+export JAVA_HOME="$(brew --prefix openjdk@17)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+Complete the license prompts. If Xcode is elsewhere, substitute its actual
+path. See [Flutter's macOS setup](https://docs.flutter.dev/platform-integration/macos/setup).
+
+**Windows 10/11, x64:** install App Installer/WinGet if `winget` is absent, then
+run these commands in PowerShell. The Visual Studio installer may request UAC.
+
+```powershell
+winget install --exact --id Git.Git
+winget install --exact --id Python.Python.3.13
+winget install --exact --id EclipseAdoptium.Temurin.17.JDK
+winget install --exact --id Rustlang.Rustup
+winget install --exact --id Microsoft.VisualStudio.2022.Community --override "--wait --passive --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended"
+Start-Process 'ms-settings:developers'
+```
+
+Open a new PowerShell window after installation. Confirm the Visual Studio
+**Desktop development with C++** workload and CMake tools are installed;
+VS Code alone does not provide them. Enable **Developer Mode** in the opened
+Windows Settings page to permit Flutter plugin symlinks. See
+[Flutter's Windows setup](https://docs.flutter.dev/platform-integration/windows/setup)
+and [Microsoft's installer options](https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio).
+
+### 2. Install SDKs and obtain the project
+
+For a new **macOS/Linux** environment, install Rust through its
+[official installer](https://rustup.rs/) and Flutter at the tested tag:
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/watch-rustup-init.sh
+sh /tmp/watch-rustup-init.sh
+. "$HOME/.cargo/env"
+mkdir -p "$HOME/develop"
+git clone --branch 3.47.4 --depth 1 https://github.com/flutter/flutter.git "$HOME/develop/flutter"
+export PATH="$HOME/develop/flutter/bin:$PATH"
+git clone https://github.com/LordixDemon/apple_watch_connector.git
+cd apple_watch_connector
+rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
+rustup override set 1.98.1
+```
+
+For **Windows**, after the WinGet steps:
+
+```powershell
+New-Item -ItemType Directory -Force "$env:USERPROFILE\develop" | Out-Null
+git clone --branch 3.47.4 --depth 1 https://github.com/flutter/flutter.git "$env:USERPROFILE\develop\flutter"
+$env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
+$env:JAVA_HOME = Split-Path (Split-Path (Get-Command javac.exe).Source -Parent) -Parent
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+git clone https://github.com/LordixDemon/apple_watch_connector.git
+cd apple_watch_connector
+rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
+rustup override set 1.98.1
+```
+
+If an SDK or project directory already exists, use it instead of cloning over
+it. Persist the Flutter/Cargo `bin` paths and JDK selection in your own shell
+profile or user environment; the exports above apply to the current terminal.
+The [official Flutter installation guide](https://docs.flutter.dev/install/manual)
+also provides SDK archives. Do not run `flutter upgrade` or `pub upgrade` as
+part of reproducing the tested candidate.
+
+On **all hosts**, from the project root:
+
+```sh
+git rev-parse --short HEAD
+python3 --version
+java -version
+javac -version
+rustc --version
+flutter --version
+flutter doctor -v
+cd apple-watch-companion
+flutter pub get --enforce-lockfile
+cd ..
+```
+
+Use `python` instead of `python3` on Windows. `flutter doctor` must show a
+working toolchain for your chosen target; an unrelated Android/Xcode warning
+does not block a Linux/Windows build. Expected SDK output is Rust 1.98.1,
+Flutter 3.47.4 and Dart 3.13.3; Java and `javac` should use JDK 17.
+Record the Git revision when reporting a test.
+
+### 3. Choose the platform path
+
+| Target | Next steps | Current outcome |
+| --- | --- | --- |
+| Android | [SDK/build](#en-build), then [APK/root installation](#en-android-install) | Tested on rooted OnePlus CPH2653; clean Companion build is blocked by missing optical inputs |
+| Linux | [Build](#en-build), then [broker installation and pairing](#en-linux) | Fresh pairing, activation and saved-pair reconnect |
+| Windows | [Build](#en-build), then [controller launcher and pairing](#en-windows) | Tested on Windows 10 / Realtek `0bda:b00e`; latest refactor needs hardware retest |
+| macOS | [Build and launch](#en-macos) | Discovery and BLE only; full activation/IDS is incomplete |
+
+For a new pair, the Watch must display its pairing screen. A Watch already
+paired to another host cannot join a new pair using that host's old PIN.
+For an existing pair saved by this installation, use **Connect**, preserving
+its records. Keep the Watch nearby and charged. The selected Bluetooth
+controller is reserved during a Linux/Windows session.
+
+Successful Linux/Windows setup requires a visible Watch face, owner confirmation
+when requested, and `OPERATIONAL` / `watchReady=true`. Android likewise requires
+observed setup completion and operational readiness. A Bluetooth connection,
+activation reply or delivery ACK alone does not establish completed setup.
+Finally disconnect and reconnect: an eligible saved pair should resume without
+another PIN. See [troubleshooting](#en-diagnostics) if a stage stalls.
+
 <a id="en-build"></a>
 ## Build, test, and first run
 
@@ -817,13 +966,57 @@ Keys, PINs, optical payloads, and Wi-Fi passwords are not UI data. Public snapsh
 
 macOS deployment also depends on Xcode configuration; see [macOS findings](docs/MACOS_PAIRING_TRANSPORT_FINDINGS.md). Linux requires installation of the HCI broker, and Windows requires controller access through WinUSB or the supported UsbDk driver. See the platform connection sections below.
 
+### Android SDK and camera build prerequisite
+
+Install [Android Studio and SDK Command-Line Tools](https://developer.android.com/studio)
+first. In Bash/zsh on macOS/Linux, after selecting JDK 17:
+
+```sh
+if [ "$(uname -s)" = Darwin ]; then
+  export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+else
+  export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
+fi
+export PATH="$ANDROID_HOME/platform-tools:$PATH"
+"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses
+"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" \
+  "platform-tools" "platforms;android-36" "build-tools;36.1.0" \
+  "ndk;28.2.13676358" "cmake;3.22.1"
+flutter config --android-sdk "$ANDROID_HOME" --jdk-dir "$JAVA_HOME"
+rustup target add aarch64-linux-android
+flutter doctor -v
+```
+
+Use the installed SDK path if it differs, and adjust `cmdline-tools/latest`
+to its installed directory. Review the license prompts. Package installation
+uses the [SDK Manager CLI](https://developer.android.com/tools/sdkmanager).
+
+**Clean Android Companion builds are currently blocked in this public checkout.**
+`prepareOpticalAsset` requires four local inputs which are not distributed here.
+From the project root, check them before attempting `tools/build.py android`:
+
+```sh
+test -f firmware/ios-26.6-23G71/extracted/VisualPairing
+test -f research-tools/prepare_optical_android_asset.py
+test -f research-tools/visual_pairing_reader_oracle.py
+test -x research-tools/venv-dis/bin/python
+```
+
+If any input is missing, stop the Companion package build. The pinned asset
+generation step validates its source; arbitrary substitute files are not a
+working decoder. These instructions do not supply the private inputs.
+`-x prepareOpticalAsset` is only a source-compilation check and cannot validate
+camera pairing. See the [Android release gate](docs/BUILD_AND_RELEASE.md#android-signing).
+Bridge can still be built separately with
+`(cd apple-watch-bridge && ./gradlew :app:assembleRelease)` after its SDK/NDK setup.
+
 ### Build from the project root
 
 ```sh
 # Workspace Rust tests and Clippy
 python3 tools/build.py core
 
-# Bridge and Companion release APKs; no installation
+# Bridge and Companion APKs; requires the optical inputs above; no installation
 python3 tools/build.py android
 
 # macOS app with embedded Rust dylib and signature verification
@@ -848,13 +1041,13 @@ SDK location comes from `apple-watch-bridge/local.properties` / local environmen
 ### Layer-specific checks
 
 ```sh
-# Root: portable protocols
-cargo test --workspace --locked
-cargo clippy --workspace --all-targets --locked -- -D warnings
+# Root: host-appropriate workspace tests and Clippy
+python3 tools/build.py core
 cargo fmt --all --check
 
 # In apple-watch-bridge/
 ./gradlew :core:test
+./gradlew :protocol-runtime:test
 ./gradlew :app:lintDebug :hal:lintDebug
 ./gradlew :app:assembleDebug :app:assembleRelease
 ./gradlew :app:assembleDebugAndroidTest
@@ -879,7 +1072,53 @@ Native captures/builders have `tools/test_native_*.py` checks and documented fix
 | Windows bundle (x64) | `apple-watch-companion/build/windows/x64/runner/Release/` |
 | Java XML / report | `apple-watch-bridge/core/build/test-results/test/`, `core/build/reports/tests/test/` |
 
-### First Android run
+<a id="en-android-install"></a>
+### Android installation and first run
+
+The root HAL implementation currently accepts **OnePlus CPH2653 only** and
+requires an already rooted, supported phone. This guide does not root the phone.
+Enable USB debugging, unlock it, and approve the computer's ADB key. From the
+project root, select the phone using its serial from `adb devices`:
+
+```sh
+adb devices -l
+WATCH_ADB_SERIAL='REPLACE_WITH_ADB_DEVICE_SERIAL'
+adb -s "$WATCH_ADB_SERIAL" get-state
+adb -s "$WATCH_ADB_SERIAL" shell getprop ro.product.model
+adb -s "$WATCH_ADB_SERIAL" shell su -c id
+```
+
+Expected: `device`, model `CPH2653`, and root `uid=0` after the Magisk prompt.
+`unauthorized` requires approval on the phone; an emulator does not test the
+physical HAL. For multiple devices always retain the explicit `-s` selection.
+
+For initial deployment using the checked-in Magisk module:
+
+```sh
+bash apple-watch-bridge/tool/build_magisk_module.sh
+adb -s "$WATCH_ADB_SERIAL" push apple-watch-bridge/build/apple-watch-bridge-magisk.zip /sdcard/Download/
+```
+
+In **Magisk → Modules → Install from storage**, choose that ZIP and reboot the
+phone to apply the module. It supplies the Bridge priv-app, hidden-API whitelist
+and SELinux rules. Root access alone does not supply this configuration.
+The ZIP embeds the built Bridge APK; rebuild it for your intended version.
+
+Once both APKs are built or supplied as a tested matching pair, verify their
+signatures, then install them:
+
+```sh
+"$ANDROID_HOME/build-tools/36.1.0/apksigner" verify --print-certs apple-watch-bridge/app/build/outputs/apk/release/app-release.apk
+"$ANDROID_HOME/build-tools/36.1.0/apksigner" verify --print-certs apple-watch-companion/build/app/outputs/flutter-apk/app-release.apk
+adb -s "$WATCH_ADB_SERIAL" install -r apple-watch-bridge/app/build/outputs/apk/release/app-release.apk
+adb -s "$WATCH_ADB_SERIAL" install -r apple-watch-companion/build/app/outputs/flutter-apk/app-release.apk
+adb -s "$WATCH_ADB_SERIAL" shell am start -n dev.applewatchandroid.companion.apple_watch_companion/.MainActivity
+```
+
+Both signer SHA-256 digests must match for signature-protected IPC. Expected
+install output is `Success` for each APK. Ordinary local builds use the debug
+key; distribution signing is a separate [release procedure](docs/BUILD_AND_RELEASE.md#android-signing).
+For an update, first follow [session shutdown and backup](#en-update).
 
 1. Build both APKs, verify signatures, and prepare a supported root/HAL backend.
 2. Before replacing Bridge, stop the active setup/operational service and wait for HAL close/root exit. `adb install -r` preserves app data; do not erase pair storage to update.
@@ -892,6 +1131,25 @@ Native captures/builders have `tools/test_native_*.py` checks and documented fix
 
 Desktop platforms share the Flutter interface through Rust and use code/PIN pairing. Linux and Windows have their own HCI transports; macOS discovery/BLE does not establish complete new pairing capability. Capabilities are explicit, and there is no desktop fallback to Android channels.
 
+<a id="en-macos"></a>
+## macOS discovery build
+
+After host/SDK preparation, from the project root:
+
+```sh
+rustup target add aarch64-apple-darwin
+python3 tools/build.py macos
+codesign --verify --deep --strict apple-watch-companion/build/macos/Build/Products/Release/apple_watch_companion.app
+open apple-watch-companion/build/macos/Build/Products/Release/apple_watch_companion.app
+```
+
+On an Intel Mac use `x86_64-apple-darwin` instead. Allow Bluetooth access when
+macOS requests it; select **Scan / Find a Watch** in Companion. Expected result
+is an observed BLE device list. A missing permission can be corrected in
+**System Settings → Privacy & Security → Bluetooth**. `codesign` verifies the
+local app signature; it does not establish Developer ID notarization.
+Full Watch pairing, activation and operational IDS remain unavailable on macOS.
+
 <a id="en-linux"></a>
 ## Linux connection
 
@@ -900,6 +1158,8 @@ as the desktop user:
 
 ```sh
 python3 tools/install_linux.py apple-watch-companion/build/linux/x64/release/bundle
+getcap /usr/local/libexec/watch-companion/watch-linux-hci
+./apple-watch-companion/build/linux/x64/release/bundle/apple_watch_companion
 ```
 
 The example uses the x64 bundle path; use the corresponding `arm64` output for
@@ -921,6 +1181,21 @@ Desktop Wi-Fi provisioning, watch-face management, notifications and Health
 are not yet fully exposed through the desktop command contract. See
 [Linux hardware verification](docs/LINUX_COMPANION_91.md) and
 [adapter selection](docs/LINUX_ADAPTER_SELECTION_94.md).
+
+Before connection, inspect adapters without opening an HCI session:
+
+```sh
+systemctl is-active bluetooth
+bluetoothctl list
+busctl --system --json=short call org.bluez / org.freedesktop.DBus.ObjectManager GetManagedObjects
+```
+
+Expected: Bluetooth service `active`, your controller in the inventory, and
+`cap_net_admin,cap_net_raw=ep` on the installed broker. Run the bundle as your
+desktop user. If BlueZ is stopped, use `sudo systemctl start bluetooth` and
+refresh adapters in Companion. While connected the leased adapter can disappear
+from BlueZ; inspect it after **Disconnect**. Do not start the raw HCI broker
+manually or run Flutter with `sudo`.
 
 <a id="en-windows"></a>
 ## Windows connection
@@ -984,6 +1259,160 @@ The earlier WinRT discovery/BLE transport remains in
 `crates/watch-transport-windows` for diagnostics; it is not the full-pairing
 backend used by the Windows FFI.
 
+### Windows launch and controller recovery commands
+
+From the project root in PowerShell, after building:
+
+```powershell
+.\tools\run_windows_companion.ps1 -Check
+.\tools\run_windows_companion.ps1
+```
+
+The first command reports controller IDs/services and driver signature; the
+second starts the controller-selection/UAC flow. For a specific controller,
+copy its full ID from `-Check` into the prompt:
+
+```powershell
+$watchControllerId = Read-Host 'Controller InstanceId from -Check'
+.\tools\run_windows_companion.ps1 -InstanceId $watchControllerId -NonInteractive
+```
+
+If scripts are blocked, launch only this invocation with a process-local policy:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\run_windows_companion.ps1
+```
+
+After closing Companion, wait for the supervisor to restore the controller:
+use the `$watchControllerId` captured above (set it from `-Check` if you used
+automatic selection).
+
+```powershell
+Get-PnpDevice -PresentOnly -InstanceId $watchControllerId
+Get-PnpDeviceProperty -InstanceId $watchControllerId -KeyName DEVPKEY_Device_Service
+Get-ChildItem "$env:LOCALAPPDATA\watch-companion\controller-leases" -Filter restored -Recurse
+```
+
+For a controller originally using the Windows Bluetooth stack, its service
+should return to `BTHUSB`; inspect the `restored` marker in the matching lease
+directory. If driver restoration was interrupted, retain that lease's
+`original.json` and start a recovery session with the same controller:
+
+```powershell
+$watchRecoveryRecord = Read-Host 'Full path to the matching lease original.json'
+.\tools\run_windows_companion.ps1 -InstanceId $watchControllerId -RecoveryRecord $watchRecoveryRecord
+```
+
+This starts Companion with the saved restoration information. Close the window
+and wait for restoration, then repeat the service check. The record must belong
+to that exact controller. This launcher has no restore-only switch.
+
+<a id="en-update"></a>
+## Update, backup, and rollback
+
+First use **Disconnect / stop setup** in Companion, wait for HAL/HCI worker
+shutdown, and close the app. On Windows also wait for driver restoration before
+replacing the bundle. Keep pairing records; updating an app does not require
+resetting the Watch or choosing Unpair.
+
+### Linux: keep the state and complete bundle together
+
+From the existing project's root, after stopping the app:
+
+```sh
+watch_state="${XDG_STATE_HOME:-$HOME/.local/state}/watch-companion"
+watch_backup="$HOME/watch-companion-backups/$(date +%Y%m%d-%H%M%S)"
+install -d -m 700 "$watch_backup"
+cp -a "$watch_state" "$watch_backup/state"
+cp -a apple-watch-companion/build/linux/x64/release/bundle "$watch_backup/bundle"
+git status --short
+git pull --ff-only
+(cd apple-watch-companion && flutter pub get --enforce-lockfile)
+(cd apple-watch-bridge && ./gradlew :core:desktopRuntime)
+python3 tools/build.py linux
+python3 tools/install_linux.py apple-watch-companion/build/linux/x64/release/bundle
+./apple-watch-companion/build/linux/x64/release/bundle/apple_watch_companion
+```
+
+These backup steps assume a prior successful installation. Stop before pulling
+if `git status` lists local changes. Adjust the bundle path for ARM64.
+Expected: the saved pair is available and resumes without another PIN.
+For rollback, stop the app again and install/run the preserved whole bundle:
+
+```sh
+python3 tools/install_linux.py "$watch_backup/bundle"
+"$watch_backup/bundle/apple_watch_companion"
+```
+
+If the new version changed state incompatibly, with all workers stopped preserve
+that state and restore the matching backup first:
+
+```sh
+mv "$watch_state" "$watch_backup/state-after-update"
+cp -a "$watch_backup/state" "$watch_state"
+```
+
+### Windows: same user, saved DPAPI state and whole bundle
+
+In PowerShell, after closing the app and restoring the driver:
+
+```powershell
+$watchBackup = Join-Path $env:USERPROFILE ('watch-companion-backups\' + (Get-Date -Format yyyyMMdd-HHmmss))
+$watchState = Join-Path $env:LOCALAPPDATA 'watch-companion'
+New-Item -ItemType Directory -Path $watchBackup | Out-Null
+Copy-Item -LiteralPath $watchState -Destination (Join-Path $watchBackup 'state') -Recurse
+Copy-Item -LiteralPath 'apple-watch-companion\build\windows\x64\runner\Release' -Destination (Join-Path $watchBackup 'bundle') -Recurse
+git status --short
+git pull --ff-only
+Push-Location apple-watch-companion
+flutter pub get --enforce-lockfile
+Pop-Location
+python tools/build.py windows
+.\tools\run_windows_companion.ps1
+```
+
+Keep the backup private, on this Windows installation and under the same account;
+DPAPI records are not a portable pairing export. To run the previous version:
+
+```powershell
+.\tools\run_windows_companion.ps1 -Bundle (Join-Path $watchBackup 'bundle')
+```
+
+If state rollback is required, first close the app and wait for the supervisor,
+then preserve the new state and restore the matching backup:
+
+```powershell
+Move-Item -LiteralPath $watchState -Destination (Join-Path $watchBackup 'state-after-update')
+Copy-Item -LiteralPath (Join-Path $watchBackup 'state') -Destination $watchState -Recurse
+```
+
+### Android and macOS updates
+
+Android: stop the session, build a matching-signature pair of APKs, and repeat
+the [two `adb install -r` commands](#en-android-install). Keep the installed
+signing key and package IDs. `allowBackup=false` means ordinary `adb backup`
+does not provide a pair backup. A lower release versionCode can be rejected;
+uninstalling/clearing app data to force a downgrade destroys the saved pair.
+There is no documented general Android pair-export/restore procedure yet.
+Update the Magisk module's embedded APK too when changing its base version.
+
+macOS: quit the app before rebuilding. Keep a copy of the whole old `.app`, then
+rebuild/verify/open using the [macOS commands](#en-macos). This build does not
+provide an activated pair to migrate. For example, from the project root:
+
+```sh
+watch_mac_app=apple-watch-companion/build/macos/Build/Products/Release/apple_watch_companion.app
+watch_mac_backup="$HOME/watch-companion-backups/$(date +%Y%m%d-%H%M%S)/apple_watch_companion.app"
+mkdir -p "$(dirname "$watch_mac_backup")"
+ditto "$watch_mac_app" "$watch_mac_backup"
+python3 tools/build.py macos
+open "$watch_mac_app"
+```
+
+To run the old build, quit the new app and use `open "$watch_mac_backup"`.
+On any platform a saved backup cannot
+restore a pair after the Watch itself has been reset or paired elsewhere.
+
 <a id="en-diagnostics"></a>
 ## Diagnostics and research commands
 
@@ -1008,8 +1437,38 @@ backend used by the Windows FFI.
 Read logs separately from Watch commands:
 
 ```sh
-adb logcat -d -s WatchBridgeIpc
+adb -s "$WATCH_ADB_SERIAL" logcat -d -s WatchBridgeIpc WatchBridge WatchNotification
 ```
+
+For Linux, after the protocol worker has run:
+
+```sh
+watch_state="${XDG_STATE_HOME:-$HOME/.local/state}/watch-companion"
+tail -n 100 "$watch_state/protocol.log"
+getcap /usr/local/libexec/watch-companion/watch-linux-hci
+```
+
+For Windows:
+
+```powershell
+Get-Content "$env:LOCALAPPDATA\watch-companion\protocol.log" -Tail 100
+.\tools\run_windows_companion.ps1 -Check
+```
+
+| Problem | Action and expected check |
+| --- | --- |
+| Missing `flutter` / `cargo` / `javac` | Reopen the terminal after installation; check PATH, `JAVA_HOME` and version commands in [Start here](#en-start) |
+| Linux `Missing shared dependencies` | Run `(cd apple-watch-bridge && ./gradlew :core:desktopRuntime)` before building; do not add arbitrary JARs |
+| Linux `LINUX_BACKEND_NOT_INSTALLED` / permission error | Re-run `tools/install_linux.py` on the correct bundle; check broker ownership/capabilities and adapter inventory |
+| Windows no raw HCI / controller remains unavailable | Use the WinUSB launcher and its matching UAC flow; check `-Check`, the lease log and [recovery](#en-windows) |
+| Android `prepareOpticalAsset` missing input | The public source cannot finish that APK; follow the documented [build prerequisite](#en-build) rather than bypassing it |
+| Android signature / IPC denied | Compare both APK signer digests and the installed signing key; use matching builds |
+| Wrong/stale PIN or Watch awaiting a new pair | Select a fresh discovery candidate and use the current on-screen PIN; an old PIN/session cannot resume a reset Watch |
+| Setup stalls after an ACK | Inspect current phase/journal and actual Watch screen; do not force a success state or repeatedly reset the Watch |
+| macOS BLE list empty | Check Bluetooth permission, proximity and the Watch's discoverable pairing state; activation is not supported on this backend |
+
+Log files are created after the worker starts. Review/redact identifiers before
+sharing excerpts; never upload pairing stores, keys, account inputs or Wi-Fi secrets.
 
 Journal/projections and retained reports provide other stages. Ordinary diagnosis does not require exposing secrets from encrypted pair records.
 
@@ -1130,7 +1589,7 @@ Third-party tree/binary licenses and provenance remain in their own `LICENSE`/`N
 </p>
 
 <p align="center">
-  <a href="#ru-calls">Карта вызовов</a> · <a href="#ru-pairing">Сопряжение</a> · <a href="#ru-api">API</a> · <a href="#ru-build">Сборка</a> · <a href="#ru-evidence">Доказательства</a>
+  <a href="#ru-start">Начать здесь</a> · <a href="#ru-calls">Карта вызовов</a> · <a href="#ru-pairing">Сопряжение</a> · <a href="#ru-api">API</a> · <a href="#ru-build">Сборка</a> · <a href="#ru-evidence">Доказательства</a>
 </p>
 
 **Подключение Apple Watch к Android, Linux и Windows через нативные Bluetooth/IDS протоколы и общий Flutter Companion. macOS использует тот же интерфейс с ограниченным Bluetooth-бэкендом.**
@@ -1169,9 +1628,12 @@ Rust-бэкенд Linux разделён на состояние, ввод/за�
 - [Уведомления, поиск, Wi-Fi и Health](#ru-features)
 - [Современный StateReplicator и QUIC](#ru-replicator)
 - [Ключи, хранилища и время жизни](#ru-ownership)
+- [Запуск с чистой системы](#ru-start)
 - [Сборка, тестирование и первый запуск](#ru-build)
+- [Сборка для обнаружения на macOS](#ru-macos)
 - [Подключение в Linux и выбор адаптера](#ru-linux)
 - [Подключение в Windows](#ru-windows)
+- [Обновление, резервная копия и откат](#ru-update)
 - [Диагностика и исследовательские команды](#ru-diagnostics)
 - [Карта исходников и доказательств](#ru-evidence)
 - [Словарь](#ru-glossary)
@@ -1895,6 +2357,151 @@ Handshake и authenticated DATA не доказывают, что complete snaps
 
 Ключи, PIN, optical payload и Wi-Fi passwords не являются UI data. Public snapshots содержат только разрешённые проекции. Смена пары, epoch, close или timeout инвалидирует pending commands/late callbacks; interrupted native mutation не должна автоматически переигрываться.
 
+<a id="ru-start"></a>
+## Запуск с чистой системы
+
+Выполняйте каждый блок на указанной ОС и останавливайтесь при ошибке команды.
+Shell-блоки рассчитаны на Bash/zsh, Windows-блоки — на PowerShell. Desktop-цели
+собираются на своей ОС. Текущая Android-сборка использует NDK для macOS/Linux.
+Проверенный набор SDK: Flutter **3.47.4 / Dart 3.13.3**, Rust **1.98.1**, JDK
+**17**. Команды устанавливают инструменты и сохраняют зависимости из lockfiles.
+
+### 1. Подготовка системы
+
+**Linux Mint 22 / Ubuntu 24.04, x86_64:**
+
+```sh
+sudo apt-get update
+sudo apt-get install -y git curl unzip xz-utils zip python3 build-essential \
+  clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev \
+  libglu1-mesa libusb-1.0-0-dev libbluetooth-dev bluez systemd libcap2-bin openjdk-17-jdk
+sudo update-alternatives --config java
+sudo update-alternatives --config javac
+export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")"
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+Если установлено несколько JDK, в обоих запросах alternatives выберите JDK 17.
+Для других дистрибутивов нужны
+эквивалентные пакеты и отдельная проверка оборудования. За основу взяты
+[требования Flutter для Linux](https://docs.flutter.dev/platform-integration/linux/setup),
+добавлены Java, USB и Bluetooth-зависимости проекта.
+
+**macOS:** сначала установите полный [Xcode](https://developer.apple.com/xcode/)
+и [Homebrew](https://brew.sh/), затем:
+
+```sh
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -runFirstLaunch
+sudo xcodebuild -license
+brew install python git openjdk@17 cocoapods libusb
+export JAVA_HOME="$(brew --prefix openjdk@17)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+Завершите запросы лицензии. Если Xcode расположен в другом месте, укажите его
+путь. См. [подготовку macOS для Flutter](https://docs.flutter.dev/platform-integration/macos/setup).
+
+**Windows 10/11, x64:** если нет `winget`, установите App Installer/WinGet.
+Выполните команды в PowerShell; установщик Visual Studio может запросить UAC.
+
+```powershell
+winget install --exact --id Git.Git
+winget install --exact --id Python.Python.3.13
+winget install --exact --id EclipseAdoptium.Temurin.17.JDK
+winget install --exact --id Rustlang.Rustup
+winget install --exact --id Microsoft.VisualStudio.2022.Community --override "--wait --passive --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended"
+Start-Process 'ms-settings:developers'
+```
+
+После установки откройте новое окно PowerShell. Проверьте наличие workload
+**Desktop development with C++** и CMake tools в Visual Studio. Одного VS Code
+недостаточно. В открытой странице Windows Settings включите **Developer Mode**
+для symlinks Flutter-плагинов. См. [подготовку Windows для Flutter](https://docs.flutter.dev/platform-integration/windows/setup)
+и [параметры установщика Microsoft](https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio).
+
+### 2. SDK и получение проекта
+
+В новой среде **macOS/Linux** установите Rust через
+[официальный установщик](https://rustup.rs/), а Flutter — на проверенном теге:
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/watch-rustup-init.sh
+sh /tmp/watch-rustup-init.sh
+. "$HOME/.cargo/env"
+mkdir -p "$HOME/develop"
+git clone --branch 3.47.4 --depth 1 https://github.com/flutter/flutter.git "$HOME/develop/flutter"
+export PATH="$HOME/develop/flutter/bin:$PATH"
+git clone https://github.com/LordixDemon/apple_watch_connector.git
+cd apple_watch_connector
+rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
+rustup override set 1.98.1
+```
+
+На **Windows**, после установки через WinGet:
+
+```powershell
+New-Item -ItemType Directory -Force "$env:USERPROFILE\develop" | Out-Null
+git clone --branch 3.47.4 --depth 1 https://github.com/flutter/flutter.git "$env:USERPROFILE\develop\flutter"
+$env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
+$env:JAVA_HOME = Split-Path (Split-Path (Get-Command javac.exe).Source -Parent) -Parent
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+git clone https://github.com/LordixDemon/apple_watch_connector.git
+cd apple_watch_connector
+rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
+rustup override set 1.98.1
+```
+
+Если каталог SDK или проекта уже существует, используйте его. Добавьте Flutter,
+Cargo `bin` и выбранный JDK в профиль своего shell или пользовательскую среду;
+показанные переменные действуют в текущем терминале. Архивы SDK доступны в
+[официальной инструкции Flutter](https://docs.flutter.dev/install/manual).
+Для воспроизведения проверенной сборки не выполняйте `flutter upgrade` или
+`pub upgrade`.
+
+На **всех ОС**, из корня проекта:
+
+```sh
+git rev-parse --short HEAD
+python3 --version
+java -version
+javac -version
+rustc --version
+flutter --version
+flutter doctor -v
+cd apple-watch-companion
+flutter pub get --enforce-lockfile
+cd ..
+```
+
+На Windows используйте `python` вместо `python3`. В `flutter doctor` должен
+работать toolchain выбранной платформы. Предупреждение Android/Xcode, не
+относящееся к сборке Linux/Windows, её не блокирует. Ожидаемые версии: Rust
+1.98.1, Flutter 3.47.4 и Dart 3.13.3; `java` и `javac` должны использовать JDK 17.
+При сообщении о результатах сохраните Git revision.
+
+### 3. Выбор сценария
+
+| Платформа | Следующие шаги | Текущий результат |
+| --- | --- | --- |
+| Android | [SDK/сборка](#ru-build), затем [установка APK/root](#ru-android-install) | Проверено на rooted OnePlus CPH2653; чистая сборка Companion блокируется отсутствующими optical inputs |
+| Linux | [Сборка](#ru-build), затем [установка broker и сопряжение](#ru-linux) | Новая пара, активация и реконнект сохранённой пары |
+| Windows | [Сборка](#ru-build), затем [launcher и сопряжение](#ru-windows) | Проверено на Windows 10 / Realtek `0bda:b00e`; последний рефакторинг требует повторной проверки на устройстве |
+| macOS | [Сборка и запуск](#ru-macos) | Обнаружение и BLE; полная активация/IDS пока не завершены |
+
+Для новой пары часы должны показывать экран сопряжения. Часы, связанные с
+другим устройством, не создадут новую пару по его старому PIN. Для пары,
+сохранённой этой установкой приложения, используйте **Connect** и сохраните её
+записи. Держите часы рядом и заряженными. Во время сессии Linux/Windows выбранный
+Bluetooth-контроллер занят приложением.
+
+Успешная настройка Linux/Windows требует рабочего циферблата, подтверждения
+пользователя, если оно запрошено, и `OPERATIONAL` / `watchReady=true`. На Android
+также необходимы наблюдаемое завершение настройки и operational readiness.
+Одного Bluetooth-соединения, ответа активации или ACK доставки недостаточно.
+После настройки отключите и подключите часы: сохранённая готовая пара должна
+восстановиться без нового PIN. При зависшем этапе см. [диагностику](#ru-diagnostics).
+
 <a id="ru-build"></a>
 ## Сборка, тестирование и первый запуск
 
@@ -1915,13 +2522,57 @@ Handshake и authenticated DATA не доказывают, что complete snaps
 
 Для macOS также важна Xcode build configuration; ограничения приведены в [macOS findings](docs/MACOS_PAIRING_TRANSPORT_FINDINGS.md). Linux требует установки HCI broker, Windows — доступа к контроллеру через WinUSB или поддерживаемый UsbDk. Подробности приведены ниже в разделах подключения.
 
+### Android SDK и условия сборки камеры
+
+Сначала установите [Android Studio и SDK Command-Line Tools](https://developer.android.com/studio).
+В Bash/zsh на macOS/Linux, после выбора JDK 17:
+
+```sh
+if [ "$(uname -s)" = Darwin ]; then
+  export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+else
+  export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
+fi
+export PATH="$ANDROID_HOME/platform-tools:$PATH"
+"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses
+"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" \
+  "platform-tools" "platforms;android-36" "build-tools;36.1.0" \
+  "ndk;28.2.13676358" "cmake;3.22.1"
+flutter config --android-sdk "$ANDROID_HOME" --jdk-dir "$JAVA_HOME"
+rustup target add aarch64-linux-android
+flutter doctor -v
+```
+
+Если SDK установлен в другом месте, укажите его путь; `cmdline-tools/latest`
+замените на установленный каталог. Прочитайте запросы лицензий. Используется
+[CLI SDK Manager](https://developer.android.com/tools/sdkmanager).
+
+**Чистая Android-сборка Companion сейчас заблокирована в публичном репозитории.**
+`prepareOpticalAsset` требует четыре локальных компонента, которые здесь не
+распространяются. Перед `tools/build.py android` проверьте их из корня проекта:
+
+```sh
+test -f firmware/ios-26.6-23G71/extracted/VisualPairing
+test -f research-tools/prepare_optical_android_asset.py
+test -f research-tools/visual_pairing_reader_oracle.py
+test -x research-tools/venv-dis/bin/python
+```
+
+Если чего-то нет, остановите сборку APK Companion. Генерация закреплённого asset
+проверяет исходный файл; произвольная заглушка не создаст работающий декодер.
+Эта инструкция не предоставляет приватные компоненты. `-x prepareOpticalAsset`
+пригоден только для проверки компиляции исходников и не подтверждает camera
+pairing. См. [блокер Android-релиза](docs/BUILD_AND_RELEASE.md#android-signing).
+Bridge можно собрать отдельно командой
+`(cd apple-watch-bridge && ./gradlew :app:assembleRelease)` после подготовки SDK/NDK.
+
 ### Сборка из корня
 
 ```sh
 # Rust tests + Clippy для всего workspace
 python3 tools/build.py core
 
-# Bridge release APK и Companion release APK; без установки
+# APK Bridge и Companion; нужны optical inputs выше; без установки
 python3 tools/build.py android
 
 # macOS app с embedded Rust dylib и проверкой подписи
@@ -1946,13 +2597,13 @@ SDK location задаётся существующим `apple-watch-bridge/local
 ### Проверки по слоям
 
 ```sh
-# Из корня: portable protocols и research probe
-cargo test --workspace --locked
-cargo clippy --workspace --all-targets --locked -- -D warnings
+# Из корня: workspace-тесты для текущей ОС и Clippy
+python3 tools/build.py core
 cargo fmt --all --check
 
 # Из apple-watch-bridge/
 ./gradlew :core:test
+./gradlew :protocol-runtime:test
 ./gradlew :app:lintDebug :hal:lintDebug
 ./gradlew :app:assembleDebug :app:assembleRelease
 ./gradlew :app:assembleDebugAndroidTest
@@ -1977,7 +2628,54 @@ Native captures/builders имеют свои `tools/test_native_*.py` прове
 | Windows bundle (x64) | `apple-watch-companion/build/windows/x64/runner/Release/` |
 | Java test XML / report | `apple-watch-bridge/core/build/test-results/test/`, `core/build/reports/tests/test/` |
 
-### Первый запуск на Android
+<a id="ru-android-install"></a>
+### Установка Android и первый запуск
+
+Текущая реализация root HAL допускает **только OnePlus CPH2653** и требует
+уже подготовленный rooted-телефон. Получение root не входит в эту инструкцию.
+Включите USB debugging, разблокируйте телефон и разрешите ADB-ключ компьютера.
+Из корня проекта выберите телефон по серийному номеру из `adb devices`:
+
+```sh
+adb devices -l
+WATCH_ADB_SERIAL='REPLACE_WITH_ADB_DEVICE_SERIAL'
+adb -s "$WATCH_ADB_SERIAL" get-state
+adb -s "$WATCH_ADB_SERIAL" shell getprop ro.product.model
+adb -s "$WATCH_ADB_SERIAL" shell su -c id
+```
+
+Ожидается `device`, модель `CPH2653` и root `uid=0` после запроса Magisk.
+При `unauthorized` подтвердите доступ на телефоне. Эмулятор не проверяет физический
+HAL. При нескольких устройствах всегда сохраняйте явный выбор через `-s`.
+
+Первичная подготовка через Magisk-модуль из репозитория:
+
+```sh
+bash apple-watch-bridge/tool/build_magisk_module.sh
+adb -s "$WATCH_ADB_SERIAL" push apple-watch-bridge/build/apple-watch-bridge-magisk.zip /sdcard/Download/
+```
+
+В **Magisk → Modules → Install from storage** выберите ZIP и перезагрузите
+телефон для применения модуля. Он добавляет Bridge priv-app, hidden-API whitelist
+и SELinux rules; одного root для этого недостаточно. ZIP содержит собранный APK
+Bridge — пересоберите его для нужной версии.
+
+Когда оба APK собраны или получены как проверенная совместимая пара, проверьте
+подписи и установите их:
+
+```sh
+"$ANDROID_HOME/build-tools/36.1.0/apksigner" verify --print-certs apple-watch-bridge/app/build/outputs/apk/release/app-release.apk
+"$ANDROID_HOME/build-tools/36.1.0/apksigner" verify --print-certs apple-watch-companion/build/app/outputs/flutter-apk/app-release.apk
+adb -s "$WATCH_ADB_SERIAL" install -r apple-watch-bridge/app/build/outputs/apk/release/app-release.apk
+adb -s "$WATCH_ADB_SERIAL" install -r apple-watch-companion/build/app/outputs/flutter-apk/app-release.apk
+adb -s "$WATCH_ADB_SERIAL" shell am start -n dev.applewatchandroid.companion.apple_watch_companion/.MainActivity
+```
+
+SHA-256 сертификата подписанта у обоих APK должен совпадать для IPC с проверкой
+подписи. Для каждой установки ожидается `Success`. Обычная локальная сборка
+использует debug key; подпись для распространения описана в
+[релизной инструкции](docs/BUILD_AND_RELEASE.md#android-signing). При обновлении
+сначала выполните [остановку сессии и резервное копирование](#ru-update).
 
 1. Собрать оба APK, проверить подписи и подготовить поддерживаемый root/HAL backend.
 2. При замене Bridge остановить действующий setup/operational service и дождаться HAL close/root exit. `adb install -r` сохраняет приложение; не очищать pair storage ради обновления.
@@ -1990,6 +2688,25 @@ Native captures/builders имеют свои `tools/test_native_*.py` прове
 
 Desktop-платформы используют общий Flutter UI через Rust и сопряжение по коду/PIN. Linux и Windows имеют собственные HCI-транспорты; discovery/BLE на macOS не означает доступность полного нового pairing. Возможности зависят от backend; Android fallback на desktop отсутствует.
 
+<a id="ru-macos"></a>
+## Сборка для обнаружения на macOS
+
+После подготовки системы и SDK, из корня проекта:
+
+```sh
+rustup target add aarch64-apple-darwin
+python3 tools/build.py macos
+codesign --verify --deep --strict apple-watch-companion/build/macos/Build/Products/Release/apple_watch_companion.app
+open apple-watch-companion/build/macos/Build/Products/Release/apple_watch_companion.app
+```
+
+На Intel Mac используйте `x86_64-apple-darwin`. Разрешите Bluetooth по запросу
+macOS и выберите **Scan / Find a Watch** в Companion. Ожидаемый результат —
+список обнаруженных BLE-устройств. Разрешение можно изменить в
+**System Settings → Privacy & Security → Bluetooth**. `codesign` проверяет
+локальную подпись приложения, но не подтверждает Developer ID notarization.
+Полное сопряжение часов, активация и operational IDS на macOS пока недоступны.
+
 <a id="ru-linux"></a>
 ## Подключение в Linux
 
@@ -1998,6 +2715,8 @@ launcher от обычного пользователя:
 
 ```sh
 python3 tools/install_linux.py apple-watch-companion/build/linux/x64/release/bundle
+getcap /usr/local/libexec/watch-companion/watch-linux-hci
+./apple-watch-companion/build/linux/x64/release/bundle/apple_watch_companion
 ```
 
 В примере указан x64 bundle; для ARM64 используется соответствующий output
@@ -2019,6 +2738,21 @@ Desktop Wi-Fi provisioning, управление циферблатами, notif
 ещё не полностью доступны через desktop command contract. См.
 [проверку Linux на устройстве](docs/LINUX_COMPANION_91.md) и
 [выбор адаптера](docs/LINUX_ADAPTER_SELECTION_94.md).
+
+Перед подключением проверьте адаптеры, не открывая HCI-сессию:
+
+```sh
+systemctl is-active bluetooth
+bluetoothctl list
+busctl --system --json=short call org.bluez / org.freedesktop.DBus.ObjectManager GetManagedObjects
+```
+
+Ожидается статус Bluetooth `active`, контроллер в списке и
+`cap_net_admin,cap_net_raw=ep` у установленного broker. Запускайте bundle от
+обычного пользователя. Если BlueZ остановлен, выполните
+`sudo systemctl start bluetooth` и обновите список адаптеров в Companion.
+Во время подключения арендованный адаптер может исчезнуть из BlueZ — проверяйте
+после **Disconnect**. Не запускайте raw HCI broker вручную или Flutter через `sudo`.
 
 <a id="ru-windows"></a>
 ## Подключение в Windows
@@ -2050,6 +2784,161 @@ Realtek `0bda:b00e` и Watch7,5 / watchOS 26.2.0 физически провер
 Подробности сборки, восстановления прошивки Realtek и альтернативного UsbDk
 — в [Windows connection](#en-windows).
 
+### Команды запуска Windows и восстановления контроллера
+
+Из корня проекта в PowerShell, после сборки:
+
+```powershell
+.\tools\run_windows_companion.ps1 -Check
+.\tools\run_windows_companion.ps1
+```
+
+Первая команда показывает ID/сервисы контроллеров и подпись драйвера, вторая
+запускает выбор контроллера и UAC. Для явного выбора скопируйте полный ID из
+`-Check` в запрос:
+
+```powershell
+$watchControllerId = Read-Host 'Controller InstanceId from -Check'
+.\tools\run_windows_companion.ps1 -InstanceId $watchControllerId -NonInteractive
+```
+
+Если выполнение скриптов заблокировано, разрешите только этот запуск:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\run_windows_companion.ps1
+```
+
+После закрытия Companion дождитесь восстановления контроллера supervisor:
+используйте `$watchControllerId` из примера выше (при автоматическом выборе
+задайте его по результату `-Check`).
+
+```powershell
+Get-PnpDevice -PresentOnly -InstanceId $watchControllerId
+Get-PnpDeviceProperty -InstanceId $watchControllerId -KeyName DEVPKEY_Device_Service
+Get-ChildItem "$env:LOCALAPPDATA\watch-companion\controller-leases" -Filter restored -Recurse
+```
+
+Если контроллер изначально использовал Windows Bluetooth stack, его сервис должен
+вернуться к `BTHUSB`. Проверьте маркер `restored` в каталоге нужной аренды. Если
+восстановление драйвера прервалось, сохраните её `original.json` и запустите
+recovery-сессию с тем же контроллером:
+
+```powershell
+$watchRecoveryRecord = Read-Host 'Full path to the matching lease original.json'
+.\tools\run_windows_companion.ps1 -InstanceId $watchControllerId -RecoveryRecord $watchRecoveryRecord
+```
+
+Команда запускает Companion с сохранёнными сведениями о восстановлении. Закройте
+окно, дождитесь возврата драйвера и повторите проверку сервиса. Запись должна
+принадлежать этому контроллеру. Отдельного restore-only параметра у launcher нет.
+
+<a id="ru-update"></a>
+## Обновление, резервная копия и откат
+
+Сначала выберите **Disconnect / остановку настройки** в Companion, дождитесь
+завершения HAL/HCI worker и закройте приложение. На Windows также дождитесь
+восстановления драйвера, прежде чем заменять bundle. Сохраните записи пары;
+обновление приложения не требует сброса часов или выбора Unpair.
+
+### Linux: состояние и полный bundle вместе
+
+Из корня существующего проекта, после остановки приложения:
+
+```sh
+watch_state="${XDG_STATE_HOME:-$HOME/.local/state}/watch-companion"
+watch_backup="$HOME/watch-companion-backups/$(date +%Y%m%d-%H%M%S)"
+install -d -m 700 "$watch_backup"
+cp -a "$watch_state" "$watch_backup/state"
+cp -a apple-watch-companion/build/linux/x64/release/bundle "$watch_backup/bundle"
+git status --short
+git pull --ff-only
+(cd apple-watch-companion && flutter pub get --enforce-lockfile)
+(cd apple-watch-bridge && ./gradlew :core:desktopRuntime)
+python3 tools/build.py linux
+python3 tools/install_linux.py apple-watch-companion/build/linux/x64/release/bundle
+./apple-watch-companion/build/linux/x64/release/bundle/apple_watch_companion
+```
+
+Резервное копирование предполагает успешную предыдущую установку. Если
+`git status` показывает локальные изменения, остановитесь до pull. Для ARM64
+замените путь bundle. Ожидаемый результат — доступная сохранённая пара и
+реконнект без нового PIN. Для отката снова остановите приложение и установите
+сохранённый полный bundle:
+
+```sh
+python3 tools/install_linux.py "$watch_backup/bundle"
+"$watch_backup/bundle/apple_watch_companion"
+```
+
+Если новая версия несовместимо изменила состояние, сначала, при остановленных
+workers, сохраните его и восстановите соответствующую резервную копию:
+
+```sh
+mv "$watch_state" "$watch_backup/state-after-update"
+cp -a "$watch_backup/state" "$watch_state"
+```
+
+### Windows: тот же пользователь, DPAPI-состояние и полный bundle
+
+В PowerShell, после закрытия приложения и восстановления драйвера:
+
+```powershell
+$watchBackup = Join-Path $env:USERPROFILE ('watch-companion-backups\' + (Get-Date -Format yyyyMMdd-HHmmss))
+$watchState = Join-Path $env:LOCALAPPDATA 'watch-companion'
+New-Item -ItemType Directory -Path $watchBackup | Out-Null
+Copy-Item -LiteralPath $watchState -Destination (Join-Path $watchBackup 'state') -Recurse
+Copy-Item -LiteralPath 'apple-watch-companion\build\windows\x64\runner\Release' -Destination (Join-Path $watchBackup 'bundle') -Recurse
+git status --short
+git pull --ff-only
+Push-Location apple-watch-companion
+flutter pub get --enforce-lockfile
+Pop-Location
+python tools/build.py windows
+.\tools\run_windows_companion.ps1
+```
+
+Храните копию приватно, в этой установке Windows и под тем же пользователем:
+DPAPI-записи не являются переносимым экспортом пары. Запуск предыдущей версии:
+
+```powershell
+.\tools\run_windows_companion.ps1 -Bundle (Join-Path $watchBackup 'bundle')
+```
+
+Если требуется откат состояния, сначала закройте приложение и дождитесь
+supervisor, затем сохраните новое состояние и восстановите соответствующую копию:
+
+```powershell
+Move-Item -LiteralPath $watchState -Destination (Join-Path $watchBackup 'state-after-update')
+Copy-Item -LiteralPath (Join-Path $watchBackup 'state') -Destination $watchState -Recurse
+```
+
+### Обновление Android и macOS
+
+Android: остановите сессию, соберите два APK с совместимой подписью и повторите
+[две команды `adb install -r`](#ru-android-install). Сохраните ключ установленной
+версии и package IDs. Из-за `allowBackup=false` обычный `adb backup` не создаёт
+резервную копию пары. Пониженный release versionCode может быть отклонён;
+удаление приложения или очистка данных для принудительного downgrade уничтожит
+сохранённую пару. Общего документированного экспорта/восстановления Android-пары
+пока нет. При смене базовой версии обновите и APK внутри Magisk-модуля.
+
+macOS: завершите приложение перед сборкой. Сохраните полный старый `.app`, затем
+соберите, проверьте и откройте новый по [командам macOS](#ru-macos). У этой сборки
+нет активированной пары для переноса. Пример из корня проекта:
+
+```sh
+watch_mac_app=apple-watch-companion/build/macos/Build/Products/Release/apple_watch_companion.app
+watch_mac_backup="$HOME/watch-companion-backups/$(date +%Y%m%d-%H%M%S)/apple_watch_companion.app"
+mkdir -p "$(dirname "$watch_mac_backup")"
+ditto "$watch_mac_app" "$watch_mac_backup"
+python3 tools/build.py macos
+open "$watch_mac_app"
+```
+
+Для запуска старой версии закройте новую и выполните `open "$watch_mac_backup"`.
+На любой платформе резервная копия не
+восстановит пару после сброса часов или сопряжения с другим устройством.
+
 <a id="ru-diagnostics"></a>
 ## Диагностика и исследовательские команды
 
@@ -2074,8 +2963,39 @@ Realtek `0bda:b00e` и Watch7,5 / watchOS 26.2.0 физически провер
 Читать логи можно отдельно от команд часов:
 
 ```sh
-adb logcat -d -s WatchBridgeIpc
+adb -s "$WATCH_ADB_SERIAL" logcat -d -s WatchBridgeIpc WatchBridge WatchNotification
 ```
+
+На Linux, после запуска protocol worker:
+
+```sh
+watch_state="${XDG_STATE_HOME:-$HOME/.local/state}/watch-companion"
+tail -n 100 "$watch_state/protocol.log"
+getcap /usr/local/libexec/watch-companion/watch-linux-hci
+```
+
+На Windows:
+
+```powershell
+Get-Content "$env:LOCALAPPDATA\watch-companion\protocol.log" -Tail 100
+.\tools\run_windows_companion.ps1 -Check
+```
+
+| Проблема | Действие и ожидаемая проверка |
+| --- | --- |
+| Не найдены `flutter` / `cargo` / `javac` | Откройте новый терминал после установки; проверьте PATH, `JAVA_HOME` и версии в [начале инструкции](#ru-start) |
+| Linux `Missing shared dependencies` | До сборки выполните `(cd apple-watch-bridge && ./gradlew :core:desktopRuntime)`; не подставляйте произвольные JAR |
+| Linux `LINUX_BACKEND_NOT_INSTALLED` / ошибка прав | Повторите `tools/install_linux.py` для нужного bundle; проверьте владельца/capabilities broker и список адаптеров |
+| Windows нет raw HCI / контроллер недоступен | Используйте WinUSB launcher и его UAC-сценарий; проверьте `-Check`, журнал аренды и [восстановление](#ru-windows) |
+| Android `prepareOpticalAsset`: нет входного файла | Публичные исходники не позволяют завершить этот APK; следуйте [условиям сборки](#ru-build), не обходите этап |
+| Android несовпадение подписи / отказ IPC | Сравните сертификаты обоих APK и ключ установленной версии; используйте совместимые сборки |
+| Неверный/старый PIN или часы ждут новую пару | Выберите свежий discovery candidate и текущий PIN на экране; старая сессия не продолжает работу со сброшенными часами |
+| Настройка зависла после ACK | Проверьте phase/journal и реальный экран часов; не подставляйте статус успеха и не сбрасывайте часы многократно |
+| macOS: список BLE пуст | Проверьте разрешение Bluetooth, расстояние и экран сопряжения часов; активация этим backend не поддерживается |
+
+Логи появляются после запуска worker. Перед публикацией фрагментов проверьте
+и скройте идентификаторы; не отправляйте pairing stores, ключи, данные аккаунта
+или Wi-Fi secrets.
 
 Journal/projections и сохранённые reports дают дополнительные этапы. Не выводить secrets из encrypted pair records для обычной диагностики.
 

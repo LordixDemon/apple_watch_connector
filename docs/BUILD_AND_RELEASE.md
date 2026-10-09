@@ -7,6 +7,12 @@ activation, visible watch face and reconnect are verified. Windows 10 x64 with
 Realtek `0bda:b00e` also has physical PIN, activation and encrypted reconnect
 evidence. Other models/controllers need their own hardware acceptance run.
 
+For installation from a clean machine, use the executable sequences in the
+README: [English](../README.md#en-start) / [Русский](../README.md#ru-start).
+They cover host dependencies, SDK selection, Android prerequisites and ADB,
+Linux broker setup, Windows controller selection/recovery, macOS discovery,
+logs and saved-pair updates. This document covers candidate auditing and signing.
+
 ## Candidate versions and support
 
 Current source versions: Companion `1.0.85+86`, Android Bridge `0.2.427` (code
@@ -43,7 +49,7 @@ identity, without compiled-in personal addresses.
 ## Windows installation and verification
 
 Build on Windows with Visual Studio C++ desktop tools, Rust MSVC, Flutter and JDK
-17+. From the project root:
+17–22 (tested with 17). From the project root:
 
 ```powershell
 python tools/build.py windows
@@ -116,6 +122,12 @@ Java modules use strict Gradle lockfiles, including transitive dependencies.
 Intentional updates require `:core:resolvePortableDependencies
 :protocol-runtime:resolvePortableDependencies --write-locks` followed by tests;
 ordinary builds do not rewrite them.
+
+After cloning, select the tested SDKs and run
+`flutter pub get --enforce-lockfile` inside `apple-watch-companion` before
+building/testing. Use `python` for the Python commands on Windows and run
+Gradle wrapper tasks there with `gradlew.bat`; the Linux sequence below uses a
+POSIX shell. Host-sensitive Rust tests are selected by `tools/build.py core`.
 
 ```sh
 python3 tools/build.py core
