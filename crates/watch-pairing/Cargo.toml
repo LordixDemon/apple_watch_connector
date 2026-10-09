@@ -1,0 +1,23 @@
+[package]
+name = "watch-pairing"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+watch-protocol = { path = "../watch-protocol" }
+aes-gcm = { version = "0.10.3", features = ["zeroize"] }
+getrandom = "0.3.4"
+hmac = "0.12.1"
+sha2 = "0.10.9"
+subtle = "2.6.1"
+x448 = "0.6.0"
+ml-kem = { version = "0.3.2", features = ["zeroize"] }
+zeroize = { version = "1.8.2", features = ["derive"] }
+p256 = "0.13.2"
+hkdf = "0.12.4"
+pbkdf2 = { version = "0.12.2", default-features = false, features = ["hmac"] }
+
+[dev-dependencies]
+serde_json.workspace = true
+ml-kem = { version = "0.3.2", features = ["hazmat"] }

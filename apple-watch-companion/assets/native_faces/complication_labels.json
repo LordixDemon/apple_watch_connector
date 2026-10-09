@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "source": "iOS 26.2 (23C54) NanoWeatherComplicationsCompanion.framework/en.lproj/NanoWeatherComplications-Localizable.strings",
+  "labels": [
+    {
+      "identity": {
+        "containerBundleIdentifier": "com.apple.weather.watchapp",
+        "extensionBundleIdentifier": "com.apple.weather.watchapp.widgets",
+        "kind": "com.apple.weather.widget.uv"
+      },
+      "sourceKey": "UVI_COMPLICATION_NAME",
+      "labels": {"en": "UV Index"}
+    },
+    {
+      "identity": {
+        "containerBundleIdentifier": "com.apple.weather.watchapp",
+        "extensionBundleIdentifier": "com.apple.weather.watchapp.widgets",
+        "kind": "com.apple.weather.widget.wind"
+      },
+      "sourceKey": "WIND_COMPLICATION_NAME",
+      "labels": {"en": "Wind"}
+    }
+  ],
+  "bundleLabels": [
+    {
+      "identity": {
+        "bundle app identifier": "com.apple.NanoCompass.watchkitapp",
+        "bundle identifier": "com.apple.NanoCompass.complications.level"
+      },
+      "source": "watchOS 26.2 (23S303) LevelComplicationDataSource / LevelComplication.strings/sl.lproj; English translation",
+      "sourceKey": "LEVEL_COMPLICATION_NAME",
+      "labels": {"en": "Level", "sl": "Libela"}
+    }
+  ]
+}

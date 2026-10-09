@@ -1,0 +1,16 @@
+Apple Watch Bridge Lab
+
+The AIDL declarations under app/src/main/hal_aidl/android/hardware/bluetooth
+are derived from the Android Open Source Project hardware/interfaces
+Bluetooth HAL. Those declarations are licensed under the Apache License,
+Version 2.0.
+
+Android Open Source Project:
+https://android.googlesource.com/platform/hardware/interfaces/+/android16-release/bluetooth/aidl/
+
+Apache License, Version 2.0:
+https://www.apache.org/licenses/LICENSE-2.0
+
+The neighboring CatPlay project was inspected read-only for its Android
+privilege/deployment architecture. No CatPlay source code is included in this
+project.

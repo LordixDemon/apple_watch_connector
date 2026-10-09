@@ -1,0 +1,1216 @@
+{
+  "version": 1,
+  "source": "watchOS 26.2 / 23S303 native editOptionsForCustomEditModes",
+  "families": {
+    "type:kaleidoscope rich": {
+      "order": [
+        "content",
+        "style"
+      ],
+      "sections": [
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "asset 28",
+            "asset 29",
+            "asset 30",
+            "asset 31",
+            "asset 32",
+            "asset 33",
+            "asset 24",
+            "asset 27",
+            "asset 26",
+            "asset 25",
+            "asset 17",
+            "asset 18",
+            "asset 19",
+            "asset 20",
+            "asset 21",
+            "asset 22",
+            "asset 23",
+            "asset 14",
+            "asset 15",
+            "asset 13",
+            "asset 16",
+            "asset 10",
+            "asset 9",
+            "asset 11",
+            "asset 12",
+            "asset 1",
+            "asset 2",
+            "asset 3",
+            "asset 4",
+            "asset 5",
+            "asset 6",
+            "asset 7",
+            "asset 8"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "fullscreen facet",
+            "faceted",
+            "radial",
+            "limit"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKSnowglobeFaceBundle": {
+      "order": [
+        "color",
+        "style"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "on",
+            "off"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKCrosswindFaceBundle": {
+      "order": [
+        "color"
+      ],
+      "sections": []
+    },
+    "bundle:com.apple.NTKLilypadFaceBundle": {
+      "order": [
+        "style"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKGladiusFaceBundle": {
+      "order": [
+        "style",
+        "content",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 0",
+            "style 1",
+            "style 2"
+          ]
+        },
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "light 0",
+            "light 2",
+            "light 1"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKGlobetrotterFaceBundle": {
+      "order": [
+        "style",
+        "numerals",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "analog",
+            "digital"
+          ]
+        },
+        {
+          "field": "numerals",
+          "mode": 19,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 14",
+            "style 6",
+            "style 5",
+            "style 9",
+            "style 15",
+            "style 8",
+            "style 13",
+            "style 10",
+            "style 11",
+            "style 7",
+            "style 12"
+          ]
+        }
+      ]
+    },
+    "type:california": {
+      "order": [
+        "typeface",
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "typeface",
+          "mode": 13,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 5",
+            "style 6",
+            "style 8",
+            "style 9",
+            "style 19",
+            "style 11",
+            "style 10",
+            "style 14",
+            "style 20",
+            "style 13",
+            "style 18",
+            "style 15",
+            "style 16",
+            "style 12",
+            "style 17"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "fullscreen",
+            "circular"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKGreyhoundFaceBundle": {
+      "order": [
+        "detail",
+        "typeface",
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        },
+        {
+          "field": "typeface",
+          "mode": 13,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 5"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKMagmaFaceBundle": {
+      "order": [
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        }
+      ]
+    },
+    "type:victory digital rich": {
+      "order": [
+        "typeface",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "typeface",
+          "mode": 13,
+          "collectionType": 0,
+          "values": [
+            "style 4",
+            "style 5",
+            "style 6"
+          ]
+        }
+      ]
+    },
+    "type:x-large rich": {
+      "order": [
+        "background",
+        "numerals",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "background",
+          "mode": 17,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        },
+        {
+          "field": "numerals",
+          "mode": 19,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 14",
+            "style 6",
+            "style 5",
+            "style 9",
+            "style 15",
+            "style 8",
+            "style 13",
+            "style 10",
+            "style 11",
+            "style 7",
+            "style 12"
+          ]
+        }
+      ]
+    },
+    "type:simple rich": {
+      "order": [
+        "detail",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "minimal",
+            "simple",
+            "medium",
+            "detailed"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKCollieFaceBundle": {
+      "order": [
+        "numerals",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "numerals",
+          "mode": 19,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 14",
+            "style 6",
+            "style 5",
+            "style 9",
+            "style 15",
+            "style 8",
+            "style 13",
+            "style 10",
+            "style 11",
+            "style 7",
+            "style 12"
+          ]
+        }
+      ]
+    },
+    "type:whistler-digital": {
+      "order": [
+        "background",
+        "numerals",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "background",
+          "mode": 17,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        },
+        {
+          "field": "numerals",
+          "mode": 19,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 14",
+            "style 6",
+            "style 5",
+            "style 9",
+            "style 15",
+            "style 8",
+            "style 13",
+            "style 10",
+            "style 11",
+            "style 7",
+            "style 12"
+          ]
+        }
+      ]
+    },
+    "type:sidereal": {
+      "order": [
+        "style"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "analog",
+            "digital"
+          ]
+        }
+      ]
+    },
+    "type:motion": {
+      "order": [
+        "content"
+      ],
+      "sections": [
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "butterfly",
+            "flower",
+            "jellyfish"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKColtanFaceBundle": {
+      "order": [
+        "content",
+        "detail",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "fullscreen",
+            "circular"
+          ]
+        },
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        }
+      ]
+    },
+    "type:victory analog rich": {
+      "order": [
+        "detail",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4"
+          ]
+        }
+      ]
+    },
+    "type:whistler-analog": {
+      "order": [
+        "color"
+      ],
+      "sections": []
+    },
+    "bundle:com.apple.NTKKuiperFaceBundle": {
+      "order": [
+        "detail",
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "detailed",
+            "medium",
+            "simple",
+            "minimal"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 5"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKVivaldiFaceBundle": {
+      "order": [
+        "color"
+      ],
+      "sections": []
+    },
+    "bundle:com.apple.NTKCloudrakerFaceBundle": {
+      "order": [
+        "numerals",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "numerals",
+          "mode": 19,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 14",
+            "style 6",
+            "style 5",
+            "style 9",
+            "style 15",
+            "style 8",
+            "style 13",
+            "style 10",
+            "style 11",
+            "style 7",
+            "style 12"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKGalleonFaceBundle": {
+      "order": [
+        "detail",
+        "content",
+        "night",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "hour",
+            "minute"
+          ]
+        },
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "lat-long",
+            "elev-incl",
+            "empty"
+          ]
+        },
+        {
+          "field": "night",
+          "mode": 18,
+          "collectionType": 0,
+          "values": [
+            "auto",
+            "off",
+            "on"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKRenegadeFaceBundle": {
+      "order": [
+        "color"
+      ],
+      "sections": []
+    },
+    "bundle:com.apple.NTKAlaskanFaceBundle.NTKSalmonFaceBundle": {
+      "order": [
+        "color"
+      ],
+      "sections": []
+    },
+    "bundle:com.apple.NTKAlaskanFaceBundle.NTKTroutFaceBundle": {
+      "order": [
+        "color"
+      ],
+      "sections": []
+    },
+    "bundle:com.apple.NTKAlaskanFaceBundle.NTKSharkFaceBundle": {
+      "order": [
+        "detail",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 5"
+          ]
+        }
+      ]
+    },
+    "type:color rich": {
+      "order": [
+        "color",
+        "style"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "fullscreen",
+            "circular",
+            "dial"
+          ]
+        }
+      ]
+    },
+    "type:activity analog rich": {
+      "order": [
+        "detail",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "simple",
+            "detailed"
+          ]
+        }
+      ]
+    },
+    "type:activity digital rich": {
+      "order": [
+        "detail",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 3,
+          "values": [
+            "seconds",
+            "minutes"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NanoTimeKit.NTKPrideWeaveFaceBundle": {
+      "order": [
+        "content"
+      ],
+      "sections": [
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "fullscreen",
+            "circular"
+          ]
+        }
+      ]
+    },
+    "type:breathe rich": {
+      "order": [
+        "content"
+      ],
+      "sections": [
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "orbs",
+            "classic",
+            "calm",
+            "focus"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKKapacitorFaceBundle": {
+      "order": [
+        "numerals",
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "numerals",
+          "mode": 19,
+          "collectionType": 0,
+          "values": [
+            "arabic",
+            "arabic-indic",
+            "devanagari"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "filled",
+            "outline"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKExactitudesFaceBundle": {
+      "order": [
+        "background",
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "background",
+          "mode": 17,
+          "collectionType": 0,
+          "values": [
+            "backgroundOn",
+            "backgroundOff"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "closed",
+            "expandedI",
+            "expandedII"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKProteusFaceBundle": {
+      "order": [
+        "style",
+        "content",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        },
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "on",
+            "off"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.RhizomeFace": {
+      "order": [
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKLeghornFaceBundle": {
+      "order": [
+        "style",
+        "position",
+        "night",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "digital",
+            "analog"
+          ]
+        },
+        {
+          "field": "position",
+          "mode": 14,
+          "collectionType": 0,
+          "values": [
+            "none",
+            "left",
+            "right"
+          ]
+        },
+        {
+          "field": "night",
+          "mode": 18,
+          "collectionType": 0,
+          "values": [
+            "auto",
+            "off",
+            "on"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKBigNumeralsDigitalFaceBundle": {
+      "order": [
+        "typeface",
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "typeface",
+          "mode": 13,
+          "collectionType": 0,
+          "values": [
+            "western arabic",
+            "eastern arabic",
+            "devanagari"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "fill",
+            "half fill",
+            "outline"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKWarlockFaceBundle": {
+      "order": [
+        "typeface",
+        "background",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "typeface",
+          "mode": 13,
+          "collectionType": 0,
+          "values": [
+            "stencil",
+            "solid"
+          ]
+        },
+        {
+          "field": "background",
+          "mode": 17,
+          "collectionType": 0,
+          "values": [
+            "on",
+            "off"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKSeltzerFaceBundle": {
+      "order": [
+        "content",
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 2,
+          "values": [
+            "calendar 0",
+            "calendar 5",
+            "calendar 1",
+            "calendar 2",
+            "calendar 6",
+            "calendar 3",
+            "calendar 7",
+            "calendar 8",
+            "calendar 4",
+            "calendar 9"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "analog",
+            "digital"
+          ]
+        }
+      ]
+    },
+    "type:utility rich": {
+      "order": [
+        "detail",
+        "typeface",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "detail",
+          "mode": 11,
+          "collectionType": 0,
+          "values": [
+            "minimal",
+            "simple",
+            "medium",
+            "detailed"
+          ]
+        },
+        {
+          "field": "typeface",
+          "mode": 13,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2",
+            "style 3",
+            "style 4",
+            "style 14",
+            "style 6",
+            "style 5",
+            "style 9",
+            "style 15",
+            "style 8",
+            "style 13",
+            "style 10",
+            "style 11",
+            "style 7",
+            "style 12"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKShibaFaceBundle": {
+      "order": [
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 2",
+            "style 1",
+            "style 3"
+          ]
+        }
+      ]
+    },
+    "type:timelapse": {
+      "order": [
+        "content"
+      ],
+      "sections": [
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "Mack Lake",
+            "New York",
+            "Hong Kong",
+            "London",
+            "Paris",
+            "Shanghai"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKMargaritaFaceBundle": {
+      "order": [
+        "style",
+        "detail",
+        "position"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 3"
+          ]
+        },
+        {
+          "field": "position",
+          "mode": 14,
+          "collectionType": 0,
+          "values": [
+            "0",
+            "15",
+            "30",
+            "45",
+            "60",
+            "75",
+            "90",
+            "105",
+            "120",
+            "135",
+            "150",
+            "165",
+            "180",
+            "195",
+            "210",
+            "225",
+            "240",
+            "255",
+            "270",
+            "285",
+            "300",
+            "315",
+            "330",
+            "345"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKFoghornFaceBundle": {
+      "order": [
+        "content",
+        "style",
+        "night",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "none",
+            "seconds",
+            "depth",
+            "elevation",
+            "harmonia"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "default",
+            "defaultWithSeconds",
+            "large",
+            "largeWithSeconds",
+            "extraLarge",
+            "extraLargeWithSeconds"
+          ]
+        },
+        {
+          "field": "night",
+          "mode": 18,
+          "collectionType": 0,
+          "values": [
+            "auto",
+            "off",
+            "on"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKBigNumeralsAnalogFaceBundle": {
+      "order": [
+        "typeface",
+        "style",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "typeface",
+          "mode": 13,
+          "collectionType": 0,
+          "values": [
+            "western arabic",
+            "eastern arabic",
+            "devanagari",
+            "roman"
+          ]
+        },
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "fill",
+            "outline"
+          ]
+        }
+      ]
+    },
+    "type:olympus": {
+      "order": [
+        "style",
+        "content",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "style",
+          "mode": 15,
+          "collectionType": 0,
+          "values": [
+            "style 2",
+            "style 1",
+            "style 3"
+          ]
+        },
+        {
+          "field": "content",
+          "mode": 12,
+          "collectionType": 0,
+          "values": [
+            "fullscreen",
+            "circular"
+          ]
+        }
+      ]
+    },
+    "bundle:com.apple.NTKExtragalacticFaceBundle": {
+      "order": [
+        "background",
+        "color"
+      ],
+      "sections": [
+        {
+          "field": "background",
+          "mode": 17,
+          "collectionType": 0,
+          "values": [
+            "style 1",
+            "style 2"
+          ]
+        }
+      ]
+    }
+  }
+}

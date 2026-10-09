@@ -1,0 +1,24 @@
+[package]
+name = "watch-core-ffi"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+watch-core = { path = "../watch-core" }
+serde_json.workspace = true
+watch-pairing = { path = "../watch-pairing" }
+zeroize = "1.8.2"
+
+[target.'cfg(not(any(target_os = "linux", target_os = "windows")))'.dependencies]
+watch-transport-macos = { path = "../watch-transport-macos" }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+watch-transport-windows = { path = "../watch-transport-windows" }
+watch-transport-linux = { path = "../watch-transport-linux" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+watch-transport-linux = { path = "../watch-transport-linux" }

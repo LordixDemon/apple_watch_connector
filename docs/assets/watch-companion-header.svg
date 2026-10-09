@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="title desc">
+  <title id="title">Apple Watch Companion — Android, macOS, Linux and Windows</title>
+  <desc id="desc">Apple Watch connects to a phone and laptop running the shared Companion. Android, macOS, Linux and Windows use Flutter UI, Java protocols and Rust Core.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#101f34"/><stop offset=".5" stop-color="#101925"/><stop offset="1" stop-color="#122c2a"/>
+    </linearGradient>
+    <linearGradient id="line"><stop stop-color="#69aaff"/><stop offset="1" stop-color="#69e5b8"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#54adbf" stop-opacity=".16"/><stop offset="1" stop-color="#54adbf" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#a0c7de" stroke-opacity=".055"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="400" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="400" rx="24" fill="url(#grid)"/>
+  <ellipse cx="640" cy="190" rx="610" ry="225" fill="url(#glow)"/>
+  <path d="M213 200H322M958 200H1023" stroke="url(#line)" stroke-width="2" stroke-dasharray="5 8" opacity=".7"/>
+  <circle cx="280" cy="200" r="4" fill="#69aaff"/><circle cx="1000" cy="200" r="4" fill="#69e5b8"/>
+  <g transform="translate(92 81)">
+    <rect x="28" width="64" height="238" rx="23" fill="#202f44" stroke="#344b67"/>
+    <rect y="40" width="120" height="158" rx="32" fill="#152235" stroke="#9ecaff" stroke-width="3"/>
+    <rect x="9" y="49" width="102" height="140" rx="25" fill="#0a1525"/>
+    <rect x="120" y="86" width="8" height="28" rx="4" fill="#9ecaff"/>
+    <circle cx="60" cy="119" r="38" fill="none" stroke="#263c57" stroke-width="2"/>
+    <path d="M60 87V119L81 133" stroke="#e5f1ff" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <circle cx="60" cy="119" r="4" fill="#69aaff"/>
+    <text x="60" y="273" text-anchor="middle" fill="#96b4d8" font-family="Arial, sans-serif" font-size="14" letter-spacing="2">WATCH</text>
+  </g>
+  <g transform="translate(1015 70)">
+    <rect x="8" y="70" width="190" height="126" rx="12" fill="#132d2b" stroke="#8de3c0" stroke-width="3"/>
+    <rect x="17" y="80" width="172" height="105" rx="5" fill="#0a1d20"/>
+    <circle cx="103" cy="75" r="2" fill="#335955"/>
+    <rect x="25" y="89" width="33" height="87" rx="4" fill="#102e2b"/>
+    <rect x="33" y="98" width="17" height="3" rx="1.5" fill="#8de3c0"/>
+    <rect x="33" y="111" width="17" height="3" rx="1.5" fill="#376b61"/>
+    <rect x="33" y="124" width="13" height="3" rx="1.5" fill="#376b61"/>
+    <rect x="33" y="137" width="17" height="3" rx="1.5" fill="#376b61"/>
+    <rect x="80" y="106" width="44" height="55" rx="12" fill="#173c37" stroke="#8de3c0" stroke-width="2"/>
+    <path d="M102 117V133L113 140" stroke="#d5f7eb" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="102" cy="133" r="2.5" fill="#8de3c0"/>
+    <rect x="137" y="109" width="40" height="4" rx="2" fill="#376b61"/>
+    <rect x="137" y="121" width="29" height="4" rx="2" fill="#254c46"/>
+    <rect x="137" y="139" width="38" height="14" rx="7" fill="#245345"/>
+    <path d="M0 196H206V202Q206 213 194 213H12Q0 213 0 202Z" fill="#203f39" stroke="#8de3c0" stroke-width="2"/>
+    <path d="M79 196H127L123 202H83Z" fill="#8de3c0" opacity=".65"/>
+    <rect x="158" y="155" width="64" height="121" rx="15" fill="#132d2b" stroke="#8de3c0" stroke-width="2.5"/>
+    <rect x="164" y="162" width="52" height="107" rx="10" fill="#0a1d20"/>
+    <rect x="181" y="165" width="18" height="3" rx="1.5" fill="#335955"/>
+    <rect x="175" y="184" width="30" height="38" rx="8" fill="#173c37" stroke="#2a6457"/>
+    <path d="M190 192V203L198 208" stroke="#d5f7eb" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <rect x="174" y="235" width="32" height="3" rx="1.5" fill="#376b61"/>
+    <rect x="174" y="245" width="23" height="3" rx="1.5" fill="#254c46"/>
+    <text x="111" y="299" text-anchor="middle" fill="#a2cfc0" font-family="Arial, sans-serif" font-size="11" letter-spacing="1.5">PHONE + DESKTOP</text>
+  </g>
+  <g text-anchor="middle" font-family="Arial, Helvetica, sans-serif">
+    <text x="640" y="105" fill="#89b7c3" font-size="12" font-weight="700" letter-spacing="4">HARDWARE · PROTOCOLS · COMPANION</text>
+    <text x="640" y="176" fill="#f2f7fc" font-size="50" font-weight="700" letter-spacing="-1">Apple Watch Companion</text>
+    <text x="640" y="220" fill="#b0c2d4" font-size="20">From Bluetooth packets to native watch faces.</text>
+    <g font-size="12" font-weight="700" letter-spacing="1">
+      <rect x="373" y="267" width="160" height="36" rx="18" fill="#172e46" stroke="#36577c"/>
+      <text x="453" y="290" fill="#a8d3ff">FLUTTER UI</text>
+      <rect x="550" y="267" width="180" height="36" rx="18" fill="#202d3c" stroke="#43576d"/>
+      <text x="640" y="290" fill="#d3e0ef">JAVA HAL + IDS</text>
+      <rect x="747" y="267" width="160" height="36" rx="18" fill="#17382f" stroke="#346c57"/>
+      <text x="827" y="290" fill="#a7e6c4">RUST CORE</text>
+    </g>
+    <text x="640" y="348" fill="#89b7c3" font-size="14" letter-spacing="2">ANDROID · macOS · LINUX · WINDOWS</text>
+  </g>
+</svg>

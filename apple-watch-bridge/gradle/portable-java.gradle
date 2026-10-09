@@ -1,0 +1,29 @@
+// Common compilation and dependency policy for the shared protocol modules.
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+    options.encoding = "UTF-8"
+}
+
+tasks.withType(Test).configureEach {
+    useJUnit()
+    testLogging.events "failed"
+}
+
+dependencyLocking {
+    lockAllConfigurations()
+    lockMode = LockMode.STRICT
+}
+
+// Explicit maintenance entry point; ordinary builds never rewrite locks.
+tasks.register("resolvePortableDependencies") {
+    group = "build setup"
+    description = "Resolve all portable configurations; use --write-locks for intentional updates."
+    doLast {
+        configurations.findAll { it.canBeResolved }.each { it.resolve() }
+    }
+}

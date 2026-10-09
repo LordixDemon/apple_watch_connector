@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="136" height="42" viewBox="0 0 136 42" role="img" aria-label="Русский">
+  <rect x=".5" y=".5" width="135" height="41" rx="10" fill="#17382f" stroke="#4c8a72"/>
+  <rect x="10" y="10" width="28" height="22" rx="5" fill="#a7e6c4"/>
+  <text x="24" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#122c23">RU</text>
+  <text x="83" y="26" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#edfff6">Русский</text>
+</svg>

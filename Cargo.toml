@@ -1,0 +1,30 @@
+[package]
+name = "apple-watch-android-research"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+name = "uike_framing"
+path = "src/lib.rs"
+
+[dependencies]
+rusb = "0.9.4"
+watch-protocol = { path = "crates/watch-protocol" }
+
+[workspace]
+resolver = "3"
+members = ["crates/watch-protocol", "crates/watch-pairing", "crates/watch-core", "crates/watch-transport-macos", "crates/watch-transport-linux", "crates/watch-transport-windows", "crates/watch-core-ffi", "crates/watch-replicator-quic"]
+
+[workspace.package]
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[workspace.dependencies]
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+
+[profile.release]
+lto = true
+codegen-units = 1

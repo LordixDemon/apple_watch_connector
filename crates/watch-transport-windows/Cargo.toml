@@ -1,0 +1,20 @@
+[package]
+name = "watch-transport-windows"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+watch-core = { path = "../watch-core" }
+watch-protocol = { path = "../watch-protocol" }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-future = "0.3.2"
+windows = { version = "0.62.2", features = [
+    "Devices_Bluetooth_Advertisement",
+    "Devices_Bluetooth_GenericAttributeProfile",
+    "Devices_Radios",
+    "Foundation_Collections",
+    "Storage_Streams",
+    "Win32_System_WinRT",
+] }

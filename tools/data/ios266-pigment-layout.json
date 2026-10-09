@@ -1,0 +1,40 @@
+{
+  "version": 4,
+  "compactDiameter": 36.0,
+  "expandedDiameter": 42.333333333333336,
+  "expandedAbovePhysicalPixels": 750.0,
+  "row": {
+    "sectionHorizontalInset": 16.0,
+    "swatchVerticalInset": 23.0,
+    "compactHorizontalInset": 16.0,
+    "expandedHorizontalInset": 20.0,
+    "headerTopInset": 6.0,
+    "headerLabelGap": 16.0,
+    "headerFontSize": 17.0,
+    "headerMaxFontSize": 33.0,
+    "headerLineHeight": 20.287109375
+  },
+  "strip": {
+    "compactOutlineWidth": 2.5,
+    "expandedOutlineWidth": 2.6666666666666665,
+    "outlineOutset": 4.0,
+    "swatchSpacing": 20.0,
+    "plusImage": "a7547ccce9ffddf6aa728fe6794a3b77569b3d2df19175a2f8063cab3779b455.png",
+    "plusWidth": 42.333333333333336,
+    "plusHeight": 42.0,
+    "dividerImage": "03a6b0cb69ac1e6ab2b3990930823f3d36c111e3060d4c5f91f5022d2c0e2cb2.png",
+    "dividerWidth": 3.0,
+    "dividerHeight": 42.0
+  },
+  "picker": {
+    "diameter": 42.0,
+    "compactHorizontalInset": 16.0,
+    "expandedHorizontalInset": 20.0,
+    "topInset": 15.0,
+    "headerGap": 12.0,
+    "sectionSpacing": 25.0,
+    "itemSpacing": 12.0,
+    "headerFontSize": 17.0,
+    "headerMaxFontSize": 33.0
+  }
+}

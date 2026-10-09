@@ -1,0 +1,23 @@
+[package]
+name = "watch-transport-linux"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde_json.workspace = true
+
+[target.'cfg(target_os = "windows")'.dependencies]
+rusb = { version = "0.9.4", features = ["vendored"] }
+windows = { version = "0.62.2", features = ["Win32_Security_Cryptography", "Win32_System_Memory", "Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_SystemInformation"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2.189"
+
+[[bin]]
+name = "watch-linux-hci"
+path = "src/bin/hci.rs"
+
+[[bin]]
+name = "watch-windows-hci"
+path = "src/bin/windows_hci.rs"

@@ -1,0 +1,92 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "dev.applewatchandroid.bridge"
+    compileSdk 36
+    buildToolsVersion "36.1.0"
+    ndkVersion "28.2.13676358"
+
+    defaultConfig {
+        applicationId "dev.applewatchandroid.bridge"
+        minSdk 33
+        targetSdk 36
+        versionCode 627
+        versionName "0.2.427"
+
+        testInstrumentationRunner "dev.applewatchandroid.bridge.HealthDefaultsInstrumentation"
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            // Local test artifact. Shared signing policy gates distribution builds.
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        aidl false
+        buildConfig false
+    }
+
+    // Direct, aligned APK loading from the root HAL process; no mutable .so copy.
+    packaging { jniLibs { useLegacyPackaging = false } }
+
+    lint {
+        abortOnError true
+        warningsAsErrors false
+    }
+}
+
+apply from: rootProject.file("gradle/android-signing.gradle")
+
+def rustWorkspace = rootProject.projectDir.parentFile
+def quicJniOutput = layout.buildDirectory.dir("generated/quicJni")
+tasks.register("buildReplicatorQuic") {
+    inputs.files(fileTree(new File(rustWorkspace, "crates/watch-replicator-quic")) { include "**/*.rs", "Cargo.toml" })
+    inputs.files(new File(rustWorkspace, "Cargo.toml"), new File(rustWorkspace, "Cargo.lock"))
+    outputs.file(quicJniOutput.map { new File(it.asFile, "arm64-v8a/libwatch_replicator_quic.so") })
+    doLast {
+        def hostTag = System.getProperty("os.name").toLowerCase().contains("mac") ? "darwin-x86_64" : "linux-x86_64"
+        def compiler = new File(android.sdkDirectory,
+            "ndk/${android.ndkVersion}/toolchains/llvm/prebuilt/${hostTag}/bin/aarch64-linux-android33-clang")
+        if (!compiler.exists()) throw new GradleException("Android QUIC NDK compiler is missing: ${compiler}")
+        def cargo = providers.gradleProperty("cargoExecutable").getOrElse(
+            new File(System.getProperty("user.home"), ".cargo/bin/cargo").absolutePath)
+        exec {
+            workingDir rustWorkspace
+            environment "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER", compiler.absolutePath
+            environment "CC_aarch64_linux_android", compiler.absolutePath
+            commandLine cargo, "build", "--locked", "--release", "--target", "aarch64-linux-android", "-p", "watch-replicator-quic"
+        }
+        copy {
+            from new File(rustWorkspace, "target/aarch64-linux-android/release/libwatch_replicator_quic.so")
+            into new File(quicJniOutput.get().asFile, "arm64-v8a")
+        }
+    }
+}
+android.sourceSets.main.jniLibs.srcDir(files(quicJniOutput).builtBy(tasks.named("buildReplicatorQuic")))
+tasks.named("preBuild").configure { dependsOn("buildReplicatorQuic") }
+
+dependencies {
+    implementation project(":core")
+    implementation project(":hal")
+}
+
+tasks.configureEach { task ->
+    // Preserve the established validation command after moving JVM tests to core.
+    if (task.name.startsWith("test") && task.name.endsWith("UnitTest")) {
+        task.dependsOn(":core:test")
+    }
+}

@@ -1,0 +1,9 @@
+[package]
+name = "watch-core"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+watch-protocol = { path = "../watch-protocol" }
+serde.workspace = true

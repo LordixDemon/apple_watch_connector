@@ -1,0 +1,24 @@
+// Shared by Bridge and Companion: their signature-protected IPC needs one key.
+def distribution = System.getenv("WATCH_DISTRIBUTION_RELEASE") == "1"
+def propertiesPath = System.getenv("WATCH_RELEASE_SIGNING_PROPERTIES")
+if (distribution && !propertiesPath) {
+    throw new GradleException("Distribution requires WATCH_RELEASE_SIGNING_PROPERTIES; debug signing is only for local tests")
+}
+def androidExtension = extensions.getByName("android")
+if (propertiesPath) {
+    def propertiesFile = new File(propertiesPath)
+    def signing = new Properties()
+    propertiesFile.withInputStream { signing.load(it) }
+    ["storeFile", "storePassword", "keyAlias", "keyPassword"].each { name ->
+        if (!signing.getProperty(name)) throw new GradleException("Missing signing property: ${name}")
+    }
+    def keyStore = new File(signing.getProperty("storeFile"))
+    if (!keyStore.isAbsolute()) keyStore = new File(propertiesFile.absoluteFile.parentFile, keyStore.path)
+    if (!keyStore.isFile()) throw new GradleException("Release keystore is unavailable")
+    def config = androidExtension.signingConfigs.create("watchDistribution")
+    config.storeFile = keyStore
+    config.storePassword = signing.getProperty("storePassword")
+    config.keyAlias = signing.getProperty("keyAlias")
+    config.keyPassword = signing.getProperty("keyPassword")
+    androidExtension.buildTypes.getByName("release").signingConfig = config
+}

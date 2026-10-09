@@ -1,0 +1,1954 @@
+{
+  "bluetoothAdapter": "Bluetooth Adapter",
+  "bluetoothController": "Bluetooth controller",
+  "refreshBluetoothAdapters": "Refresh Adapters",
+  "bluetoothAdaptersLoading": "Looking for Bluetooth adapters…",
+  "bluetoothAdaptersEmpty": "No Bluetooth adapters found. Connect an adapter and refresh the list.",
+  "bluetoothAdapterChoiceHint": "Choose an adapter for your Watch. Your choice is saved for future connections.",
+  "bluetoothAdapterDisconnectHint": "Disconnect your Watch before changing the Bluetooth adapter.",
+  "bluetoothAdapterMissing": "Saved adapter unavailable",
+  "bluetoothAdapterMissingHint": "Reconnect your saved adapter or choose another one. Your Watch pairing is preserved.",
+  "bluetoothAdapterDiscoveryFailed": "Could not read Bluetooth adapters. Check that BlueZ is running, then refresh the list.",
+  "bluetoothAdapterSaveFailed": "Could not read or save the adapter preference. Check access to the application state folder, then select an adapter again.",
+  "bluetoothAdapterSaved": "Bluetooth adapter saved.",
+  "opticalScanTitle": "Pair Apple Watch",
+  "opticalPairWithCamera": "Pair with Camera",
+  "opticalScanHint": "Keep the pairing animation inside the frame, then tap Scan. Hold your phone steady while it reads the code.",
+  "opticalScan": "Scan",
+  "opticalNoMatch": "No pairing animation found. Point the camera at your Watch and try again.",
+  "opticalRecognizedTitle": "Apple Watch Found",
+  "opticalRecognizedDetail": "Pairing code recognized for {name}. Bluetooth authentication is the next step.",
+  "@opticalRecognizedDetail": {"placeholders": {"name": {"type": "String"}}},
+  "opticalReplaceDetail": "Code recognized for {name}. Your Watch must be waiting for a new pair. The previous encrypted pair will be backed up before replacement.",
+  "@opticalReplaceDetail": {"placeholders": {"name": {"type": "String"}}},
+  "opticalReplacePair": "Replace Saved Pair",
+  "opticalStartPairing": "Pair Watch",
+  "opticalAnalyzedFrames": "{count} frames analyzed",
+  "@opticalAnalyzedFrames": {"placeholders": {"count": {"type": "int"}}},
+  "opticalPairingLab": "Optical Pairing Lab",
+  "opticalCaptureHint": "Keep the pairing animation inside the frame. Capture a short sample to test the optical decoder. Recognition is not yet enabled. The sample is deleted when you leave this screen.",
+  "opticalCameraError": "Camera capture failed. Check camera permission and try again.",
+  "opticalFrames": "{count} frames captured",
+  "@opticalFrames": {"placeholders": {"count": {"type": "int"}}},
+  "opticalCapture": "Capture Sample",
+  "opticalRetry": "Try Again",
+  "opticalStopCapture": "Stop Capture",
+  "@@locale": "en",
+  "backendFeatures": "Available Features",
+  "backendFeaturesHint": "Availability describes this backend's implemented services. A connection does not guarantee every watchOS feature, device or firmware version is supported.",
+  "backendFeaturesUnknown": "Feature capabilities have not been received from the connection service yet.",
+  "featureNotSupported": "Not supported yet",
+  "phoneFindFeature": "Find Phone",
+  "ok": "OK",
+  "@ok": {"description": "Dismiss an informational dialog."},
+  "digitalCrownTimeTravel": "DIGITAL CROWN / TIME TRAVEL",
+  "@digitalCrownTimeTravel": {"description": "Caption above the face preview time slider."},
+  "rightWrist": "Right wrist",
+  "@rightWrist": {
+    "description": "Application UI text."
+  },
+  "rotateScreen180": "Rotate screen 180°",
+  "@rotateScreen180": {
+    "description": "Application UI text."
+  },
+  "message24Hourtime": "24-hour time",
+  "@message24Hourtime": {
+    "description": "Application UI text."
+  },
+  "readyToConnect": "Ready to connect",
+  "@readyToConnect": {
+    "description": "Application UI text."
+  },
+  "workout": "Workout",
+  "@workout": {
+    "description": "Application UI text."
+  },
+  "trackActivityHeartRatePowerZonesAndGpsRoutes": "Track activity, heart rate, power zones, and GPS routes.",
+  "@trackActivityHeartRatePowerZonesAndGpsRoutes": {
+    "description": "Application UI text."
+  },
+  "activity": "Activity",
+  "@activity": {
+    "description": "Application UI text."
+  },
+  "moveExerciseAndStandRings": "Move, Exercise, and Stand rings.",
+  "@moveExerciseAndStandRings": {
+    "description": "Application UI text."
+  },
+  "heartRate": "Heart Rate",
+  "@heartRate": {
+    "description": "Application UI text."
+  },
+  "heartRateMeasurementsAndAlerts": "Heart rate measurements and alerts.",
+  "@heartRateMeasurementsAndAlerts": {
+    "description": "Application UI text."
+  },
+  "compassWaypoints": "Compass & Waypoints",
+  "@compassWaypoints": {
+    "description": "Application UI text."
+  },
+  "elevationInclineCoordinatesAndBacktrackRoutes": "Elevation, incline, coordinates, and Backtrack routes.",
+  "@elevationInclineCoordinatesAndBacktrackRoutes": {
+    "description": "Application UI text."
+  },
+  "music": "Music",
+  "@music": {
+    "description": "Application UI text."
+  },
+  "streamAudioAndControlPlayback": "Stream audio and control playback.",
+  "@streamAudioAndControlPlayback": {
+    "description": "Application UI text."
+  },
+  "messages": "Messages",
+  "@messages": {
+    "description": "Application UI text."
+  },
+  "sendAndReceiveMessagesUseDictationAndQuickReplies": "Send and receive messages, use dictation and quick replies.",
+  "@sendAndReceiveMessagesUseDictationAndQuickReplies": {
+    "description": "Application UI text."
+  },
+  "phone": "Phone",
+  "@phone": {
+    "description": "Application UI text."
+  },
+  "callsOverBluetoothOrCellular": "Calls over Bluetooth or cellular.",
+  "@callsOverBluetoothOrCellular": {
+    "description": "Application UI text."
+  },
+  "weather": "Weather",
+  "@weather": {
+    "description": "Application UI text."
+  },
+  "forecastsUvIndexPrecipitationAndWind": "Forecasts, UV index, precipitation, and wind.",
+  "@forecastsUvIndexPrecipitationAndWind": {
+    "description": "Application UI text."
+  },
+  "maps": "Maps",
+  "@maps": {
+    "description": "Application UI text."
+  },
+  "turnByTurnDirectionsWithHapticFeedback": "Turn-by-turn directions with haptic feedback.",
+  "@turnByTurnDirectionsWithHapticFeedback": {
+    "description": "Application UI text."
+  },
+  "noise": "Noise",
+  "@noise": {
+    "description": "Application UI text."
+  },
+  "monitorAmbientNoiseLevelsInDecibels": "Monitor ambient noise levels in decibels.",
+  "@monitorAmbientNoiseLevelsInDecibels": {
+    "description": "Application UI text."
+  },
+  "naturalTitanium": "Natural Titanium",
+  "@naturalTitanium": {
+    "description": "Application UI text."
+  },
+  "message49Mm": "49 mm",
+  "@message49Mm": {
+    "description": "Application UI text."
+  },
+  "battery": "Battery",
+  "@battery": {
+    "description": "Application UI text."
+  },
+  "message72Bpm": "72 bpm",
+  "@message72Bpm": {
+    "description": "Application UI text."
+  },
+  "message21Sunny": "+21° Sunny",
+  "@message21Sunny": {
+    "description": "Application UI text."
+  },
+  "compass": "Compass",
+  "@compass": {
+    "description": "Application UI text."
+  },
+  "message124Se182M": "124° SE • 182 m",
+  "@message124Se182M": {
+    "description": "Application UI text."
+  },
+  "outdoorRun": "Outdoor Run",
+  "@outdoorRun": {
+    "description": "Application UI text."
+  },
+  "nowPlaying": "Now Playing",
+  "@nowPlaying": {
+    "description": "Application UI text."
+  },
+  "calendar": "Calendar",
+  "@calendar": {
+    "description": "Application UI text."
+  },
+  "meetingAt1930": "Meeting at 19:30",
+  "@meetingAt1930": {
+    "description": "Application UI text."
+  },
+  "custom": "Custom",
+  "@custom": {
+    "description": "Application UI text."
+  },
+  "imported": "Imported",
+  "@imported": {
+    "description": "Application UI text."
+  },
+  "gb": "{value0} GB",
+  "@gb": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "mb": "{value0} MB",
+  "@mb": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "kb": "{value0} KB",
+  "@kb": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "b": "{value0} B",
+  "@b": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "pointTheCameraAtYourAppleWatchScreen": "Point the camera at your Apple Watch screen",
+  "@pointTheCameraAtYourAppleWatchScreen": {
+    "description": "Application UI text."
+  },
+  "enterThe6DigitCodeShownOnYourWatch": "Enter the 6-digit code shown on your watch",
+  "@enterThe6DigitCodeShownOnYourWatch": {
+    "description": "Application UI text."
+  },
+  "waitingForBridgeConfirmation": "Waiting for Bridge confirmation…",
+  "@waitingForBridgeConfirmation": {
+    "description": "Application UI text."
+  },
+  "setupConfirmedByTheWatch": "Setup confirmed by the watch",
+  "@setupConfirmedByTheWatch": {
+    "description": "Application UI text."
+  },
+  "setupIsNotConfirmedYetAppleWatchBridgeIs": "Setup is not confirmed yet. Apple Watch Bridge is still setting up the watch.",
+  "@setupIsNotConfirmedYetAppleWatchBridgeIs": {
+    "description": "Application UI text."
+  },
+  "noSetupConfirmationFromBridge": "No setup confirmation from Bridge",
+  "@noSetupConfirmationFromBridge": {
+    "description": "Application UI text."
+  },
+  "discover": "Discover",
+  "@discover": {
+    "description": "Application UI text."
+  },
+  "newInWatchos11": "WATCH COMPANION",
+  "@newInWatchos11": {
+    "description": "Application UI text."
+  },
+  "appleWatchUltra2OnAndroid": "Apple Watch Companion",
+  "@appleWatchUltra2OnAndroid": {
+    "description": "Application UI text."
+  },
+  "syncNotificationsCallsWorkoutsAndWatchFacesWithYour": "Connect your Apple Watch using your phone or desktop. See Available Features in My Watch for the services implemented by your connection backend.",
+  "@syncNotificationsCallsWorkoutsAndWatchFacesWithYour": {
+    "description": "Application UI text."
+  },
+  "guidesTips": "GUIDES & TIPS",
+  "@guidesTips": {
+    "description": "Application UI text."
+  },
+  "gesturesControls": "Gestures & Controls",
+  "@gesturesControls": {
+    "description": "Application UI text."
+  },
+  "doubleTapDigitalCrownAndActionButton": "Double Tap, Digital Crown, and Action Button",
+  "@doubleTapDigitalCrownAndActionButton": {
+    "description": "Application UI text."
+  },
+  "healthWorkouts": "Health & Workouts",
+  "@healthWorkouts": {
+    "description": "Application UI text."
+  },
+  "setUpHeartRateZonesGpsRoutesAndActivity": "Set up heart rate zones, GPS routes, and Activity rings",
+  "@setUpHeartRateZonesGpsRoutesAndActivity": {
+    "description": "Application UI text."
+  },
+  "compassBacktrack": "Compass & Backtrack",
+  "@compassBacktrack": {
+    "description": "Application UI text."
+  },
+  "navigateWithoutAnInternetConnection": "Navigate without an internet connection",
+  "@navigateWithoutAnInternetConnection": {
+    "description": "Application UI text."
+  },
+  "notificationMirroring": "Notification Mirroring",
+  "@notificationMirroring": {
+    "description": "Application UI text."
+  },
+  "setUpSmsCallsAndMessagingApps": "Set up SMS, calls, and messaging apps",
+  "@setUpSmsCallsAndMessagingApps": {
+    "description": "Application UI text."
+  },
+  "resources": "RESOURCES",
+  "@resources": {
+    "description": "Application UI text."
+  },
+  "appleWatchUserGuide": "Apple Watch User Guide",
+  "@appleWatchUserGuide": {
+    "description": "Application UI text."
+  },
+  "halSupportDiagnostics": "HAL Support & Diagnostics",
+  "@halSupportDiagnostics": {
+    "description": "Application UI text."
+  },
+  "appleWatchUltra2Controls": "Apple Watch Ultra 2 Controls",
+  "@appleWatchUltra2Controls": {
+    "description": "Application UI text."
+  },
+  "useDoubleTapTheDigitalCrownAndTheOrange": "Use Double Tap, the Digital Crown, and the orange Action Button.",
+  "@useDoubleTapTheDigitalCrownAndTheOrange": {
+    "description": "Application UI text."
+  },
+  "essentialGestures": "ESSENTIAL GESTURES",
+  "@essentialGestures": {
+    "description": "Application UI text."
+  },
+  "doubleTap": "Double Tap",
+  "@doubleTap": {
+    "description": "Application UI text."
+  },
+  "tapYourIndexFingerAndThumbTogetherTwiceTo": "Tap your index finger and thumb together twice to answer a call, stop a timer, or scroll the Smart Stack.",
+  "@tapYourIndexFingerAndThumbTogetherTwiceTo": {
+    "description": "Application UI text."
+  },
+  "turnToScrollThroughListsAndZoomOrPress": "Turn to scroll through lists and zoom, or press to return to the watch face.",
+  "@turnToScrollThroughListsAndZoomOrPress": {
+    "description": "Application UI text."
+  },
+  "orangeActionButton": "Orange Action Button",
+  "@orangeActionButton": {
+    "description": "Application UI text."
+  },
+  "startAWorkoutMarkAWaypointOrHoldTo": "Start a workout, mark a waypoint, or hold to activate the 86 dB siren.",
+  "@startAWorkoutMarkAWaypointOrHoldTo": {
+    "description": "Application UI text."
+  },
+  "waterLock": "Water Lock",
+  "@waterLock": {
+    "description": "Application UI text."
+  },
+  "preventsAccidentalTouchesInWaterUseTheDigitalCrown": "Prevents accidental touches in water. Use the Digital Crown to unlock the screen and eject water.",
+  "@preventsAccidentalTouchesInWaterUseTheDigitalCrown": {
+    "description": "Application UI text."
+  },
+  "faceGallery": "Face Gallery",
+  "@faceGallery": {
+    "description": "Application UI text."
+  },
+  "save": "SAVE",
+  "@save": {
+    "description": "Application UI text."
+  },
+  "reset": "Reset",
+  "@reset": {
+    "description": "Application UI text."
+  },
+  "colorPalette": "COLOR PALETTE",
+  "@colorPalette": {
+    "description": "Application UI text."
+  },
+  "nightMode": "Night Mode",
+  "@nightMode": {
+    "description": "Application UI text."
+  },
+  "bezelStyle": "BEZEL STYLE",
+  "@bezelStyle": {
+    "description": "Application UI text."
+  },
+  "elevationIncline": "Elevation / Incline",
+  "@elevationIncline": {
+    "description": "Application UI text."
+  },
+  "seconds": "Seconds",
+  "@seconds": {
+    "description": "Application UI text."
+  },
+  "noBezel": "No Bezel",
+  "@noBezel": {
+    "description": "Application UI text."
+  },
+  "complicationsTapToChange": "COMPLICATIONS (TAP TO CHANGE)",
+  "@complicationsTapToChange": {
+    "description": "Application UI text."
+  },
+  "saveLayoutOnPhone": "Save Layout on Phone",
+  "@saveLayoutOnPhone": {
+    "description": "Application UI text."
+  },
+  "exportWatchfacePackage": "Export .watchface Package",
+  "@exportWatchfacePackage": {
+    "description": "Application UI text."
+  },
+  "chooseAComplicationFor": "Choose a complication for {value0}",
+  "@chooseAComplicationFor": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Application UI text."
+  },
+  "watchfaceGeneratedSuccessfully": ".watchface generated successfully",
+  "@watchfaceGeneratedSuccessfully": {
+    "description": "Application UI text."
+  },
+  "createdAnAppleWatchPackageBytes": "Created an Apple Watch package ({value0} bytes). ",
+  "@createdAnAppleWatchPackageBytes": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "includesFacePlistMetadataPlistAndSlotConfiguration": "Includes Face.plist, metadata.plist, and slot configuration.",
+  "@includesFacePlistMetadataPlistAndSlotConfiguration": {
+    "description": "Application UI text."
+  },
+  "topSubdial": "Top Subdial",
+  "@topSubdial": {
+    "description": "Application UI text."
+  },
+  "topLeft": "Top Left",
+  "@topLeft": {
+    "description": "Application UI text."
+  },
+  "topRight": "Top Right",
+  "@topRight": {
+    "description": "Application UI text."
+  },
+  "center": "Center",
+  "@center": {
+    "description": "Application UI text."
+  },
+  "bottomLeft": "Bottom Left",
+  "@bottomLeft": {
+    "description": "Application UI text."
+  },
+  "bottomRight": "Bottom Right",
+  "@bottomRight": {
+    "description": "Application UI text."
+  },
+  "bottomSubdial": "Bottom Subdial",
+  "@bottomSubdial": {
+    "description": "Application UI text."
+  },
+  "bezel": "Bezel",
+  "@bezel": {
+    "description": "Application UI text."
+  },
+  "import": "Import",
+  "@import": {
+    "description": "Application UI text."
+  },
+  "onlineGallery": "Online Gallery",
+  "@onlineGallery": {
+    "description": "Application UI text."
+  },
+  "downloadedFromTheAppleWatchFaceCatalogServer": "Downloaded from the Apple Watch Face catalog server.",
+  "@downloadedFromTheAppleWatchFaceCatalogServer": {
+    "description": "Application UI text."
+  },
+  "importedWayfinder": "Imported Wayfinder",
+  "@importedWayfinder": {
+    "description": "Application UI text."
+  },
+  "importAppleWatchFace": "Import Apple Watch Face",
+  "@importAppleWatchFace": {
+    "description": "Application UI text."
+  },
+  "loadAWatchfacePackageZipWithFacePlist": "Load a .watchface package (ZIP with Face.plist)",
+  "@loadAWatchfacePackageZipWithFacePlist": {
+    "description": "Application UI text."
+  },
+  "watchFaceImported": "Watch face imported!",
+  "@watchFaceImported": {
+    "description": "Application UI text."
+  },
+  "layoutSavedOnYourPhone": "Layout “{value0}” saved on your phone.",
+  "@layoutSavedOnYourPhone": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "importSampleWatchface": "Import Sample .watchface",
+  "@importSampleWatchface": {
+    "description": "Application UI text."
+  },
+  "myWatch": "My Watch",
+  "@myWatch": {
+    "description": "Application UI text."
+  },
+  "about": "About",
+  "@about": {
+    "description": "Application UI text."
+  },
+  "general": "General",
+  "@general": {
+    "description": "Application UI text."
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Application UI text."
+  },
+  "model": "Model",
+  "@model": {
+    "description": "Application UI text."
+  },
+  "modelNumber": "Model Number",
+  "@modelNumber": {
+    "description": "Application UI text."
+  },
+  "watchCase": "Case",
+  "@watchCase": {
+    "description": "Application UI text."
+  },
+  "watchosVersion": "watchOS Version",
+  "@watchosVersion": {
+    "description": "Application UI text."
+  },
+  "serialNumber": "Serial Number",
+  "@serialNumber": {
+    "description": "Application UI text."
+  },
+  "networkAddresses": "Network Addresses",
+  "@networkAddresses": {
+    "description": "Application UI text."
+  },
+  "wiFiAddress": "Wi-Fi Address",
+  "@wiFiAddress": {
+    "description": "Application UI text."
+  },
+  "storage": "Storage",
+  "@storage": {
+    "description": "Application UI text."
+  },
+  "available": "Available",
+  "@available": {
+    "description": "Application UI text."
+  },
+  "songs": "Songs",
+  "@songs": {
+    "description": "Application UI text."
+  },
+  "photos": "Photos",
+  "@photos": {
+    "description": "Application UI text."
+  },
+  "userApps": "User Apps",
+  "@userApps": {
+    "description": "Application UI text."
+  },
+  "actionButton": "Action Button",
+  "@actionButton": {
+    "description": "Application UI text."
+  },
+  "quickAccessToWorkoutsWaypointsTheStopwatchAndThe": "Quick access to workouts, waypoints, the stopwatch, and the safety siren.",
+  "@quickAccessToWorkoutsWaypointsTheStopwatchAndThe": {
+    "description": "Application UI text."
+  },
+  "action": "ACTION",
+  "@action": {
+    "description": "Application UI text."
+  },
+  "stopwatch": "Stopwatch",
+  "@stopwatch": {
+    "description": "Application UI text."
+  },
+  "compassWaypoint": "Compass Waypoint",
+  "@compassWaypoint": {
+    "description": "Application UI text."
+  },
+  "backtrack": "Backtrack",
+  "@backtrack": {
+    "description": "Application UI text."
+  },
+  "diveDepth": "Dive & Depth",
+  "@diveDepth": {
+    "description": "Application UI text."
+  },
+  "flashlight": "Flashlight",
+  "@flashlight": {
+    "description": "Application UI text."
+  },
+  "safetySiren": "SAFETY SIREN",
+  "@safetySiren": {
+    "description": "Application UI text."
+  },
+  "holdTheActionButtonOnAppleWatchUltraTo": "Hold the Action Button on Apple Watch Ultra to play an 86-decibel alarm audible from up to 180 meters away.",
+  "@holdTheActionButtonOnAppleWatchUltraTo": {
+    "description": "Application UI text."
+  },
+  "holdForSiren": "Hold for Siren",
+  "@holdForSiren": {
+    "description": "Application UI text."
+  },
+  "version": "{value0} • Version {value1}",
+  "@version": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "showAppOnAppleWatch": "Show App on Apple Watch",
+  "@showAppOnAppleWatch": {
+    "description": "Application UI text."
+  },
+  "displayBrightness": "Display & Brightness",
+  "@displayBrightness": {
+    "description": "Application UI text."
+  },
+  "brightness": "BRIGHTNESS",
+  "@brightness": {
+    "description": "Application UI text."
+  },
+  "textSize": "TEXT SIZE",
+  "@textSize": {
+    "description": "Application UI text."
+  },
+  "boldText": "Bold Text",
+  "@boldText": {
+    "description": "Application UI text."
+  },
+  "keepTheWatchFaceAndAppInformationVisibleWhen": "Keep the watch face and app information visible when your wrist is down.",
+  "@keepTheWatchFaceAndAppInformationVisibleWhen": {
+    "description": "Application UI text."
+  },
+  "alwaysOn": "Always On",
+  "@alwaysOn": {
+    "description": "Application UI text."
+  },
+  "wristRaise": "WRIST RAISE",
+  "@wristRaise": {
+    "description": "Application UI text."
+  },
+  "wakeOnWristRaise": "Wake on Wrist Raise",
+  "@wakeOnWristRaise": {
+    "description": "Application UI text."
+  },
+  "wakeDuration": "Wake Duration",
+  "@wakeDuration": {
+    "description": "Application UI text."
+  },
+  "message70Seconds": "70 seconds",
+  "@message70Seconds": {
+    "description": "Application UI text."
+  },
+  "message15Seconds": "15 seconds",
+  "@message15Seconds": {
+    "description": "Application UI text."
+  },
+  "screenWakeDurationOnTap": "Screen Wake Duration on Tap",
+  "@screenWakeDurationOnTap": {
+    "description": "Application UI text."
+  },
+  "emergencySos": "Emergency SOS",
+  "@emergencySos": {
+    "description": "Application UI text."
+  },
+  "fallDetection": "FALL DETECTION",
+  "@fallDetection": {
+    "description": "Application UI text."
+  },
+  "ifAppleWatchDetectsAHardFallAndYou": "If Apple Watch detects a hard fall and you remain immobile for about a minute, it gives a haptic alert, sounds an alarm, and contacts emergency services.",
+  "@ifAppleWatchDetectsAHardFallAndYou": {
+    "description": "Application UI text."
+  },
+  "fallDetection2": "Fall Detection",
+  "@fallDetection2": {
+    "description": "Application UI text."
+  },
+  "crashDetection": "CRASH DETECTION",
+  "@crashDetection": {
+    "description": "Application UI text."
+  },
+  "afterASevereCarCrashAppleWatchShowsThe": "After a severe car crash, Apple Watch shows the emergency call slider and automatically calls emergency services after 20 seconds.",
+  "@afterASevereCarCrashAppleWatchShowsThe": {
+    "description": "Application UI text."
+  },
+  "crashDetection2": "Crash Detection",
+  "@crashDetection2": {
+    "description": "Application UI text."
+  },
+  "medicalInformation": "MEDICAL INFORMATION",
+  "@medicalInformation": {
+    "description": "Application UI text."
+  },
+  "setUpMedicalId": "Set Up Medical ID",
+  "@setUpMedicalId": {
+    "description": "Application UI text."
+  },
+  "softwareUpdate": "Software Update",
+  "@softwareUpdate": {
+    "description": "Application UI text."
+  },
+  "orientationTime": "Orientation & Time",
+  "@orientationTime": {
+    "description": "Application UI text."
+  },
+  "leftWrist": "Left wrist",
+  "@leftWrist": {
+    "description": "Application UI text."
+  },
+  "notReceived": "Not received",
+  "@notReceived": {
+    "description": "Application UI text."
+  },
+  "backgroundAppRefresh": "Background App Refresh",
+  "@backgroundAppRefresh": {
+    "description": "Application UI text."
+  },
+  "on": "On",
+  "@on": {
+    "description": "Application UI text."
+  },
+  "off": "Off",
+  "@off": {
+    "description": "Application UI text."
+  },
+  "connectivity": "CONNECTIVITY",
+  "@connectivity": {
+    "description": "Application UI text."
+  },
+  "airplaneMode": "Airplane Mode",
+  "@airplaneMode": {
+    "description": "Application UI text."
+  },
+  "resetUnpair": "Reset & Unpair",
+  "@resetUnpair": {
+    "description": "Application UI text."
+  },
+  "unpairAppleWatch": "Unpair Apple Watch",
+  "@unpairAppleWatch": {
+    "description": "Application UI text."
+  },
+  "allDataWatchFacesAndSettingsWillBeErased": "All data, watch faces, and settings will be erased from the device.",
+  "@allDataWatchFacesAndSettingsWillBeErased": {
+    "description": "Application UI text."
+  },
+  "unpair": "Unpair",
+  "@unpair": {
+    "description": "Application UI text."
+  },
+  "activityHealth": "Activity & Health",
+  "@activityHealth": {
+    "description": "Application UI text."
+  },
+  "noHealthDataReceivedFromTheWatchYet": "No health data received from the watch yet.",
+  "@noHealthDataReceivedFromTheWatchYet": {
+    "description": "Application UI text."
+  },
+  "watchMeasurements": "WATCH MEASUREMENTS",
+  "@watchMeasurements": {
+    "description": "Application UI text."
+  },
+  "bpm": "bpm",
+  "@bpm": {
+    "description": "Application UI text."
+  },
+  "steps": "Steps",
+  "@steps": {
+    "description": "Application UI text."
+  },
+  "km": "{value0} km",
+  "@km": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "move": "Move",
+  "@move": {
+    "description": "Application UI text."
+  },
+  "kcal": "{value0} / {value1} kcal",
+  "@kcal": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "exercise": "Exercise",
+  "@exercise": {
+    "description": "Application UI text."
+  },
+  "min": "{value0} / {value1} min",
+  "@min": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "stand": "Stand",
+  "@stand": {
+    "description": "Application UI text."
+  },
+  "hr": "{value0} / {value1} hr",
+  "@hr": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "activityRings": "ACTIVITY RINGS",
+  "@activityRings": {
+    "description": "Application UI text."
+  },
+  "standReminders": "Stand Reminders",
+  "@standReminders": {
+    "description": "Application UI text."
+  },
+  "remindsYouToStandAndMove10MinutesBefore": "Reminds you to stand and move 10 minutes before the end of each hour.",
+  "@remindsYouToStandAndMove10MinutesBefore": {
+    "description": "Application UI text."
+  },
+  "dailyCoaching": "Daily Coaching",
+  "@dailyCoaching": {
+    "description": "Application UI text."
+  },
+  "goalCompletions": "Goal Completions",
+  "@goalCompletions": {
+    "description": "Application UI text."
+  },
+  "heartBreathing": "HEART & BREATHING",
+  "@heartBreathing": {
+    "description": "Application UI text."
+  },
+  "highHeartRateNotifications": "High Heart Rate Notifications",
+  "@highHeartRateNotifications": {
+    "description": "Application UI text."
+  },
+  "bpm2": "> {value0} bpm",
+  "@bpm2": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "lowHeartRateNotifications": "Low Heart Rate Notifications",
+  "@lowHeartRateNotifications": {
+    "description": "Application UI text."
+  },
+  "bpm3": "< {value0} bpm",
+  "@bpm3": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "bloodOxygen": "Blood Oxygen",
+  "@bloodOxygen": {
+    "description": "Application UI text."
+  },
+  "sleepTracking": "Sleep Tracking",
+  "@sleepTracking": {
+    "description": "Application UI text."
+  },
+  "allWatches": "All Watches",
+  "@allWatches": {
+    "description": "Application UI text."
+  },
+  "connected": "Connected",
+  "@connected": {
+    "description": "Application UI text."
+  },
+  "disconnected": "Disconnected",
+  "@disconnected": {
+    "description": "Application UI text."
+  },
+  "soundsHaptics": "Sounds & Haptics",
+  "@soundsHaptics": {
+    "description": "Application UI text."
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Application UI text."
+  },
+  "passcode": "Passcode",
+  "@passcode": {
+    "description": "Application UI text."
+  },
+  "installedOnAppleWatch": "INSTALLED ON APPLE WATCH",
+  "@installedOnAppleWatch": {
+    "description": "Application UI text."
+  },
+  "installed": "Installed",
+  "@installed": {
+    "description": "Application UI text."
+  },
+  "hidden": "Hidden",
+  "@hidden": {
+    "description": "Application UI text."
+  },
+  "manageConnectedWatches": "Manage connected watches",
+  "@manageConnectedWatches": {
+    "description": "Application UI text."
+  },
+  "addAppleWatch": "Add Apple Watch",
+  "@addAppleWatch": {
+    "description": "Application UI text."
+  },
+  "notificationIndicator": "Notification Indicator",
+  "@notificationIndicator": {
+    "description": "Application UI text."
+  },
+  "showsARedDotAtTheTopOfThe": "Shows a red dot at the top of the watch face when you have unread notifications.",
+  "@showsARedDotAtTheTopOfThe": {
+    "description": "Application UI text."
+  },
+  "notificationPrivacy": "Notification Privacy",
+  "@notificationPrivacy": {
+    "description": "Application UI text."
+  },
+  "hideNotificationDetailsUntilYouTapTheScreen": "Hide notification details until you tap the screen.",
+  "@hideNotificationDetailsUntilYouTapTheScreen": {
+    "description": "Application UI text."
+  },
+  "notificationSummary": "Notification Summary",
+  "@notificationSummary": {
+    "description": "Application UI text."
+  },
+  "mirrorPhoneAlerts": "MIRROR PHONE ALERTS",
+  "@mirrorPhoneAlerts": {
+    "description": "Application UI text."
+  },
+  "forwardAlertsFromTheseAppsToAppleWatchWith": "Forward alerts from these apps to Apple Watch with haptic feedback.",
+  "@forwardAlertsFromTheseAppsToAppleWatchWith": {
+    "description": "Application UI text."
+  },
+  "messagesSmsRcs": "Messages (SMS & RCS)",
+  "@messagesSmsRcs": {
+    "description": "Application UI text."
+  },
+  "phoneCalls": "Phone & Calls",
+  "@phoneCalls": {
+    "description": "Application UI text."
+  },
+  "mail": "Mail",
+  "@mail": {
+    "description": "Application UI text."
+  },
+  "calendarReminders": "Calendar & Reminders",
+  "@calendarReminders": {
+    "description": "Application UI text."
+  },
+  "bankingApps": "Banking Apps",
+  "@bankingApps": {
+    "description": "Application UI text."
+  },
+  "bulletinRelayTest": "BULLETIN RELAY TEST",
+  "@bulletinRelayTest": {
+    "description": "Application UI text."
+  },
+  "sendATestNotificationToAppleWatchOverThe": "Send a test notification to Apple Watch over the secure com.apple.private.alloy.bulletindistributor IDS channel.",
+  "@sendATestNotificationToAppleWatchOverThe": {
+    "description": "Application UI text."
+  },
+  "sendTestNotification": "Send Test Notification",
+  "@sendTestNotification": {
+    "description": "Application UI text."
+  },
+  "simulatedTelegramSmsWithTapticFeedback": "Simulated Telegram / SMS with Taptic feedback",
+  "@simulatedTelegramSmsWithTapticFeedback": {
+    "description": "Application UI text."
+  },
+  "testMessage": "Test Message",
+  "@testMessage": {
+    "description": "Application UI text."
+  },
+  "androidAppleWatchConnectionIsWorking": "Android ↔ Apple Watch connection is working!",
+  "@androidAppleWatchConnectionIsWorking": {
+    "description": "Application UI text."
+  },
+  "notificationSent": "Notification sent",
+  "@notificationSent": {
+    "description": "Application UI text."
+  },
+  "bulletinrequestWasHandedToTheWatchProtocolStack": "BulletinRequest was handed to the watch protocol stack.",
+  "@bulletinrequestWasHandedToTheWatchProtocolStack": {
+    "description": "Application UI text."
+  },
+  "changePasscode": "Change Passcode",
+  "@changePasscode": {
+    "description": "Application UI text."
+  },
+  "simplePasscode4Digits": "Simple Passcode (4 digits)",
+  "@simplePasscode4Digits": {
+    "description": "Application UI text."
+  },
+  "unlockWithPhone": "Unlock with Phone",
+  "@unlockWithPhone": {
+    "description": "Application UI text."
+  },
+  "unlockingYourPhoneAutomaticallyUnlocksYourTrustedAppleWatch": "Unlocking your phone automatically unlocks your trusted Apple Watch when worn.",
+  "@unlockingYourPhoneAutomaticallyUnlocksYourTrustedAppleWatch": {
+    "description": "Application UI text."
+  },
+  "wristDetection": "WRIST DETECTION",
+  "@wristDetection": {
+    "description": "Application UI text."
+  },
+  "lockAppleWatchWhenYouTakeItOffTo": "Lock Apple Watch when you take it off to protect your data and Apple Pay cards.",
+  "@lockAppleWatchWhenYouTakeItOffTo": {
+    "description": "Application UI text."
+  },
+  "wristDetection2": "Wrist Detection",
+  "@wristDetection2": {
+    "description": "Application UI text."
+  },
+  "dataSecurity": "DATA SECURITY",
+  "@dataSecurity": {
+    "description": "Application UI text."
+  },
+  "eraseAllAppleWatchDataAfter10FailedPasscode": "Erase all Apple Watch data after 10 failed passcode attempts.",
+  "@eraseAllAppleWatchDataAfter10FailedPasscode": {
+    "description": "Application UI text."
+  },
+  "eraseData10Attempts": "Erase Data (10 attempts)",
+  "@eraseData10Attempts": {
+    "description": "Application UI text."
+  },
+  "automaticUpdates": "Automatic Updates",
+  "@automaticUpdates": {
+    "description": "Application UI text."
+  },
+  "betaUpdates": "Beta Updates",
+  "@betaUpdates": {
+    "description": "Application UI text."
+  },
+  "checkingForUpdates": "Checking for updates…",
+  "@checkingForUpdates": {
+    "description": "Application UI text."
+  },
+  "yourAppleWatchSoftwareIsUpToDate": "Your Apple Watch software is up to date.",
+  "@yourAppleWatchSoftwareIsUpToDate": {
+    "description": "Application UI text."
+  },
+  "checkAgain": "Check Again",
+  "@checkAgain": {
+    "description": "Application UI text."
+  },
+  "alertVolume": "ALERT VOLUME",
+  "@alertVolume": {
+    "description": "Application UI text."
+  },
+  "silentMode": "Silent Mode",
+  "@silentMode": {
+    "description": "Application UI text."
+  },
+  "hapticFeedback": "HAPTIC FEEDBACK",
+  "@hapticFeedback": {
+    "description": "Application UI text."
+  },
+  "hapticAlerts": "Haptic Alerts",
+  "@hapticAlerts": {
+    "description": "Application UI text."
+  },
+  "defaultHaptic": "Default",
+  "@defaultHaptic": {
+    "description": "Application UI text."
+  },
+  "prominent": "Prominent",
+  "@prominent": {
+    "description": "Application UI text."
+  },
+  "playAnAdditionalHapticBeforeANotification": "Play an additional haptic before a notification.",
+  "@playAnAdditionalHapticBeforeANotification": {
+    "description": "Application UI text."
+  },
+  "systemFeedback": "SYSTEM FEEDBACK",
+  "@systemFeedback": {
+    "description": "Application UI text."
+  },
+  "crownHaptics": "Crown Haptics",
+  "@crownHaptics": {
+    "description": "Application UI text."
+  },
+  "systemHaptics": "System Haptics",
+  "@systemHaptics": {
+    "description": "Application UI text."
+  },
+  "coverToMute": "Cover to Mute",
+  "@coverToMute": {
+    "description": "Application UI text."
+  },
+  "coverTheDisplayWithYourPalmForAtLeast": "Cover the display with your palm for at least 3 seconds to mute an incoming call or alert.",
+  "@coverTheDisplayWithYourPalmForAtLeast": {
+    "description": "Application UI text."
+  },
+  "watchStorage": "WATCH STORAGE",
+  "@watchStorage": {
+    "description": "Application UI text."
+  },
+  "reclaimable": "Reclaimable",
+  "@reclaimable": {
+    "description": "Application UI text."
+  },
+  "purgeableData": "Purgeable Data",
+  "@purgeableData": {
+    "description": "Application UI text."
+  },
+  "watchContent": "WATCH CONTENT",
+  "@watchContent": {
+    "description": "Application UI text."
+  },
+  "pointTheCamera": "Point the Camera",
+  "@pointTheCamera": {
+    "description": "Application UI text."
+  },
+  "keepAppleWatchInTheViewfinder": "Keep Apple Watch in the viewfinder",
+  "@keepAppleWatchInTheViewfinder": {
+    "description": "Application UI text."
+  },
+  "placeTheAppleWatchScreenInTheCenterOf": "Place the Apple Watch screen in the center of the frame to recognize the pairing animation automatically.",
+  "@placeTheAppleWatchScreenInTheCenterOf": {
+    "description": "Application UI text."
+  },
+  "pairAppleWatchManually": "Pair Apple Watch Manually",
+  "@pairAppleWatchManually": {
+    "description": "Application UI text."
+  },
+  "pairManually": "Pair Manually",
+  "@pairManually": {
+    "description": "Application UI text."
+  },
+  "enterThe6DigitCode": "Enter the 6-digit Code",
+  "@enterThe6DigitCode": {
+    "description": "Application UI text."
+  },
+  "tapTheIIconOnYourAppleWatchTo": "Tap the “i” icon on your Apple Watch to see the pairing code.",
+  "@tapTheIIconOnYourAppleWatchTo": {
+    "description": "Application UI text."
+  },
+  "syncComplete": "Sync complete!",
+  "@syncComplete": {
+    "description": "Application UI text."
+  },
+  "syncingAppleWatch": "Syncing Apple Watch",
+  "@syncingAppleWatch": {
+    "description": "Application UI text."
+  },
+  "setUpAppleWatch": "Set Up Apple Watch",
+  "@setUpAppleWatch": {
+    "description": "Application UI text."
+  },
+  "keepBluetoothOnAndYourWatchCloseToYour": "Keep Bluetooth on and your watch close to your phone.",
+  "@keepBluetoothOnAndYourWatchCloseToYour": {
+    "description": "Application UI text."
+  },
+  "connectAppleWatchToYourAndroidPhoneToSync": "Connect Apple Watch to your Android phone to sync notifications, calls, and workouts.",
+  "@connectAppleWatchToYourAndroidPhoneToSync": {
+    "description": "Application UI text."
+  },
+  "pairAppleWatch": "Pair Apple Watch",
+  "@pairAppleWatch": {
+    "description": "Application UI text."
+  },
+  "continueAction": "Continue",
+  "@continueAction": {
+    "description": "Application UI text."
+  },
+  "finishSetup": "Finish Setup",
+  "@finishSetup": {
+    "description": "Application UI text."
+  },
+  "whichWristDoYouWearYourWatchOn": "Which wrist do you wear your watch on?",
+  "@whichWristDoYouWearYourWatchOn": {
+    "description": "Application UI text."
+  },
+  "appleWatchAdjustsWristRaiseAndGestureRecognitionFor": "Apple Watch adjusts wrist raise and gesture recognition for your selected wrist.",
+  "@appleWatchAdjustsWristRaiseAndGestureRecognitionFor": {
+    "description": "Application UI text."
+  },
+  "digitalCrownPosition": "Digital Crown Position",
+  "@digitalCrownPosition": {
+    "description": "Application UI text."
+  },
+  "chooseWhichSideTheDigitalCrownIsOn": "Choose which side the Digital Crown is on.",
+  "@chooseWhichSideTheDigitalCrownIsOn": {
+    "description": "Application UI text."
+  },
+  "digitalCrownOnRight": "Digital Crown on Right",
+  "@digitalCrownOnRight": {
+    "description": "Application UI text."
+  },
+  "digitalCrownOnLeft": "Digital Crown on Left",
+  "@digitalCrownOnLeft": {
+    "description": "Application UI text."
+  },
+  "alwaysOnDisplay": "Always-On Display",
+  "@alwaysOnDisplay": {
+    "description": "Application UI text."
+  },
+  "theAlwaysOnRetinaDisplayShowsTheTimeAnd": "The Always-On Retina display shows the time and important information without raising your wrist.",
+  "@theAlwaysOnRetinaDisplayShowsTheTimeAnd": {
+    "description": "Application UI text."
+  },
+  "enableAlwaysOnDisplay": "Enable Always-On Display",
+  "@enableAlwaysOnDisplay": {
+    "description": "Application UI text."
+  },
+  "createAPasscode": "Create a Passcode",
+  "@createAPasscode": {
+    "description": "Application UI text."
+  },
+  "aPasscodeProtectsYourDataApplePayCardsAnd": "A passcode protects your data, Apple Pay cards, and medical information.",
+  "@aPasscodeProtectsYourDataApplePayCardsAnd": {
+    "description": "Application UI text."
+  },
+  "addA4DigitPasscode": "Add a 4-digit Passcode",
+  "@addA4DigitPasscode": {
+    "description": "Application UI text."
+  },
+  "titanium": "Titanium",
+  "@titanium": {
+    "description": "Application UI text."
+  },
+  "sunny": "Sunny",
+  "@sunny": {
+    "description": "Application UI text."
+  },
+  "exclusiveAppleWatchUltraFacesWithACustomizableBezel": "Exclusive Apple Watch Ultra faces with a customizable bezel, Night Mode, and 8 complications.",
+  "@exclusiveAppleWatchUltraFacesWithACustomizableBezel": {
+    "description": "Application UI text."
+  },
+  "modular": "Modular",
+  "@modular": {
+    "description": "Application UI text."
+  },
+  "largeInformationBlocksAndGraphsForDataAtA": "Large information blocks and graphs for data at a glance.",
+  "@largeInformationBlocksAndGraphsForDataAtA": {
+    "description": "Application UI text."
+  },
+  "classic": "Classic",
+  "@classic": {
+    "description": "Application UI text."
+  },
+  "traditionalAnalogFacesWithRomanAndArabicNumerals": "Traditional analog faces with Roman and Arabic numerals.",
+  "@traditionalAnalogFacesWithRomanAndArabicNumerals": {
+    "description": "Application UI text."
+  },
+  "infographAstronomy": "Infograph & Astronomy",
+  "@infographAstronomy": {
+    "description": "Application UI text."
+  },
+  "detailedAstronomicalAndWeatherDisplays": "Detailed astronomical and weather displays.",
+  "@detailedAstronomicalAndWeatherDisplays": {
+    "description": "Application UI text."
+  },
+  "activityNike": "Activity & Nike",
+  "@activityNike": {
+    "description": "Application UI text."
+  },
+  "activityRingsWorkoutsAndSportsMetrics": "Activity rings, workouts, and sports metrics.",
+  "@activityRingsWorkoutsAndSportsMetrics": {
+    "description": "Application UI text."
+  },
+  "wayfinderAlpine": "Wayfinder Alpine",
+  "@wayfinderAlpine": {
+    "description": "Application UI text."
+  },
+  "wayfinderNightMode": "Wayfinder Night Mode",
+  "@wayfinderNightMode": {
+    "description": "Application UI text."
+  },
+  "modularDuo": "Modular Duo",
+  "@modularDuo": {
+    "description": "Application UI text."
+  },
+  "modularMulticolor": "Modular Multicolor",
+  "@modularMulticolor": {
+    "description": "Application UI text."
+  },
+  "california": "California",
+  "@california": {
+    "description": "Application UI text."
+  },
+  "californiaOcean": "California Ocean",
+  "@californiaOcean": {
+    "description": "Application UI text."
+  },
+  "chronographPro": "Chronograph Pro",
+  "@chronographPro": {
+    "description": "Application UI text."
+  },
+  "infograph": "Infograph",
+  "@infograph": {
+    "description": "Application UI text."
+  },
+  "solarDial": "Solar Dial",
+  "@solarDial": {
+    "description": "Application UI text."
+  },
+  "activityAnalog": "Activity Analog",
+  "@activityAnalog": {
+    "description": "Application UI text."
+  },
+  "modularUltra": "Modular Ultra",
+  "@modularUltra": {
+    "description": "Application UI text."
+  },
+  "activityDigital": "Activity Digital",
+  "@activityDigital": {
+    "description": "Application UI text."
+  },
+  "selectionConfirmedByTheWatch": "Selection confirmed by the watch.",
+  "@selectionConfirmedByTheWatch": {
+    "description": "Application UI text."
+  },
+  "collectionReceivedFromTheWatch": "Collection received from the watch.",
+  "@collectionReceivedFromTheWatch": {
+    "description": "Application UI text."
+  },
+  "incompleteCollectionReceivedRefreshAgain": "Incomplete collection received. Refresh again.",
+  "@incompleteCollectionReceivedRefreshAgain": {
+    "description": "Application UI text."
+  },
+  "connectionChangedRefreshAgain": "Connection changed. Refresh again.",
+  "@connectionChangedRefreshAgain": {
+    "description": "Application UI text."
+  },
+  "waitingForTheWatchFaceCollection": "Waiting for the watch face collection…",
+  "@waitingForTheWatchFaceCollection": {
+    "description": "Application UI text."
+  },
+  "requestNotSentCheckTheConnection": "Request not sent. Check the connection.",
+  "@requestNotSentCheckTheConnection": {
+    "description": "Application UI text."
+  },
+  "newCollectionNotReceivedYetRefreshAgain": "New collection not received yet. Refresh again.",
+  "@newCollectionNotReceivedYetRefreshAgain": {
+    "description": "Application UI text."
+  },
+  "waitingForTheNewWatchFace": "Waiting for the new watch face…",
+  "@waitingForTheNewWatchFace": {
+    "description": "Application UI text."
+  },
+  "waitingForTheSelectedWatchFace": "Waiting for the selected watch face…",
+  "@waitingForTheSelectedWatchFace": {
+    "description": "Application UI text."
+  },
+  "commandNotSentRefreshTheWatchFaceCollection": "Command not sent. Refresh the watch face collection.",
+  "@commandNotSentRefreshTheWatchFaceCollection": {
+    "description": "Application UI text."
+  },
+  "resultNotConfirmedRefreshTheWatchFaceCollection": "Result not confirmed. Refresh the watch face collection.",
+  "@resultNotConfirmedRefreshTheWatchFaceCollection": {
+    "description": "Application UI text."
+  },
+  "lastSync": "Last sync: {value0}.",
+  "@lastSync": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "myFaces": "My Faces",
+  "@myFaces": {
+    "description": "Heading when the watch face collection size is unknown."
+  },
+  "myFacesCount": "{count, plural, =0{My Faces · 0} =1{My Faces · 1} other{My Faces · {count}}}",
+  "@myFacesCount": {
+    "description": "Heading with the size of the complete watch face collection.",
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "collectionNotReceivedYet": "Collection not received yet",
+  "@collectionNotReceivedYet": {
+    "description": "Application UI text."
+  },
+  "partialCollectionReceived": "Partial collection received",
+  "@partialCollectionReceived": {
+    "description": "Application UI text."
+  },
+  "collectionIsEmpty": "Collection is empty",
+  "@collectionIsEmpty": {
+    "description": "Application UI text."
+  },
+  "face": "Face {value0}",
+  "@face": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedOnWatch": "Selected on watch",
+  "@selectedOnWatch": {
+    "description": "Application UI text."
+  },
+  "createCopy": "Create Copy",
+  "@createCopy": {
+    "description": "Application UI text."
+  },
+  "refreshFromWatch": "Refresh from Watch",
+  "@refreshFromWatch": {
+    "description": "Application UI text."
+  },
+  "enable": "Enable",
+  "@enable": {
+    "description": "Application UI text."
+  },
+  "disable": "Disable",
+  "@disable": {
+    "description": "Application UI text."
+  },
+  "commandSentWaitingForTheWatchResult": "Command sent. Waiting for the watch result.",
+  "@commandSentWaitingForTheWatchResult": {
+    "description": "Application UI text."
+  },
+  "commandNotSentCheckTheConnection": "Command not sent. Check the connection.",
+  "@commandNotSentCheckTheConnection": {
+    "description": "Application UI text."
+  },
+  "watchSettings": "WATCH SETTINGS",
+  "@watchSettings": {
+    "description": "Application UI text."
+  },
+  "valuesComeFromWatchMessagesNotReceivedMeansThe": "Values come from watch messages. “Not received” means the watch has not reported this setting yet.",
+  "@valuesComeFromWatchMessagesNotReceivedMeansThe": {
+    "description": "Application UI text."
+  },
+  "connectYourWatchToChangeSettings": "Connect your watch to change settings.",
+  "@connectYourWatchToChangeSettings": {
+    "description": "Application UI text."
+  },
+  "stopNotConfirmed": "Stop not confirmed",
+  "@stopNotConfirmed": {
+    "description": "Application UI text."
+  },
+  "couldNotOpenFlashlightPermission": "Could not open flashlight permission",
+  "@couldNotOpenFlashlightPermission": {
+    "description": "Application UI text."
+  },
+  "phoneServiceUnavailable": "Phone service unavailable",
+  "@phoneServiceUnavailable": {
+    "description": "Application UI text."
+  },
+  "alertStatusIsStale": "Alert status is stale",
+  "@alertStatusIsStale": {
+    "description": "Application UI text."
+  },
+  "flashlightIsOn": "Flashlight is on",
+  "@flashlightIsOn": {
+    "description": "Application UI text."
+  },
+  "soundAndFlashlightAreOn": "Sound and flashlight are on",
+  "@soundAndFlashlightAreOn": {
+    "description": "Application UI text."
+  },
+  "soundAlertStarted": "Sound alert started",
+  "@soundAlertStarted": {
+    "description": "Application UI text."
+  },
+  "lastAlertDidNotStart": "Last alert did not start",
+  "@lastAlertDidNotStart": {
+    "description": "Application UI text."
+  },
+  "requestHadNoSoundOrFlashlight": "Request had no sound or flashlight",
+  "@requestHadNoSoundOrFlashlight": {
+    "description": "Application UI text."
+  },
+  "alertStopped": "Alert stopped",
+  "@alertStopped": {
+    "description": "Application UI text."
+  },
+  "noAlertIsRunning": "No alert is running",
+  "@noAlertIsRunning": {
+    "description": "Application UI text."
+  },
+  "findPhoneFromWatch": "Find Phone from Watch",
+  "@findPhoneFromWatch": {
+    "description": "Application UI text."
+  },
+  "localApkTest": "Local APK Test",
+  "@localApkTest": {
+    "description": "Application UI text."
+  },
+  "stopping": "Stopping…",
+  "@stopping": {
+    "description": "Application UI text."
+  },
+  "stopAlert": "Stop Alert",
+  "@stopAlert": {
+    "description": "Application UI text."
+  },
+  "cameraPermissionIsRequiredToFindYourPhoneWith": "Camera permission is required to find your phone with the flashlight.",
+  "@cameraPermissionIsRequiredToFindYourPhoneWith": {
+    "description": "Application UI text."
+  },
+  "allowFlashlight": "Allow Flashlight",
+  "@allowFlashlight": {
+    "description": "Application UI text."
+  },
+  "incline42": "INCLINE 42°",
+  "@incline42": {
+    "description": "Application UI text."
+  },
+  "north124": "NORTH 124°",
+  "@north124": {
+    "description": "Application UI text."
+  },
+  "message182M": "182 M",
+  "@message182M": {
+    "description": "Application UI text."
+  },
+  "activity2": "ACTIVITY",
+  "@activity2": {
+    "description": "Application UI text."
+  },
+  "message620800Kcal": "620 / 800 KCAL",
+  "@message620800Kcal": {
+    "description": "Application UI text."
+  },
+  "today": "TODAY",
+  "@today": {
+    "description": "Application UI text."
+  },
+  "message1930Meeting": "19:30 MEETING",
+  "@message1930Meeting": {
+    "description": "Application UI text."
+  },
+  "watchSync": "Watch Sync",
+  "@watchSync": {
+    "description": "Application UI text."
+  },
+  "message72Bpm5Minago": "72 BPM • 5 min ago",
+  "@message72Bpm5Minago": {
+    "description": "Application UI text."
+  },
+  "theWatchHasNotRepliedYetRefreshAgain": "The watch has not replied yet. Refresh again.",
+  "@theWatchHasNotRepliedYetRefreshAgain": {
+    "description": "Application UI text."
+  },
+  "dataUpdated": "Data updated",
+  "@dataUpdated": {
+    "description": "Application UI text."
+  },
+  "couldNotSendRequest": "Could not send request",
+  "@couldNotSendRequest": {
+    "description": "Application UI text."
+  },
+  "noWatchDataYet": "No watch data yet",
+  "@noWatchDataYet": {
+    "description": "Application UI text."
+  },
+  "telemetryStatusTime": "{value0} · {value1}:{value2}:{value3}",
+  "@telemetryStatusTime": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      },
+      "value2": {
+        "type": "String"
+      },
+      "value3": {
+        "type": "String"
+      }
+    }
+  },
+  "chargingUnknown": "charging unknown",
+  "@chargingUnknown": {
+    "description": "Application UI text."
+  },
+  "charging": "charging",
+  "@charging": {
+    "description": "Application UI text."
+  },
+  "notCharging": "not charging",
+  "@notCharging": {
+    "description": "Application UI text."
+  },
+  "battery2": "Battery: —",
+  "@battery2": {
+    "description": "Application UI text."
+  },
+  "batteryReading": "{value0}: {value1}% · {value2}",
+  "@batteryReading": {
+    "description": "Application UI text.",
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      },
+      "value2": {
+        "type": "String"
+      }
+    }
+  },
+  "noConnectionToWatch": "No connection to watch",
+  "@noConnectionToWatch": {
+    "description": "Application UI text."
+  },
+  "waitingForWatchReply": "Waiting for watch reply…",
+  "@waitingForWatchReply": {
+    "description": "Application UI text."
+  },
+  "refreshData": "Refresh Data",
+  "@refreshData": {
+    "description": "Application UI text."
+  },
+  "updated": "Updated",
+  "@updated": {
+    "description": "Application UI label."
+  },
+  "dataIsStale": "Data is stale",
+  "@dataIsStale": {
+    "description": "Application UI label."
+  },
+  "battery3": "Battery",
+  "@battery3": {
+    "description": "Application UI label."
+  },
+  "lastBattery": "Last battery",
+  "@lastBattery": {
+    "description": "Application UI label."
+  },
+  "live": "LIVE",
+  "@live": {
+    "description": "Application UI label."
+  },
+  "alwaysOn2": "ALWAYS ON",
+  "@alwaysOn2": {
+    "description": "Application UI label."
+  },
+  "bluetooth": "Bluetooth",
+  "@bluetooth": {
+    "description": "Application UI label."
+  },
+  "wiFi": "Wi-Fi",
+  "@wiFi": {
+    "description": "Application UI label."
+  },
+  "digitalCrown": "Digital Crown",
+  "@digitalCrown": {
+    "description": "Application UI label."
+  },
+  "appleWatchUltra2ActionButton": "Apple Watch Ultra 2 Action Button",
+  "@appleWatchUltra2ActionButton": {
+    "description": "Application UI label."
+  },
+  "appleWatch": "Apple Watch",
+  "@appleWatch": {
+    "description": "Application UI label."
+  },
+  "watch": "Watch",
+  "@watch": {
+    "description": "Application UI label."
+  },
+  "ultra": "Ultra",
+  "@ultra": {
+    "description": "Application UI label."
+  },
+  "wayfinder": "Wayfinder",
+  "@wayfinder": {
+    "description": "Application UI label."
+  },
+  "ultraModular": "Ultra Modular",
+  "@ultraModular": {
+    "description": "Application UI label."
+  },
+  "ultraModularTrail": "Ultra Modular Trail",
+  "@ultraModularTrail": {
+    "description": "Application UI label."
+  },
+  "nikeBounceVolt": "Nike Bounce Volt",
+  "@nikeBounceVolt": {
+    "description": "Application UI label."
+  },
+  "appleMusic": "Apple Music",
+  "@appleMusic": {
+    "description": "Application UI label."
+  },
+  "appleAccount": "Apple Account",
+  "@appleAccount": {
+    "description": "Application UI label."
+  },
+  "watchConnection": "Watch connection",
+  "savedWatch": "Saved watch",
+  "noPairedWatch": "No paired watch",
+  "noPairedWatchHint": "Keep your watch nearby and put it in pairing mode to begin.",
+  "bridgeUnavailable": "Bridge is unavailable",
+  "bridgeUnavailableHint": "Install the matching Bridge backend to connect your watch.",
+  "identityLoading": "Reading saved pairing…",
+  "identityReadError": "The saved pairing is unavailable. Check diagnostics before starting a new pair.",
+  "connectWatch": "Connect",
+  "disconnectWatch": "Disconnect",
+  "connectionConnecting": "Connecting…",
+  "connectionStopping": "Disconnecting…",
+  "connectionPermissions": "Allow Bluetooth access",
+  "pairingRunning": "Setup in progress",
+  "resumeWatchSetup": "Continue setup",
+  "finishWatchSetup": "Finish setup",
+  "watchStillSettingUp": "My watch still shows setup",
+  "resumeWatchSync": "Resume synchronization",
+  "resumeWatchSyncHint": "Use this only if your watch still displays setup. If its watch face is visible, finish setup instead.",
+  "confirmWatchFace": "The watch face is visible",
+  "confirmWatchFaceHint": "Confirm only after your watch shows its watch face. The current setup connection will be stopped safely.",
+  "confirmWatchFaceQuestion": "Does your watch show its watch face?",
+  "confirmWatchFaceDetail": "This saves normal connection mode for the current activated pair.",
+  "connectionRequestAccepted": "Request accepted. Waiting for the watch…",
+  "connectionRequestRejected": "Request not accepted. Check the current connection and diagnostics.",
+  "connectionPermissionRequired": "Allow Bluetooth access, then try again.",
+  "connectionBusy": "A connection or setup operation is already running.",
+  "syncCurrentWifi": "Send phone Wi-Fi network",
+  "wifiReceiptHint": "The network is queued for delivery. Verify it in Settings → Wi-Fi on your watch.",
+  "watchDiagnostics": "Connection diagnostics",
+  "bridgeJournal": "Bridge journal",
+  "copyBridgeJournal": "Copy journal",
+  "journalCopied": "Journal copied",
+  "advancedConnectionTools": "Advanced connection tools",
+  "stockBondAudit": "Audit system Bluetooth bond",
+  "stockBondImport": "Import system Bluetooth bond",
+  "stockIdentityAlignment": "Align system Bluetooth identity",
+  "stockReconnectProbe": "Test system reconnect",
+  "advancedToolHint": "These tools require the connection to be stopped and system Bluetooth to be off.",
+  "advancedToolQuestion": "Run this connection tool?",
+  "advancedToolDetail": "The backend validates the saved pair and Bluetooth state before running.",
+  "pairingDiscovering": "Looking for a watch…",
+  "pairingConnecting": "Connecting to the discovered watch…",
+  "pairingSecurity": "Establishing a secure pair…",
+  "pairingActivation": "Activating with Apple…",
+  "pairingIds": "Connecting watch services…",
+  "pairingRegistry": "Reading watch configuration…",
+  "pairingConfiguring": "Applying watch settings…",
+  "pairingActivated": "Watch activated",
+  "pairingCheckWatch": "Initial synchronization sent. Check your watch.",
+  "pairingVerifyReconnect": "Watch setup observed. Connection verification pending.",
+  "pairingPaused": "Setup connection stopped",
+  "watchActivatedHint": "Activation is complete. Confirm below when your watch shows its watch face.",
+  "confirmWatchFaceActiveDetail": "This will disconnect the setup session safely and save normal connection mode for this activated pair.",
+  "pairingSync": "Synchronizing watch setup…",
+  "pairingVerified": "Watch setup complete",
+  "pairingFailed": "The setup session ended with an error. Check the journal.",
+  "pairingIdle": "No setup session is running.",
+  "pairingStarting": "Starting the watch session…",
+  "pairingPinHint": "Enter the six-digit code displayed on your watch.",
+  "pairingCheckingCode": "Checking the watch code…",
+  "pairingCodeVerifiedBondPending": "Watch code verified. Bluetooth bonding is not available in this build yet.",
+  "macosPairingBootstrapRestricted": "macOS restricts the Bluetooth channel required for watch pairing. See Diagnostics for details.",
+  "windowsPairingBootstrapRestricted": "Bluetooth discovery and connection are available. Windows does not expose the channel required for Apple Watch pairing in this build.",
+  "windowsRawHciRequired": "Full Watch pairing requires the bundled protocol runtime and signed UsbDk 1.0.21. Version 1.0.22 is blocked because it can crash Windows. Select a USB Bluetooth adapter; it is reserved for the Watch during the session.",
+  "sendWatchPin": "Send code",
+  "pairingCodeOnlyHint": "On this computer, pair using the six-digit code shown on your watch.",
+  "findNearbyWatch": "Find a Watch",
+  "bluetoothLinkConnected": "Bluetooth link connected",
+  "watchPairingUnavailable": "Watch pairing services are not available on this platform yet.",
+  "activationOwnerInput": "Apple requires owner confirmation",
+  "activationCredentialsHint": "Credentials are sent to Apple's activation service and are not saved by Companion.",
+  "submitActivation": "Continue activation",
+  "retryActivation": "Retry activation",
+  "stopSetup": "Stop setup",
+  "pairedIdentity": "Pairing ID",
+  "hardwareIdentity": "Hardware identifier",
+  "systemBuild": "System build",
+  "pendingWatchSetup": "This saved pair has not finished setup.",
+  "oneWatchBackend": "The backend currently stores one pairing. A saved pair is retained when disconnected.",
+  "finishInitialSync": "Finish initial synchronization",
+  "chooseDiscoveredWatch": "Choose a watch found nearby. Only supported setup advertisements are listed.",
+  "desktopCoreUnavailable": "The connection service could not start. See Diagnostics for details.",
+  "manageWatchFaces": "Manage Watch Faces",
+  "nativeFaceChangesConfirmed": "Changes confirmed by the watch.",
+  "nativeFaceWaiting": "Waiting for the watch to confirm changes…",
+  "nativeFaceSaving": "Saving changes…",
+  "nativeFaceRetry": "Retry",
+  "nativeFaceEditPending": "Changes saved on this device. Waiting for the watch…",
+  "nativeFaceSaveFailed": "Changes could not be saved on this device. Keep this editor open and retry.",
+  "nativeFaceEditUncertain": "Changes are saved on this device, but the watch has not confirmed them. Retry to send them again.",
+  "nativeFaceRejected": "Changes were not sent. Refresh the collection and try again.",
+  "nativeFaceUnknown": "The result is not confirmed. Refresh before making another change.",
+  "nativeFaceImportHint": "Choose a native .watchface package, including bundled photos and resources (up to 16 MiB). Compatibility is confirmed by the connected watch.",
+  "nativeFaceCustomization": "Customization",
+  "nativeFaceComplications": "Complications",
+  "nativeFaceSetActive": "Set as Current Face",
+  "nativeFaceDelete": "Delete Watch Face",
+  "nativeFaceDeleteQuestion": "Delete this watch face?",
+  "nativeFaceDeleteDetail": "The remaining faces will stay on the watch. The last face cannot be deleted.",
+  "nativeFaceMoveEarlier": "Move Earlier",
+  "nativeFaceMoveLater": "Move Later",
+  "nativeFaceConfiguration": "Native Configuration",
+  "nativeFaceConfigurationHint": "These values come from the watch. Keep unknown fields intact. Available values and complication support depend on the face and watchOS.",
+  "nativeFaceApply": "Apply to Watch",
+  "nativeFaceEditValue": "Edit Value",
+  "nativeFaceValueHint": "Enter a JSON value. Strings must be quoted; numbers and booleans use JSON notation.",
+  "nativeFaceInvalidValue": "Invalid configuration value",
+  "nativeFaceConfigurationUnavailable": "Update Bridge and refresh the collection to load this face’s configuration.",
+  "nativeFaceFileSaved": "Watch face file saved",
+  "nativeFaceFileError": "Could not open or save the watch face file",
+  "nativeFaceResourceExportUnavailable": "This face may need photos or other resources. Export is unavailable until the complete native package can be read.",
+  "nativeFaceLocalLayoutHint": "This gallery contains local preview layouts. Native watch faces are managed in My Watch → Manage Watch Faces.",
+  "nativeFaceComplicationHint": "Choose a compatible complication from the watch's catalog or an existing face. Saved settings and native intents are preserved.",
+  "nativeFaceComplicationCatalogPartial": "Some descriptors are unavailable. Refresh the collection to update compatible choices.",
+  "nativeFaceComplicationVariantsMissing": "Some complications on these faces have not supplied their available variants. You can still use their current settings.",
+  "nativeFaceNoComplication": "None",
+  "nativeFaceUnknownComplication": "Unknown complication",
+  "nativeFaceConflict": "This face changed or the watch reconnected. Open the face again before applying edits.",
+  "exportLocalFaceLayout": "Export Local Layout",
+  "localFaceLayoutSaved": "Local layout saved",
+  "localFaceLayoutSavedHint": "This .watchlayout file contains a Companion preview layout. It is not an installable native watch face.",
+  "nativeFaceTimeStyle": "Time Style",
+  "nativeFaceDialStyle": "Dial Style",
+  "nativeFaceWaypoint": "Waypoint",
+  "nativeFacePink": "Pink",
+  "nativeFaceNeonGreen": "Neon Green",
+  "nativeFaceOrange": "Orange",
+  "nativeFacePinkSand": "Pink / Sand",
+  "nativeFaceNeonGreenCloud": "Neon Green / Cloud",
+  "nativeFaceOrangeLightSage": "Orange / Light Sage",
+  "nativeFaceLightBlue": "Light Blue",
+  "nativeFaceBrightBlue": "Bright Blue",
+  "nativeFaceTerraCotta": "Terra Cotta",
+  "nativeFaceTopLeft": "Top Left",
+  "nativeFaceTop": "Top",
+  "nativeFaceBottom": "Bottom",
+  "nativeFaceTopRight": "Top Right",
+  "nativeFaceBottomLeft": "Bottom Left",
+  "nativeFaceBottomRight": "Bottom Right",
+  "nativeFaceCenter": "Center",
+  "nativeFaceNightMode": "Night Mode",
+  "nativeFaceColor": "Color",
+  "nativeFaceAutomatic": "Automatic",
+  "nativeFaceLeft": "Left",
+  "nativeFaceRight": "Right",
+  "nativeFacePalette": "Palette {number}",
+  "@nativeFacePalette": {"placeholders": {"number": {"type": "String"}}},
+  "nativeFaceSeasonalPalette": "Seasonal {number}",
+  "@nativeFaceSeasonalPalette": {"placeholders": {"number": {"type": "String"}}},
+  "nativeFaceAdvanced": "Advanced",
+  "nativeFaceEditHint": "Choose your settings, then apply them to your watch.",
+  "nativeFaceCopyHint": "Create a new face from one on your watch, or import a shared .watchface file.",
+  "nativeFaceLocalLibrary": "Local Design Library",
+  "nativeFaceUnsaved": "Discard unsaved changes?",
+  "nativeFaceDiscard": "Discard",
+  "nativeFaceImport": "Import Watch Face",
+  "nativeFaceSharedPreview": "Shared preview",
+  "nativeFaceImportDone": "Done",
+  "nativeFaceSharedPreviewUnavailable": "This file has no usable shared preview.",
+  "nativeFaceSharedPreviewHint": "Preview supplied with the file. Compatibility and successful installation are confirmed by your watch.",
+  "nativeFaceDraft": "Unsaved changes",
+  "nativeFaceDigital": "Digital",
+  "nativeFaceAnalog": "Analog",
+  "nativeFaceAdd": "Add Watch Face",
+  "nativeFaceAvailable": "Available Faces",
+  "nativeFaceAddToWatch": "Add to Watch",
+  "nativeFaceTemplateHint": "Choose colors and complications before adding this face to your watch.",
+  "nativeFaceDefaultPreview": "Default preview",
+  "nativeFacePreviewUnavailable": "Preview unavailable for these settings",
+  "nativeFaceStylePreview": "Style preview",
+  "nativeFaceStylePreviewHint": "Sample time. Live data and complications appear on your watch.",
+  "nativeFaceSearch": "Search",
+  "nativePhotoChoose": "Choose Photo",
+  "nativePhotoCropHint": "Drag to frame your photo. Pinch or use the slider to zoom.",
+  "nativeIntentSettings": "Settings for {slot}",
+  "@nativeIntentSettings": {"placeholders": {"slot": {"type": "String"}}},
+  "nativeIntentParameterSeconds": "{name} (seconds)",
+  "@nativeIntentParameterSeconds": {"placeholders": {"name": {"type": "String"}}},
+  "nativeIntentDurationValue": "{name}: {seconds} s",
+  "@nativeIntentDurationValue": {"placeholders": {"name": {"type": "String"}, "seconds": {"type": "String"}}},
+  "nativeIntentParameterInvalid": "Enter a finite duration within its supported range.",
+  "nativeIntentLocalDraft": "These settings are saved in your draft. Apply the face to send them to your watch.",
+  "nativePhotoZoom": "Zoom",
+  "nativePhotoAspect": "Frame Shape",
+  "nativePhotoKeepCrop": "Keep Crop",
+  "nativePhotoSelected": "{count, plural, =1{1 photo selected} other{{count} photos selected}}",
+  "@nativePhotoSelected": {"placeholders": {"count": {"type": "int"}}},
+  "nativePhotoTimeAlignment": "Time Alignment",
+  "nativePhotoLeading": "Leading",
+  "nativePhotoTrailing": "Trailing",
+  "nativePhotoTimeSize": "Time Size",
+  "nativePhotoSmall": "Small",
+  "nativePhotoMedium": "Medium",
+  "nativePhotoLarge": "Large",
+  "nativePhotoXLarge": "XL",
+  "nativePhotoRemove": "Remove Photo",
+  "nativeFaceShade": "Shade",
+  "nativeFaceAddColors": "Add Colors",
+  "nativeFaceColorsDone": "Done",
+  "nativeFaceColorsSaveError": "Could not save colors. Try again.",
+  "nativeFaceColorsPending": "Waiting for color settings from your Apple Watch.",
+  "nativeFaceColorsAwaiting": "Sending colors to your Apple Watch.",
+  "nativeFaceColorsUncertain": "Your Apple Watch reported different colors.",
+  "nativeFaceColorsSent": "Colors sent to your Apple Watch.",
+  "nativeFaceColorsDeliveryUncertain": "Color delivery could not be confirmed.",
+  "nativeFaceColorsRetry": "Retry Color Sync",
+  "nativeFaceMonogram": "Monogram",
+  "nativeMonogramDone": "Done",
+  "nativeMonogramInvalid": "This text cannot be used as a monogram.",
+  "nativeMonogramUnavailable": "Connect your Apple Watch to edit its monogram.",
+  "nativeMonogramSaveError": "Could not save the monogram. Try again.",
+  "nativeMonogramAwaiting": "Sending the monogram to your Apple Watch.",
+  "nativeMonogramDelivered": "Monogram delivered. Waiting for confirmation from your Apple Watch.",
+  "nativeMonogramUncertain": "Monogram sync could not be confirmed.",
+  "nativeMonogramConfirmed": "Monogram confirmed by your Apple Watch.",
+  "nativeFaceSeeAllWatchFaces": "See All Watch Faces",
+  "nativeFaceAllWatchFaces": "All Watch Faces",
+  "nativeFaceLibraryEdit": "Edit",
+  "nativeFaceLibraryDone": "Done",
+  "nativeFaceLibraryReorder": "Reorder {face}",
+  "@nativeFaceLibraryReorder": {"placeholders": {"face": {"type": "String"}}}
+}

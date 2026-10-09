@@ -1,0 +1,16 @@
+{
+  "locale": "ru_UA",
+  "displayName": "Research only",
+  "supportedFamilies": [
+    8,
+    9
+  ],
+  "identifier": "research-only-descriptor",
+  "userInfo": {
+    "nullable": null,
+    "values": [
+      null,
+      3
+    ]
+  }
+}

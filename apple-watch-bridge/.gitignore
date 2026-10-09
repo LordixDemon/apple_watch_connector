@@ -1,0 +1,6 @@
+.gradle/
+build/
+app/build/
+core/build/
+hal/build/
+local.properties

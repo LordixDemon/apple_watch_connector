@@ -1,0 +1,8 @@
+plugins { id "java-library" }
+
+apply from: rootProject.file("gradle/portable-java.gradle")
+
+dependencies {
+    api project(":core")
+    testImplementation "junit:junit:4.13.2"
+}

@@ -1,0 +1,20 @@
+{
+  "locale": "ru_UA",
+  "displayName": "Research only",
+  "userActivity": "YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVRyb290gAGqCwwrMTg5Oj5BQlUkbnVsbN8QDw0ODxAREhMUFRYXGBkaGxwdHhwcISIjJCUmHBwpKlhpc0FjdGl2ZVdvcHRpb25zV3ZlcnNpb25fEBFlbGlnaWJsZUZvclNlYXJjaF8QGWVsaWdpYmxlRm9yUHVibGljSW5kZXhpbmdcYWN0aXZpdHlUeXBlVHdoZW5VdGl0bGVUdHlwZVYkY2xhc3NfEBJlbGlnaWJsZUZvckhhbmRvZmZfEBVlbGlnaWJsZUZvclByZWRpY3Rpb25fEBRlbGlnaWJsZUZvclJlbWluZGVyc18QFHBlcnNpc3RlbnRJZGVudGlmaWVyV3BheWxvYWQIgAIQAQgIgAWABoAEEAGACQkICIAAgAjTLC0WLi8wV05TLmtleXNaTlMub2JqZWN0c6CggAPSMjM0NVokY2xhc3NuYW1lWCRjbGFzc2VzXE5TRGljdGlvbmFyeaI2N1xOU0RpY3Rpb25hcnlYTlNPYmplY3RfEA9SZXNlYXJjaCBhY3Rpb25fEBZyZXNlYXJjaC5vbmx5LmFjdGl2aXR50jsWPD1XTlMudGltZSNByDr2jznogYAH0jIzP0BWTlNEYXRloj83TxAiTVADBYKmZW50aXR5rXJlc2VhcmNoLW9ubHmmbnVtYmVyB9IyM0NEXxASVUFVc2VyQWN0aXZpdHlJbmZvokU3XxASVUFVc2VyQWN0aXZpdHlJbmZvAAgAEQAaACQAKQAyADcASQBMAFEAUwBeAGQAhQCOAJYAngCyAM4A2wDgAOYA6wDyAQcBHwE2AU0BVQFWAVgBWgFbAVwBXgFgAWIBZAFmAWcBaAFpAWsBbQF0AXwBhwGIAYkBiwGQAZsBpAGxAbQBwQHKAdwB9QH6AgICCwINAhICGQIcAkECRgJbAl4AAAAAAAACAQAAAAAAAABGAAAAAAAAAAAAAAAAAAACcw==",
+  "needsAppNotify": true,
+  "supportedFamilies": [
+    8,
+    9
+  ],
+  "identifier": "research-only-descriptor",
+  "userInfo": {
+    "nested": {
+      "values": [
+        "one",
+        7,
+        true
+      ]
+    }
+  }
+}

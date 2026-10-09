@@ -1,0 +1,10 @@
+# The root helper runs only after an explicit in-app action and remains in
+# Magisk's root domain. It talks to the standard VINTF Bluetooth HCI service;
+# the callback rules permit controller events and ACL data to return.
+allow magisk hal_bluetooth_service service_manager find
+allow magisk hal_bluetooth_server binder { call transfer }
+allow magisk hal_bluetooth_default binder { call transfer }
+allow hal_bluetooth_server magisk binder { call transfer }
+allow hal_bluetooth_default magisk binder { call transfer }
+allow hal_bluetooth_server magisk fd use
+allow hal_bluetooth_default magisk fd use

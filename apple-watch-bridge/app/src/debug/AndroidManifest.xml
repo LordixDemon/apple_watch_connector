@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver android:name=".LocalNotificationProbe" android:exported="false" />
+        <receiver android:name=".LocalFindMyPhoneProbe" android:exported="false" />
+        <receiver android:name=".LocalClockFaceReadProbe" android:exported="false" />
+        <receiver android:name=".LocalWatchRebootProbe" android:exported="false" />
+        <receiver android:name=".LocalDiagnosticInventoryProbe" android:exported="false" />
+        <receiver android:name=".LocalDiagnosticCollectionProbe" android:exported="false" />
+    </application>
+</manifest>

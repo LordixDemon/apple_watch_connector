@@ -1,0 +1,2383 @@
+[
+  {
+    "detail": "detailed",
+    "base": "standard.red",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0014722063424739214,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "38b91d13e84911b2ff8e1146c256e333f4f31f42651b296e5766f88b600bd439",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.033367449179682936,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d89dcf9560b43f6bcfbf4d55a29175b89f1241b8bcb1d7a7dfff99b74a0b76e6",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0008744106564380598,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d52b1850c1be4e12e736aeced1bb07e636bd32ec1f56fe620cefdd4af9650a72",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.003958667576422569,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1ee748166c1c296eb4a78e9655671ac4865af36037d4b1ffbb3edff52e8b02c3",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013846116018465587,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4bcb0c4b4c8435f2f334ca89bb3e1772c83638ba2b4dfbad9e17fd45443a53ab",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.red",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0011802238737160455,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "645efbd6d328219a54b0a79085182d456e6ce40fa06ad1192231d7601c9e1ea6",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.03325372969185092,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b5e747991f9bdde43a6d63c87fcd7cd73b3d6fea5715b44638def2036f5660c3",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0007069049243611731,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "860a92f2877fc1cb5d1e834e3272c9812bd731ac9876700e3fc0b91936b20484",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0037189346020739976,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "dec09e54dc7e8cc5490d5ba82fb322e0e61413c02b8a9a7afcd06644839ab402",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0011710033747026388,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "58fa5d0109f2430b6a957819a90691c5f5c3b5e12723811f35a11474deda4313",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.orange",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.032931012226381694,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "6606e0c79baef0bd42071866df9813b939acaa5d4de8f44248ab05e293e0cb5d",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0025433209778646555,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "17d45cdebdf61fde05caa0685007fc185388c1c0d12d463504ebb37978a75806",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.033040121464707,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "842b2da42b2d4927a6368b7a009d9e589fd58e2aa9accf902c97fe929a1d0b72",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.003055058673108722,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "972eef86c6276f4a7eb440cd57d1c9db91015079eca9797ad2caab57739420fd",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001515235337869819,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "cf62ab45e324c00042c1b4316ff6443cd4c97a09beeb20ffbaff05324b717db3",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.orange",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03270357325071766,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "59d25f639704f08baebe0b5db6e8ac3fec70f4e854bb1767d2431f927b2295fe",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0022113830133820176,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "c446b9f7094c950e9b6028921e2d86ac676bb59a2d2dcb2f17371b8791fcb165",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03259292726255678,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "088e20ce3ae90d4428f22767a39662714626c8feccffbe25422e90c673e954d2",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002890626440702971,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "0e76df71e7c651b09c88ef37da53280ab2f5d3212b2f72eccd6a7b9ac505a847",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013000903608903313,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "2668b5f67184990d351fad10554136c2540a2355a19ee4db6e79551f78d1e77a",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.lightOrange",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0019731867888690136,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "8916f2bcc590e70ce8802fc7de27d9060318f82d4f1578bd502664d257603118",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.032260989298074146,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a9bd2251cbb202a9a7bb09b1f3c03923fb693f5bf05e364516adda57ff9ff7d6",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0012171058697696719,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b1f75be862ad48ca0476d98654753bfd355f4fda24c3c4d5eb5bae619c34f84a",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0007837424161395614,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "80618e646f814dde1149510608076fa472be12feb390476f5f41845a4168c80a",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.000872873906602492,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "149f102ebd9eef6589e8b3a789f4d28f407f0f4d8ba573933c5a6857ad583aad",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.lightOrange",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0017273068151781707,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "57ad5dfa2407387243b97567917d8106a2daf39f517540a1a0930593ae5fefbf",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03227020979708755,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "e6e9a284db857422188d2fc66bad0ddcc6e6972f71c7248b4428d9dbbfb21722",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0009896668941056423,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "2d89d91a98f96b5a558759be720508122e283de6616a0e2f9b1d3add1a597db4",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0006730964279786822,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7ff742c124f69a29358623555f3003b8a6909d8d3dffa6a15e65ba2814da0ff8",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0007514706695926383,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "bed4dc35db7087c3fd886a7d98b1383d26350cf777a7ab0f057fda5def4d765d",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.yellow",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.00167966757027557,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "9e2e95e61961c81d1d21f44ead7d1ab1175c70839f480e2db0dda06266052a1c",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0032179541556789054,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "deebca06aa4a61d9b4be42641d09367cdedd1dc1df69c89f0bb0b754cadb3771",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0013630971041486098,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "56756b64ed0efb9209385cedfdeed801bc45190c540be0a058742ea9aa9abeb4",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0012309366182897818,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b5c57545a13ee112a65fb8d7c04dc7abc5451767c340c12cc84b16b12ab38fef",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0010695778855551662,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "bbfce807998cc6655c0b0c4c0e0944b7e90a48e94c57855df5d303f4eab3120e",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.yellow",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001347729605792932,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d378279dc67c143f694bf88a96289d241b30c9a40ae68fb3f0ccfd58d39192fb",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0030381544249174766,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "56a7a36f82c5b8f25b72e0dbf9c9a3717b5edf8097308235c7499863f90f6f60",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0010526736373639208,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "6608aa6bd9ccad95975d59ff981fcbd2c95a2d149343566374571d0edbd64f5c",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0010880188835819796,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1eaf1446353e03b667a60f2f6b00e03d7666e043c3e2567e455b39e5b8c6c9a4",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0009235866511762283,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "191f66038d4899f49ea6b9c987e950b09a811f728923f36d6835d6a567af3137",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.lightYellow",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0017503580627116872,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "eb55b4abf5aee9768e355db950fb15ccd23d4d9ad794d4f76197e9e9b61d3424",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.00234046999956971,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d460cb89c5500fc64f62eeb8749f40254b5678c0af0c6f8b9829c0e35a28ef81",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0019870175373891234,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b93caa44ffd606829824088c02b9aa16dd4b40f7a215accf29bb8807a5621f34",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0012662818645078405,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a0b0c923554d38381089a3ca80dc130ffdead47581db84023e8ccb76e99a3373",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0010096446419680233,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4d9cf5baa6e925ecfdc1d622a8f5cc766a51e4ad6472dc61add513453bf73768",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.lightYellow",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0014722063424739214,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4dcb5b6b60a0ab1a97010791c7abb94b8182b1ba29092ddf879db9f4cd93a577",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001994701286566962,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "6731fe1a1024d8b4e853517a0537ada898ed2402dd81690f2da5b716246c21a2",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0017365273141915773,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "629925ae4f062c9fa47292b02c2663533cbbca9dc63a0786de28cca70ba424fa",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001144878627497987,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "cce0451a4eaede9f0a507a016efadfa6d72582515dd4a049701307e4892f6dab",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0009328071501896349,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "6a01d3f25f14c6a98089a20bc88946bf0890501576d821410772c8288bfdcd11",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.lightGreen",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001184834123222749,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "77e90f2c268e8e249e66d47413e94b41661ddda88339e9dbcb86fcac50f78079",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.00167966757027557,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "43fef765bf4c2cef72bd6a87167d7608f050b094c530ab5144a2ee50fd25e120",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001355413354970771,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "15badd08f6cb484727dd41d27410aeca84e6fe20b03db414f520941b1adedf3a",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0010096446419680233,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "57afba84152cf4ee8c05d98643298956c591bb6add16cc05b198e81cd4b6c780",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013139211094104412,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "0f500a005cc1fd5f879b88c2209cb968e6d5f736afa9417f3ae72c6142a68b5f",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.lightGreen",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0009358806498607705,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "51744415fe046a01bafb7be9ddcf38bfe2aef4f17c21db007baf0658defe87a0",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0014230303477357528,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "55623b7b34be8fa222713e2589a3323514cba0d613bf7e420b873104ea79927a",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0011817606235516134,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d26d417222c07e3ee54219c077a1bfaa1d39c93fca36cd0159b64d561dc979d6",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0007499339197570706,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a37ccbbd12d23fc07a89133646c9ca5ab63eaa22403000d534417d99be4e3a63",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0010234753904881332,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "0b59b14a908416832a61003b88535ba865cc575467c1e4d6b1f6f074d13aa60e",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.green",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001579778830963665,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "5107a2f6ce25941565235eaf70bbcdb4d06e17ac8c778d25b7e26d2bc84eaad1",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0023220290015428966,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "3ff3bf93f4dfcfaabaf2329ec331552be68c26543d4038ac9df889110f937ba9",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.000965078896736558,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1671c0f6f8f4370351307f64285749a4f0db6bad4ddee5085815ed1b48e6d8c5",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0021668172681505522,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "07390651ec6bceebc04f6f8edcad3e7bdcd77b276bfdcb150a66a1d3cae90dd7",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0010695778855551662,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "10a30d356acc1e65eafddbfe5eaec0260369dca51b3d4900d8dcb1ae418ef48b",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.green",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013646338539841777,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "80df689a1b345d55d9ed7a08f07981a191208d5b96a91549e0f589998cfd98ab",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0023512272484186845,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "bc76ae5a8ccb65a38b25452ce903ca5554dd8364c1c6b91df6844a63f19a66b2",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0007560809190993417,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b4a82feb2f0c08b85cb6ee4d621b4cf550c80ab743ba15d415b3273528e183da",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0019701132891978782,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "53b9c9c58c6a45f96b75122cdf3429d7f303a9d5e058f5a8a6b9b2b1f2607598",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0009159029019983895,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4cc41751b777ab9ac3f10c34f40b21913e2c4ec18a2dda1b85b6836ea4a1c3d3",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.lightBlue",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002070002028509783,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a1c395aa94c665fec796f00cae04c7a39da1f96858fec5fd92f80af186258b3c",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0021714275176572557,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "9aeead999246222dbc76983a490042c93a86bec452764a2a8924d2af1ab50f2c",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03241466428163092,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7390a565841e31aaa463596563c82b940724c0362427c72d8837dc2c6ac7b286",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0033624086402222757,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "961cb874bec30361f3fba11135eb2e3bba77a76475764e078424d1fe1089979f",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.032371635286235025,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7a97bce53a69daa70896b9a74b07081fe1735bbac42ba62505386ee10ca99fcd",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.lightBlue",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0017565050620539583,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "db461898db5e6d81bc490a9e3091aad371ef4bdde88fc6e9f10886aa2cc58cc3",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.00182412205481894,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7084e883c42157941405fa062d713152376776c8d2900dea23467902b702e7a8",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03209194681616169,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "98efff549fe396a0458321c68b25c6931694621be645b2a7764774bfbaa975aa",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0032763506494304807,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "e0951516893bf897b8d60b591401fd7936cad74ce935dceb7038779124fe2562",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.032158027059091106,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7faecca27b8c3672f9bf9c28a388c12ce3a9a41532d641b0caf53fa81f10eb6c",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.blue",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001951672291171065,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "df89e0e475da9537f7095ee53250662eef6eb961cd11c04a53c0ca53ae9f658e",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0022989777540093803,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "3f11cbb04e60c8a355b93d216cbb485566176fcb67e696f87fd9d13cb3e51526",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001025012140323701,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4ec9107ba5634980ce93c9d1c679765ca2233461e6f047e2f63b74c649e49594",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0014629858434605147,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d667ed9239621bf00d0b316cdb379f89bba141632b051fc56fd0422727d3f2dc",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013461928559573644,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "0802b8cb964509f1a6bb1c3c20cbed785cc900ee5cbec6030bce71c96f9cfdb9",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.blue",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0017411375636982808,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b7d92ed45ae82ed1b2aca74293b3476b5519151e66f71840a752bfe7e66e9b5d",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.00202389953344275,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "53eef6512794744b39c815efb15c2b49e16774316efd6dc4e8618db61448ac8b",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0007960364148241036,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "bc8f3b7b79818e981f097fd396df6535c4e562cbd0d8941291c4680869759ae3",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001157172626182529,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "3e2dd7a32220e5d46cd0a7ab3fc931c11deb0e840b39848ff98f811a9de4ee08",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001097239382595386,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d881cb6994cd7b0b09f3cf7d99ec6f82b0697136ef389d4607003700bc1df7ed",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.navy",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013000903608903313,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1630c45705ca42f0de83177b479dcf37e5e6b3b4fc8a6f9231feef206b3f4627",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001579778830963665,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "fb8d273d8a71ca1060a994311ebe0d9a88b72acc847c3161e6f0a6527dcf14bb",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0011786871238804778,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "e8006fc11e8b23ca1b2aaca620d1dfa6dba53e5410667bb670fc0f5bb2b86697",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0034300256329872574,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "cd49ba0e0157b37b0f8df49d19b5a2bfe606a20438985b71d4cef679017a3edf",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0011110701311154959,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "e0da21b238f10cc7d3f250c849d9c47dd7ea4b5fd37db2d63569f1571933926e",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.navy",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001197128121907291,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d3d703ccf0747ee9cde6c3473004017ffa12b2bb8c4e859425304beb7c6da320",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0013907586011888296,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "063fad3d6c4d320b065f2368ab3b811605daecbe7312df0e3affa6ef74a15f83",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001058820636706192,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "eb25bcf56a540e64e5926ceef09bf93738a97021b0f277f5b59f1a43ca76c181",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0034546136303563414,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "94e28fae2217594190f290981c3b970edd5750de19ad8df9a1d577b033a7f89c",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0008544329085756788,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "666731971a14b4e0a1ec51bf49b08858d045605bb288e92788f3108e39469ad8",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.purple",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.06373823618000873,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "20c3e891e3f1901c5bd897dc4e96b7a7e74c5f9ed06059ddb4b0f9cba336e66f",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013323621074372545,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "9b62de71617dff1f5bec1f43cd3acc972d68e45f9768b7e7a2dca74f1a5d1e84",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0008913149046293052,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "fc7abaa7c1cef2bb0b08baa4d588edd99699ec3c8eb26d0aa6aba7cead2ebe5c",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0020469507809762664,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7835424653c7bd1d823d203403b4c0b504ec309a58b4e2ba434a247f76190a52",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0012263263687830785,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "72bc5a32b414c9107f1bbf66c1cef259c356b1689262b0b933ac3eeb51d0b1a7",
+        "pixelsAboveOne": 1
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.purple",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.06335712222078792,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "66ecb890c5dde9f123f07dfdeeca365461ac0ddf4893639a65f2f63a763bf976",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0011617828756892324,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1d9a10d3d096dc74283c71a16ebedad08d9fc098eed0acf0b6b9200c3b970502",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.00083291841087773,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "0dd775e69278ea1c5f14d6e7745b04393b110a47d902c0172a9dc638f0c10813",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0016320283253729692,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "c3c928570e7bb84c31ac849e21471d5af9d7ef236767e36b72b91484f02304e1",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0011986648717428588,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "cc74022842d24227c682e8f36474ef257bf2d9099ec69be77bd450840f45cfab",
+        "pixelsAboveOne": 1
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.lightPurple",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0014107363490512106,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "ec9aff14462906aa01f4656e1637df49b79cdf9bbc40bfb832e8bc8603e87fb4",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0027999582004044725,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "045d2ee381407bf899d31b5c9796af271663fddf5b7df998ad8cd4e0ca033332",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0020869062767010283,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "941a4daa069388cbbb2f6d8e328bdc4552b6d2a4c715c0ef77cf12c8573d78d1",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0010065711422968878,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b7521c95ce847bdd1dee5bdb40f886c12313e56f35e2337604668471c4a5fb45",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0017549683122183907,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "6cfb7272cdd935ec0bac1144f5547711836c1cec331e4fb14dbfb2b92a624289",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.lightPurple",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0012755023635212471,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "c6cb41e60e3aee827a8ff2e12c3d72bed043f05e4f23ba8a303ffc88ff300bbb",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002578666224082714,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "55f2b0587ed609a37d67fdeeebc700f245f1ad74b4982fc2d10b36201c41c622",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0018179750554766692,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d2eb4b683ad9801109ec890bd66ebbd83e3e8bbe7a34d92a9746a179297b65df",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0008959251541360085,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "8f81c81449fc423f0908231816069927e53400a62cf0fd8a020d81e0bc4f66f1",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0016520060732353502,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b0914a6b55320bab02a4ac2e4aa81f266773cf5445ec92963b31632550aa4132",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.lightPink",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001487573840829599,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "da11021d3e8a686d3d6e332ace4be7123c32bc79930816213fe8246151ede943",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03283573373657649,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "66dd2d7de4a2e12582a109f896e47f27b4086cb82dc1a5960e7a37da1bc091b2",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.032737381747100155,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "e54016315ed7b1f0845f3cb971bbabfc7037193eb1a9e467a3530aeb10bbe875",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0010941658829242504,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "8e9dd914694ef65b28e69a9ce26f37cd7647f546914947fa661f5c0257688880",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0006039426853781327,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "f0e33872ae6a7d099987b87d8b836aabfe2de84d4b63fea75a4f16aad29e4ff8",
+        "pixelsAboveOne": 1
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.lightPink",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0012186426196052398,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "c2dbc0fcaee8d66c8149c1559dcccb8fcd63c4f8bf5efef4943e0e9e8e7c72b9",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0327973149906873,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "015f4774bc950dce845b46964cdbfcac04efe881b2afa7ce1bc0294ffccaa3ab",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.032431568529822166,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1b791390fda72c51422033d8090db4b12d6e5c71a6433a528fa44d618340c8a8",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.00099120364394121,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "f5dd24919109cdca7049e6f32ac0277d5221aab4ce1d3e728d6e7a6c94680624",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.00043951045297238155,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "9ad68f2739a2491c2151f8e56c1ef15fb08c2eaa32f1197ba3e350ad1c3650fb",
+        "pixelsAboveOne": 1
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.pink",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.032740455246771286,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "309fee98612c97224d02932d40a192bef583031f69b1961321477d36c62d73c4",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0025079757316465966,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7860ec01266b83505b337b3fc322393fed74f4db214218eaae92e20454b73d06",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0008867046551226019,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "33be6a76d2a053b4994b9ade69aa8e3a1fdba2b8d8a804a61489d734d27f57d2",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002149913019959307,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "77afa19f6be3ee0e7004e11f15caa0cb6b17efb9223bf3d93417701ddff147b3",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0008513594089045432,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "0a2aeac6f36387c505adb8acee772c36460393a1fff0788a8a8477e4884ab67f",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.pink",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03253760426847634,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1f82bab27591ade712a858c73f8a8146a6be89b897054c6a497e2a5b3dbbdc20",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0022590222582846184,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a80366e94ef627344d269da79a3b64133f51a07690daeb6b168ddda3d575aac9",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0007437869204147995,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "74497ac51beaa56396d499b94afa9307a8ae8839cce7084a8863d1aa3ee92c5b",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002109957524234545,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "cbbedbc510257a750d0901483f61efefa1c19331e9eac0d9e87d7771bc74bc95",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.000588575187022455,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d254a42fddfd8746101e0c7ca8f6f8bddbca1e6bd0f56275b9c5004fe6da01a8",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.plum",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0017088658171513576,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7e31a1379fb84b48a2ba56d44de01b5f6a49c06f1d31b787ebfc7207cc653184",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0011341213786490124,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "efcbde62e14e5958d501db76e7d46c2f6c298432c5febf3c1b6e4051e095d59e",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0009712258960788291,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b871e690b4becf15358b39e78c29a61129c8bca9f44036c02ab6f8c1da2086b8",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002274389756640296,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "5d1dde2036031d1b928d4fed46ff9bd8946240e970cca7a1d241c812c75cf2b9",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0009220499013406605,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "40d53d8cd72521c5ff977ca43c268f5167fb07f316f7451dce5f6247238c4701",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 7,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0015106250883631155,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "c64517e70b146e902d526f241e8b3dc91846bae83ce44c9e34dab60210d5d260",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 37,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0014722063424739214,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a31f2e429f2db32cff660be423aba07456bec9ba6a5a02bc397dbf278655b54f",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 64,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0014906473405007345,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "af9569b5669f657c5813cb012f3ae0e7c11f84a9dbbeb2b8d10fc673c987af0a",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 93,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0010603573865417596,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "918c654e6d7e703897d70a0795f4299935a2e4d38ff91d54a19181fb557a948c",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.plum",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013999791002022362,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "5e05c1b3447a4592142b35f27aa4dcf047014aaf2f1f38aa78208245d66ac1fd",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 7,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001303163860561467,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "0da15366e43c9c545f10f257482e58228f907ecabbc4d9346c98ea5991aa70b2",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.00100503439246132,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b5db826b683cba9d62085ddc9f7763ad75883e89a44a6dbed19b7fd43bdc530c",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 37,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001071114635390734,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "e52a19e345cf667b59566f717197226954570c09d94e94d76751f4f2a6fb2a14",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0007376399210725285,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "9396ad02b48d79cd1a10b698e9c99245fa3c4e87085cdd18572dcaf87a129a31",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 64,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001327751857930551,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "f250a240651e36bcf7b43fcd727ae2663588c7a4940d135b88e2a0d923e06e60",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0022390445104222374,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b205526bf72b38d69f32452269b1d847a3b753e9bee50661f6405f5b8fc5be23",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 93,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0008744106564380598,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "28e19551bcd4f5f84b8046bbdf2087cd50bc0cb2206a776da6f56d3e90d2240b",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0007960364148241036,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "6cbf58e415ad7c64573199a2ef34606f122d01f06e52d08cdaa30be29804f511",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.stone",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0011694666248670711,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4629609a38513ddd497fb91691ab55909e37188e2e2fc8c087b45d79fa4b337e",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0031149919166958647,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1213573525ceb02a7d3d2fe54657b40def5aa2144e07422fa378a8c244a60423",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0321488065600777,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "c8ea33a19018e9c5e1cf5268057c8e2027357cab19051df3b2ce865efe449fc1",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0031887559088031175,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4ac4caa8cd5d009c7283ff5313c098f5c06b7d40bf919e1766a0bfa15f8cc324",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0011986648717428588,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "6e90ca37c342a18cd6188cf086e0c85f5ab307daf9791c693a38c549b603acc5",
+        "pixelsAboveOne": 1
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.stone",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0009481746485453126,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "61b1107806c337d3b5ea4493c1107dca12741d43a9c54af6400805a08ba00ee5",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.002862964943662751,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "b81b6f363732d562bbc369ddcd47dca4782f8b43c6b82db96833c53d0d6de077",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03197208032898741,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a73b4f97e06867b274c2f5d9254d0b102aa951476bd1c10ed58d07d8791eebd8",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002861428193827183,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "563ce805619fbf178428229e2258a5c87a64d39c629c02e0a1da2abc61336d9d",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.000965078896736558,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "3bb3468acac1d95897bccd2f29c23e75127e8e6c5f3da832bdef3c15f431109e",
+        "pixelsAboveOne": 1
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.warmGray",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0015244558368832256,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "65f0bb2bf2f06e25ce757a7caad114741eaf2bf51b12c698f257da990ff72093",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002672407964052348,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "9918bbd84c9ca40945decf94096c0881233da3be962d8a37175391ea2af4747e",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0009727626459143969,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "76e5e7dc10be385537496d95a40baf12859b1afc56da29ee38d1d37900009856",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0012048118710851299,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "216d785b829467383a017b17116db039baeeecb25d95a3410152ca1adf667a04",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0017365273141915773,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "2c73441398e7a1e92add902566f0f4b252e8e747aaa22e1604c5d2055b68c7cd",
+        "pixelsAboveOne": 1
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.warmGray",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001249377616316595,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4f60e951d7c1991b2c3999f6e66cc10c17cb73d19610d4cb9d27e4eab9c83185",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0025909602227672563,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "0913534e654cd0ff6b1cf6ca0b691fd3bc97a2719fe805ae2a4db0652c8601c4",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.000786815915810697,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d072ab7cb2ee7d58dec917e9a7c024245543d49fe266a962103d630eeedd5abb",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.000958931897394287,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "61ca2644786b6ed118892bdd821951bd04a9cc38e1da44abd3cc542580312814",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0015674848322791229,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "95aa989ee3af969c956393d2fa2933f6c2fb04dd4c2faab3317adeac8d8e2439",
+        "pixelsAboveOne": 1
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.cream",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03234090028952367,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d27858859438c3ab124add6558ac9fe04bab2cb2528095be890dc9c76bfe4479",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0031718516606118723,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "6d0af5628992aa012819dbee9e3662898c1b75ff82e600410b7492efb8cc9127",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001487573840829599,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "29669f1dc37c039f416b769be4ec3bf8a969ff88aa80e1cef3fcf1662ad08f18",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.002881405941689564,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "cafcb51c705c622f0c64d6b557876cc85c0683104fa4381023f26817bd5c432f",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0016043668283327493,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "3124070cac506abf7145f8a0b87ac55762894af87f3f46270a08c4e4a43ebf09",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.cream",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {},
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.03212421856270861,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "fe0d38195efe14dca2fa0315e10244f247df3d6994239df59a17cf5a3bf5efa1",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0029659271826457914,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "8c497be63daf927a9a9e718b14630cacca8dcac9fa88480bf5e81e71ff48726d",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0012386203674676207,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d7393dfe693a9128595ccb557248ecf3be2839643d806eaf3c294d0c6d85cc92",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.002738488206981762,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "4b6d4447c5acee991ea8918887b244b18c77f8ae12cb3a2f76a7965d90389f65",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0015121618381986834,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "176f8a4dacdeb338c1a7a578697c128d14640a3602b338b58e61d6757f8d41a3",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "detailed",
+    "base": "standard.gray",
+    "bindings": 26,
+    "classes": 5544,
+    "bytes": 46901,
+    "paletteGetters": {
+      "g_2b5de96309e37118": "primaryColor",
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {
+      "0": [
+        [
+          1,
+          0.5529412031173706,
+          0.1568627506494522,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          0.15,
+          0.15,
+          0.15,
+          1
+        ],
+        [
+          1,
+          0.5529412031173706,
+          0.1568627506494522,
+          1
+        ]
+      ]
+    },
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0013784646025042876,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "f2cd1ec16c543171067509ece7ff479b033e5f25488c4d7d4be078756676b035",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0028660384433338865,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "47275b97aef8252fecd9930cfd79cfd0a4d9a3f1c2abba7b394ec0232ee4727a",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0015720950817858263,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "856191b1e98901a45d10471aa60a0f19c524816d981a6f5a8a4b3eea7dc71771",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0029198246875787584,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "62662b6ddcd40c0565d6ae0822219e8735e70fba1651fbeaec648cff8e61b4e0",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0018932757974194896,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "63094007eba8740e30f4795fc798a1a26e24681d6a0f88d58e43e879da7ab2ca",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 1,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0028337666967869633,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1b8c85c2d95a31bf44ad8af54e2cd31921e0b7923924f77886c2d379fe67edfb",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 2,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001601293328661614,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a8cdb942ee060c1e9272b8676430efcf10e3b3fb58f08889019d46db570d1c51",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 7,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0012509143661521627,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "51e85685ac3259d4c8bf705cb01fbe8b2022a8869a85e001d2839d1af59681e7",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 24,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0022528752589423473,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7e414624738471bd36dc92c39587f781776e11e6003b95f9f867551a65b285ae",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 37,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0018610040508725667,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "821c84f6271e3fb020877be23c0e0931b761d111bd1c9ae6ed6978ebc0368afd",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 49,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0018994227967617607,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "85b7e58967dc9fa8469198a33a2d0cb9e8f470efeaf6f9b276d7e5a9926f405a",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 51,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0015874625801415038,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "ce4d9d6a6ec1ce2de1392bc82b16ef400a0b0cca97a37ababc75e36d64fe1197",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 64,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0015198455873765221,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7091d320e4ccd954f6b82f03908c1779dcf9db7e97ddc4bd8339d35467c2005a",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 93,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0010342326393371075,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "67d9243dd5dc79824b562c52e9c48231c35fd33e9dc2e26828ed6ebd5dc82cce",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 99,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0014261038474068883,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "a836c9e5c0ac8005b89f4a9cc213042ae6da942417844e085d470785c40afb20",
+        "pixelsAboveOne": 0
+      }
+    ]
+  },
+  {
+    "detail": "simple",
+    "base": "standard.gray",
+    "bindings": 25,
+    "classes": 8962,
+    "bytes": 68969,
+    "paletteGetters": {
+      "g_5c810c24e7a573b0": "primaryColor",
+      "g_7c7faeb76e9b60bd": "secondaryShiftedColor",
+      "g_ffe798cf0c8c5ec9": "primaryColor"
+    },
+    "percentColors": {
+      "0": [
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          0.15,
+          0.15,
+          0.15,
+          1
+        ],
+        [
+          1,
+          0.5529412031173706,
+          0.1568627506494522,
+          1
+        ]
+      ]
+    },
+    "references": [
+      {
+        "percent": 0,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0011218273799644704,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "c21e5b1e0ac0c4ef4faa5d8b425550f685c5c6de473e6d91df8817b812d7ba50",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 25,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.002678554963394619,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "1fed13c916e4ea2a486a58d02952eaa19003c5d7713d9bb4111d8f6b2e68cec5",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 50,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0011494888770046902,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "98e6aabb861d4f97b49525bfd2e4665414e38d12905d555315657b4d3d11d98b",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 75,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0027031429607637034,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "f2c612d14e6142074b26e3ddc6d63de13da9c6114d4b126d792b2fedfc83127e",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 100,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001369244103490881,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "201a1bdb0244394ee980c41f560ac67476a6166a7caf1a9becb0b4acdebacb6f",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 1,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0022851470054892705,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "c819e750917a710c8e45aec38bad9d2e9b8bc11ab673e6cfa6b462ee3e95d512",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 2,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0014829635913228957,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "7d9c71bbfd9be5ba92d6895d905fe8a733b20cb70b0160cc862ede5a8069ca0e",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 7,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0009527848980520159,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "90ee79687d83176a6073bbebf0a101ffb151eb6581170c97a8001d69b0a5ace8",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 24,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001804144306956559,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "532cdd77dedfaf5b7fd86eb338c0032124676d77bf464374a35bebd4fddab5a4",
+        "pixelsAboveOne": 3
+      },
+      {
+        "percent": 37,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.001473743092309489,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "bf0318f64ee20bd46f0d522b892b12e5a7e71ff5272d177666ec1d35725bc774",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 49,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0016443223240575112,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "05c0e5224aa4d7a8f43aeb687c9e405ef4c91bc32071cccdf6fd47e12e9754e3",
+        "pixelsAboveOne": 2
+      },
+      {
+        "percent": 51,
+        "maximumPremultipliedDelta": 2,
+        "meanPremultipliedRgbDelta": 0.0012755023635212471,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "fa7b582e388c072b914c47dd3ddc67499d633932db4247da39a6d03be45db63d",
+        "pixelsAboveOne": 1
+      },
+      {
+        "percent": 64,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.001467596092967218,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "95ca5c389523e8add197a395cabda7eeb2e637133cb833437b7b29883cf1f039",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 93,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0010496001376927853,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "477c2cc778815d822f4a0f2fe4060a110023963bd95113e887504e8368d0b8b2",
+        "pixelsAboveOne": 0
+      },
+      {
+        "percent": 99,
+        "maximumPremultipliedDelta": 1,
+        "meanPremultipliedRgbDelta": 0.0010726513852263018,
+        "fixedPixelDelta": 0,
+        "reconstructedRgbaSha256": "d08741822cbfcd00e00baabae437acbcbf7b80ea6dae6008f1d39f5c30c906ff",
+        "pixelsAboveOne": 0
+      }
+    ]
+  }
+]

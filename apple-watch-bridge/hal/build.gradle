@@ -1,0 +1,53 @@
+plugins {
+    id "com.android.library"
+}
+
+android {
+    namespace "dev.applewatchandroid.bridge.hal"
+    compileSdk 36
+    buildToolsVersion "36.1.0"
+    defaultConfig { minSdk 33 }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures { aidl false; buildConfig false }
+    lint { abortOnError true; warningsAsErrors false }
+}
+
+dependencies { api project(":protocol-runtime") }
+
+def halAidlRoot = file("src/main/hal_aidl")
+def halAidlOutput = layout.buildDirectory.dir("generated/source/bluetoothHalAidl")
+
+tasks.register("generateBluetoothHalAidl") {
+    inputs.files(fileTree(halAidlRoot) { include "**/*.aidl" })
+    outputs.dir(halAidlOutput)
+    doLast {
+        def outputDir = halAidlOutput.get().asFile
+        delete outputDir
+        outputDir.mkdirs()
+        def aidlExecutable = new File(android.sdkDirectory,
+                "build-tools/${android.buildToolsVersion}/aidl")
+        def aidlFiles = fileTree(halAidlRoot) { include "**/*.aidl" }.files.sort()
+        exec {
+            commandLine(aidlExecutable, "--lang=java", "--structured", "--stability=vintf",
+                    "--min_sdk_version=33", "-I", halAidlRoot, "-o", outputDir)
+            args aidlFiles
+        }
+        fileTree(outputDir) { include "**/*.java" }.files.each { generated ->
+            generated.text = generated.text.replace("this.markVintfStability();",
+                    "dev.applewatchandroid.bridge.VintfStability.mark(this);")
+        }
+    }
+}
+
+// Carry the producer dependency to every library consumer, including annotation extraction.
+android.sourceSets.main.java.srcDir(files(halAidlOutput).builtBy(tasks.named("generateBluetoothHalAidl")))
+
+tasks.configureEach { task ->
+    if ((task.name.startsWith("compile") && task.name.endsWith("JavaWithJavac"))
+            || (task.name.startsWith("extract") && task.name.endsWith("Annotations"))) {
+        task.dependsOn("generateBluetoothHalAidl")
+    }
+}

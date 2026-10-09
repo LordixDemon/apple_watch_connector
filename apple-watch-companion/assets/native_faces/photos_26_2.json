@@ -1,0 +1,5433 @@
+{
+  "firmware": "watchOS 26.2 / 23S303",
+  "templates": [
+    {
+      "family": "bundle:com.apple.NTKParmesanFaceBundle",
+      "resourceBuilder": "parmesan-v2",
+      "titles": {
+        "en": "Photos"
+      },
+      "configuration": {
+        "analytics id": "parmesan",
+        "face type": "bundle",
+        "customData": {
+          "3": "standard.red",
+          "4": "tritone.tritone-01",
+          "0": "plain.plain",
+          "5": "standard.red",
+          "1": "plain.plain",
+          "6": "standard.red",
+          "2": "standard.red"
+        },
+        "bundle id": "com.apple.NTKParmesanFaceBundle",
+        "resource directory": true,
+        "customization": {
+          "numerals": "style 1",
+          "content": "manual",
+          "typeface": "modern",
+          "style": "natural",
+          "position": "dynamic",
+          "color": {
+            "slots": {
+              "style-color": "plain.plain",
+              "time-color": "time.glass_05"
+            }
+          }
+        },
+        "forMigration": false,
+        "version": 4
+      },
+      "slotFamilies": {
+        "top": [
+          6
+        ],
+        "bottom": [
+          6
+        ]
+      },
+      "options": {
+        "numerals": [
+          {
+            "value": "style 1",
+            "label": "ARABIC, WESTERN"
+          },
+          {
+            "value": "style 2",
+            "label": "ARABIC, EASTERN"
+          },
+          {
+            "value": "style 3",
+            "label": "DEVANAGARI"
+          },
+          {
+            "value": "style 4",
+            "label": "BANGLA"
+          },
+          {
+            "value": "style 14",
+            "label": "BURMESE"
+          },
+          {
+            "value": "style 6",
+            "label": "GUJARATI"
+          },
+          {
+            "value": "style 5",
+            "label": "GURMUKHI"
+          },
+          {
+            "value": "style 9",
+            "label": "KANNADA"
+          },
+          {
+            "value": "style 15",
+            "label": "KHMER"
+          },
+          {
+            "value": "style 8",
+            "label": "MALAYALAM"
+          },
+          {
+            "value": "style 13",
+            "label": "MEITEI"
+          },
+          {
+            "value": "style 10",
+            "label": "ODIA"
+          },
+          {
+            "value": "style 11",
+            "label": "OL CHIKI"
+          },
+          {
+            "value": "style 7",
+            "label": "TELUGU"
+          },
+          {
+            "value": "style 12",
+            "label": "URDU"
+          }
+        ],
+        "typeface": [
+          {
+            "value": "modern",
+            "label": "Modern"
+          },
+          {
+            "value": "classic",
+            "label": "CLASSIC"
+          },
+          {
+            "value": "rounded",
+            "label": "ROUNDED"
+          }
+        ],
+        "style": [
+          {
+            "value": "natural",
+            "label": "Natural"
+          },
+          {
+            "value": "bw",
+            "label": "BLACK & WHITE"
+          },
+          {
+            "value": "monotone",
+            "label": "MONOTONE"
+          },
+          {
+            "value": "duotone",
+            "label": "DUOTONE"
+          },
+          {
+            "value": "tritone",
+            "label": "TRITONE"
+          },
+          {
+            "value": "colorBackdrop",
+            "label": "COLOR BACKDROP"
+          },
+          {
+            "value": "colorBackdropMono",
+            "label": "COLOR BACKDROP MONO"
+          }
+        ],
+        "position": [
+          {
+            "value": "dynamic",
+            "label": "Dynamic"
+          },
+          {
+            "value": "large",
+            "label": "X-LARGE"
+          },
+          {
+            "value": "medium",
+            "label": "LARGE"
+          },
+          {
+            "value": "small",
+            "label": "MEDIUM"
+          },
+          {
+            "value": "xsmall",
+            "label": "SMALL"
+          }
+        ]
+      },
+      "fieldTitles": {
+        "en": {
+          "style": "Style",
+          "typeface": "Typeface",
+          "position": "Time Size",
+          "numerals": "Numerals"
+        }
+      },
+      "controls": [
+        {
+          "path": [
+            "customization",
+            "color",
+            "slots",
+            "style-color"
+          ],
+          "selectorPath": [
+            "customization",
+            "style"
+          ],
+          "followsSelector": true,
+          "titles": {
+            "en": "Photo Color"
+          },
+          "groups": {
+            "duotone": {
+              "values": [
+                {
+                  "value": "standard.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "standard.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightYellow",
+                  "labels": {
+                    "en": "LIGHT YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightGreen",
+                  "labels": {
+                    "en": "LIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "standard.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "standard.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "standard.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "standard.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "standard.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPurple",
+                  "labels": {
+                    "en": "LIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "standard.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "standard.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "standard.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "standard.warmGray",
+                  "labels": {
+                    "en": "WARM GRAY"
+                  }
+                },
+                {
+                  "value": "standard.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "standard.gray",
+                  "labels": {
+                    "en": "GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.blue2",
+                  "labels": {
+                    "en": "BLUE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.cypress",
+                  "labels": {
+                    "en": "CYPRESS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.guava",
+                  "labels": {
+                    "en": "GUAVA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.taupe",
+                  "labels": {
+                    "en": "TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.sunglow",
+                  "labels": {
+                    "en": "SUNGLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.beryl",
+                  "labels": {
+                    "en": "BERYL"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.pacificGreen",
+                  "labels": {
+                    "en": "PACIFIC GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonGreen",
+                  "labels": {
+                    "en": "NEON GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.brightBlue",
+                  "labels": {
+                    "en": "BRIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.terracotta",
+                  "labels": {
+                    "en": "TERRA COTTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonYellow",
+                  "labels": {
+                    "en": "NEON YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.anchorBlue",
+                  "labels": {
+                    "en": "ANCHOR BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.forest",
+                  "labels": {
+                    "en": "FOREST"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.tumeric",
+                  "labels": {
+                    "en": "TUMERIC"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.caramel",
+                  "labels": {
+                    "en": "CARAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.sageGray",
+                  "labels": {
+                    "en": "SAGE GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.midnightPurple",
+                  "labels": {
+                    "en": "MIDNIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.peony",
+                  "labels": {
+                    "en": "PEONY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.tangerine",
+                  "labels": {
+                    "en": "TANGERINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.aquamarine",
+                  "labels": {
+                    "en": "AQUAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.periwinkle",
+                  "labels": {
+                    "en": "PERIWINKLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.northernLights",
+                  "labels": {
+                    "en": "NORTHERN LIGHTS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.sage",
+                  "labels": {
+                    "en": "SAGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.iceBlue",
+                  "labels": {
+                    "en": "ICE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkGreen",
+                  "labels": {
+                    "en": "DARK GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.tan",
+                  "labels": {
+                    "en": "TAN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.silver",
+                  "labels": {
+                    "en": "SILVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.roseGold",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.natural",
+                  "labels": {
+                    "en": "NATURAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.slate",
+                  "labels": {
+                    "en": "SLATE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lakeGreen",
+                  "labels": {
+                    "en": "LAKE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.denim",
+                  "labels": {
+                    "en": "DENIM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lightBlush",
+                  "labels": {
+                    "en": "LIGHT BLUSH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.starFruit",
+                  "labels": {
+                    "en": "STAR FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ultramarine",
+                  "labels": {
+                    "en": "ULTRAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.chartreuse",
+                  "labels": {
+                    "en": "CHARTREUSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.magenta",
+                  "labels": {
+                    "en": "MAGENTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ink",
+                  "labels": {
+                    "en": "INK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.blueCloud",
+                  "labels": {
+                    "en": "BLUE CLOUD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkTaupe",
+                  "labels": {
+                    "en": "DARK TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.sunshine",
+                  "labels": {
+                    "en": "SUNSHINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.softMint",
+                  "labels": {
+                    "en": "SOFT MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.raspberry",
+                  "labels": {
+                    "en": "RASPBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.lightPink & seasons.fall2023.guava",
+                  "labels": {
+                    "en": "LIGHT PINK/GUAVA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.cypress & custom.fall2023.mint",
+                  "labels": {
+                    "en": "CYPRESS/MINT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.winterBlue & seasons.fall2023.mulberry",
+                  "labels": {
+                    "en": "WINTER BLUE/MULBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust & seasons.fall2023.orangeSorbet",
+                  "labels": {
+                    "en": "STARLIGHT/ORANGE SORBET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust & seasons.fall2023.winterBlue",
+                  "labels": {
+                    "en": "STARLIGHT/WINTER BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.orangeSorbet & seasons.fall2023.winterBlue",
+                  "labels": {
+                    "en": "ORANGE SORBET/WINTER BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.red & seasons.fall2020.kumquat",
+                  "labels": {
+                    "en": "RED/KUMQUAT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.pinkSand & seasons.spring2022.orange2",
+                  "labels": {
+                    "en": "PINK SAND/NECTARINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust & seasons.fall2022.sunglow",
+                  "labels": {
+                    "en": "STARLIGHT/SUNGLOW"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust & seasons.summer2017.mistBlue",
+                  "labels": {
+                    "en": "STARLIGHT/MIST BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust & seasons.fall2017.darkOlive",
+                  "labels": {
+                    "en": "STARLIGHT/DARK OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.stormBlue & seasons.spring2015.white",
+                  "labels": {
+                    "en": "STORM BLUE/WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.deepNavy & seasons.spring2016.apricot",
+                  "labels": {
+                    "en": "DEEP NAVY/APRICOT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.lavender & seasons.spring2022.lilac",
+                  "labels": {
+                    "en": "LAVENDER GRAY/LIGHT LILAC"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.oatmilk & seasons.summer2019.canaryYellow",
+                  "labels": {
+                    "en": "OAT MILK/CANARY YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.linenBlue & seasons.spring2022.green5",
+                  "labels": {
+                    "en": "LINEN BLUE/EUCALYPTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.orange2 & seasons.winter2018.hibiscus",
+                  "labels": {
+                    "en": "NECTARINE/HIBISCUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.lightOrange & seasons.fall2021.white2t",
+                  "labels": {
+                    "en": "LIGHT ORANGE/CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.electricPink & seasons.fall2015.walnut",
+                  "labels": {
+                    "en": "ELECTRIC PINK/WALNUT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.kumquat & seasons.fall2021.green6",
+                  "labels": {
+                    "en": "KUMQUAT/FOREST GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.red2sg & seasons.fall2021.purple1",
+                  "labels": {
+                    "en": "RED/DARK CHERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.blue11 & seasons.fall2021.green1",
+                  "labels": {
+                    "en": "ABYSS BLUE/MOSS GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.pink & seasons.summer2021.olive",
+                  "labels": {
+                    "en": "PINK/OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.olive & seasons.spring2021.seaSalt",
+                  "labels": {
+                    "en": "OLIVE/SEA SALT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.blueHorizon & seasons.summer2021.electricOrange",
+                  "labels": {
+                    "en": "BLUE HORIZON/ELECTRIC ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.olive & seasons.spring2020.grapefruit",
+                  "labels": {
+                    "en": "OLIVE/GRAPEFRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.sunflower & seasons.spring2021.abyss",
+                  "labels": {
+                    "en": "SUNFLOWER/ABYSS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.kumquat & seasons.fall2020.northernBlue",
+                  "labels": {
+                    "en": "KUMQUAT/NORTHERN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cyprusGreen & seasons.fall2020.deepNavy",
+                  "labels": {
+                    "en": "CYPRUS GREEN/DEEP NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.pinkCitrus & seasons.fall2020.kumquat",
+                  "labels": {
+                    "en": "PINK CITRUS/KUMQUAT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.neonPink & seasons.summer2020.coastalGray",
+                  "labels": {
+                    "en": "NEON PINK/COASTAL GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.green & seasons.summer2020.linenBlue",
+                  "labels": {
+                    "en": "GREEN/LINEN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.orange & seasons.summer2020.coastalGray",
+                  "labels": {
+                    "en": "ORANGE/COASTAL GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.lightOrange & seasons.spring2020.cactus",
+                  "labels": {
+                    "en": "LIGHT ORANGE/CACTUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.clementine & seasons.fall2015.vintageRose",
+                  "labels": {
+                    "en": "CLEMENTINE/VINTAGE ROSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.lemonCream & seasons.winter2019.beryl",
+                  "labels": {
+                    "en": "LEMON CREAM/BERYL"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.beryl & seasons.winter2019.khaki",
+                  "labels": {
+                    "en": "BERYL/KHAKI"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.lemonCream & seasons.fall2019.alaskanBlue",
+                  "labels": {
+                    "en": "LEMON CREAM/ALASKAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.yellow & seasons.fall2015.turquoise",
+                  "labels": {
+                    "en": "YELLOW/TURQUOISE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.flash & seasons.fall2017.pinkSand",
+                  "labels": {
+                    "en": "FLASH/PINK SAND"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.orange & seasons.fall2018.stormGray",
+                  "labels": {
+                    "en": "ORANGE/STORM GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.darkOlive & seasons.spring2015.pink",
+                  "labels": {
+                    "en": "DARK OLIVE/PINK"
+                  }
+                }
+              ],
+              "rememberPath": [
+                "customData",
+                "3"
+              ]
+            },
+            "monotone": {
+              "values": [
+                {
+                  "value": "standard.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "standard.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightYellow",
+                  "labels": {
+                    "en": "LIGHT YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightGreen",
+                  "labels": {
+                    "en": "LIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "standard.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "standard.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "standard.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "standard.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "standard.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPurple",
+                  "labels": {
+                    "en": "LIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "standard.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "standard.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "standard.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "standard.warmGray",
+                  "labels": {
+                    "en": "WARM GRAY"
+                  }
+                },
+                {
+                  "value": "standard.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "standard.gray",
+                  "labels": {
+                    "en": "GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.blue2",
+                  "labels": {
+                    "en": "BLUE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.cypress",
+                  "labels": {
+                    "en": "CYPRESS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.guava",
+                  "labels": {
+                    "en": "GUAVA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.taupe",
+                  "labels": {
+                    "en": "TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.sunglow",
+                  "labels": {
+                    "en": "SUNGLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.beryl",
+                  "labels": {
+                    "en": "BERYL"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.pacificGreen",
+                  "labels": {
+                    "en": "PACIFIC GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonGreen",
+                  "labels": {
+                    "en": "NEON GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.brightBlue",
+                  "labels": {
+                    "en": "BRIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.terracotta",
+                  "labels": {
+                    "en": "TERRA COTTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonYellow",
+                  "labels": {
+                    "en": "NEON YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.anchorBlue",
+                  "labels": {
+                    "en": "ANCHOR BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.forest",
+                  "labels": {
+                    "en": "FOREST"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.tumeric",
+                  "labels": {
+                    "en": "TUMERIC"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.caramel",
+                  "labels": {
+                    "en": "CARAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.sageGray",
+                  "labels": {
+                    "en": "SAGE GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.midnightPurple",
+                  "labels": {
+                    "en": "MIDNIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.peony",
+                  "labels": {
+                    "en": "PEONY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.tangerine",
+                  "labels": {
+                    "en": "TANGERINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.aquamarine",
+                  "labels": {
+                    "en": "AQUAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.periwinkle",
+                  "labels": {
+                    "en": "PERIWINKLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.northernLights",
+                  "labels": {
+                    "en": "NORTHERN LIGHTS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.sage",
+                  "labels": {
+                    "en": "SAGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.iceBlue",
+                  "labels": {
+                    "en": "ICE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkGreen",
+                  "labels": {
+                    "en": "DARK GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.tan",
+                  "labels": {
+                    "en": "TAN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.silver",
+                  "labels": {
+                    "en": "SILVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.roseGold",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.natural",
+                  "labels": {
+                    "en": "NATURAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.slate",
+                  "labels": {
+                    "en": "SLATE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lakeGreen",
+                  "labels": {
+                    "en": "LAKE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.denim",
+                  "labels": {
+                    "en": "DENIM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lightBlush",
+                  "labels": {
+                    "en": "LIGHT BLUSH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.starFruit",
+                  "labels": {
+                    "en": "STAR FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ultramarine",
+                  "labels": {
+                    "en": "ULTRAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.chartreuse",
+                  "labels": {
+                    "en": "CHARTREUSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.magenta",
+                  "labels": {
+                    "en": "MAGENTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ink",
+                  "labels": {
+                    "en": "INK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.blueCloud",
+                  "labels": {
+                    "en": "BLUE CLOUD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkTaupe",
+                  "labels": {
+                    "en": "DARK TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.sunshine",
+                  "labels": {
+                    "en": "SUNSHINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.softMint",
+                  "labels": {
+                    "en": "SOFT MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.raspberry",
+                  "labels": {
+                    "en": "RASPBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.indigo",
+                  "labels": {
+                    "en": "INDIGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.clay",
+                  "labels": {
+                    "en": "CLAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.mulberry",
+                  "labels": {
+                    "en": "MULBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.winterBlue",
+                  "labels": {
+                    "en": "WINTER BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.orangeSorbet",
+                  "labels": {
+                    "en": "ORANGE SORBET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.alaskanBlue",
+                  "labels": {
+                    "en": "ALASKAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.sky",
+                  "labels": {
+                    "en": "SKY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.sproutGreen",
+                  "labels": {
+                    "en": "SPROUT GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.succulent",
+                  "labels": {
+                    "en": "SUCCULENT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.elderberry",
+                  "labels": {
+                    "en": "ELDERBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.slateBlue",
+                  "labels": {
+                    "en": "SLATE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.stormBlue",
+                  "labels": {
+                    "en": "STORM BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.green3",
+                  "labels": {
+                    "en": "BRIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.green5",
+                  "labels": {
+                    "en": "EUCALYPTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.orange2",
+                  "labels": {
+                    "en": "NECTARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.pink6t",
+                  "labels": {
+                    "en": "FLAMINGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.purple2",
+                  "labels": {
+                    "en": "ENGLISH LAVENDER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.purple1",
+                  "labels": {
+                    "en": "DARK CHERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.green3",
+                  "labels": {
+                    "en": "CLOVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust",
+                  "labels": {
+                    "en": "STARLIGHT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.red2sg",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.blue11",
+                  "labels": {
+                    "en": "ABYSS BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.electricOrange",
+                  "labels": {
+                    "en": "ELECTRIC ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.cloudBlue",
+                  "labels": {
+                    "en": "CLOUD BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.olive",
+                  "labels": {
+                    "en": "OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.sunflower",
+                  "labels": {
+                    "en": "SUNFLOWER"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.pistachio",
+                  "labels": {
+                    "en": "PISTACHIO"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.abyss",
+                  "labels": {
+                    "en": "ABYSS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.seaSalt",
+                  "labels": {
+                    "en": "SEA SALT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.mallardGreen",
+                  "labels": {
+                    "en": "MALLARD GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.pinkCitrus",
+                  "labels": {
+                    "en": "PINK CITRUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.deepNavy",
+                  "labels": {
+                    "en": "DEEP NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.northernBlue",
+                  "labels": {
+                    "en": "NORTHERN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.kumquat",
+                  "labels": {
+                    "en": "KUMQUAT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cyprusGreen",
+                  "labels": {
+                    "en": "CYPRUS GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.seaFoam",
+                  "labels": {
+                    "en": "SEA FOAM"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.linenBlue",
+                  "labels": {
+                    "en": "LINEN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.coastalGray",
+                  "labels": {
+                    "en": "COASTAL GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.cactus",
+                  "labels": {
+                    "en": "CACTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.surfBlue",
+                  "labels": {
+                    "en": "SURF BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.grapefruit",
+                  "labels": {
+                    "en": "GRAPEFRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.neonPink",
+                  "labels": {
+                    "en": "NEON PINK"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.pomegranate",
+                  "labels": {
+                    "en": "POMEGRANATE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.khaki",
+                  "labels": {
+                    "en": "KHAKI"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.clementine",
+                  "labels": {
+                    "en": "CLEMENTINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.lemonCream",
+                  "labels": {
+                    "en": "LEMON CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.pineGreen",
+                  "labels": {
+                    "en": "PINE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.camel",
+                  "labels": {
+                    "en": "CAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.summer2019.canaryYellow",
+                  "labels": {
+                    "en": "CANARY YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.summer2019.dragonFruit",
+                  "labels": {
+                    "en": "DRAGON FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.papaya",
+                  "labels": {
+                    "en": "PAPAYA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.spearmint",
+                  "labels": {
+                    "en": "SPEARMINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.cerulean",
+                  "labels": {
+                    "en": "CERULEAN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.lilac",
+                  "labels": {
+                    "en": "LILAC"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.delftBlue",
+                  "labels": {
+                    "en": "DELFT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.mellowYellow",
+                  "labels": {
+                    "en": "MELLOW YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.hibiscus",
+                  "labels": {
+                    "en": "HIBISCUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.stormGray",
+                  "labels": {
+                    "en": "STORM GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.blueHorizon",
+                  "labels": {
+                    "en": "BLUE HORIZON"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.indigo",
+                  "labels": {
+                    "en": "INDIGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.lavenderGray",
+                  "labels": {
+                    "en": "LAVENDER GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.peach",
+                  "labels": {
+                    "en": "PEACH"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.flashLight",
+                  "labels": {
+                    "en": "FLASH LIGHT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.denimBlue",
+                  "labels": {
+                    "en": "DENIM BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2017.darkTeal",
+                  "labels": {
+                    "en": "DARK TEAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.flash",
+                  "labels": {
+                    "en": "FLASH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.blueCobalt",
+                  "labels": {
+                    "en": "BLUE COBALT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.violet",
+                  "labels": {
+                    "en": "ULTRA VIOLET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.pinkSand",
+                  "labels": {
+                    "en": "PINK SAND"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.electricPink",
+                  "labels": {
+                    "en": "ELECTRIC PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.roseRed",
+                  "labels": {
+                    "en": "ROSE RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.softWhite",
+                  "labels": {
+                    "en": "SOFT WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.darkOlive",
+                  "labels": {
+                    "en": "DARK OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.pollen",
+                  "labels": {
+                    "en": "POLLEN"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.mistBlue",
+                  "labels": {
+                    "en": "MIST BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.flamingo",
+                  "labels": {
+                    "en": "FLAMINGO"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.azure",
+                  "labels": {
+                    "en": "AZURE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.camellia",
+                  "labels": {
+                    "en": "CAMELLIA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.pebble",
+                  "labels": {
+                    "en": "PEBBLE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2016.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2016.cocoa",
+                  "labels": {
+                    "en": "COCOA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.apricot",
+                  "labels": {
+                    "en": "APRICOT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.mint",
+                  "labels": {
+                    "en": "MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.royalBlue",
+                  "labels": {
+                    "en": "ROYAL BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.turquoise",
+                  "labels": {
+                    "en": "TURQUOISE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.midnightBlue",
+                  "labels": {
+                    "en": "MIDNIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.lavender",
+                  "labels": {
+                    "en": "LAVENDER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.vintageRose",
+                  "labels": {
+                    "en": "VINTAGE ROSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.walnut",
+                  "labels": {
+                    "en": "WALNUT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.antiqueWhite",
+                  "labels": {
+                    "en": "ANTIQUE WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.white",
+                  "labels": {
+                    "en": "WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.goldRose",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.goldYellow",
+                  "labels": {
+                    "en": "YELLOW GOLD"
+                  }
+                }
+              ],
+              "rememberPath": [
+                "customData",
+                "2"
+              ]
+            },
+            "tritone": {
+              "values": [
+                {
+                  "value": "tritone.tritone-01",
+                  "labels": {
+                    "en": "TRITONE I"
+                  }
+                },
+                {
+                  "value": "tritone.tritone-02",
+                  "labels": {
+                    "en": "TRITONE II"
+                  }
+                },
+                {
+                  "value": "tritone.tritone-03",
+                  "labels": {
+                    "en": "TRITONE III"
+                  }
+                },
+                {
+                  "value": "tritone.tritone-04",
+                  "labels": {
+                    "en": "TRITONE IV"
+                  }
+                },
+                {
+                  "value": "tritone.tritone-05",
+                  "labels": {
+                    "en": "TRITONE V"
+                  }
+                },
+                {
+                  "value": "tritone.tritone-06",
+                  "labels": {
+                    "en": "TRITONE VI"
+                  }
+                }
+              ],
+              "rememberPath": [
+                "customData",
+                "4"
+              ]
+            },
+            "colorBackdropMono": {
+              "values": [
+                {
+                  "value": "standard.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "standard.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightYellow",
+                  "labels": {
+                    "en": "LIGHT YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightGreen",
+                  "labels": {
+                    "en": "LIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "standard.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "standard.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "standard.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "standard.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "standard.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPurple",
+                  "labels": {
+                    "en": "LIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "standard.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "standard.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "standard.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "standard.warmGray",
+                  "labels": {
+                    "en": "WARM GRAY"
+                  }
+                },
+                {
+                  "value": "standard.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "standard.gray",
+                  "labels": {
+                    "en": "GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.blue2",
+                  "labels": {
+                    "en": "BLUE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.cypress",
+                  "labels": {
+                    "en": "CYPRESS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.guava",
+                  "labels": {
+                    "en": "GUAVA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.taupe",
+                  "labels": {
+                    "en": "TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.sunglow",
+                  "labels": {
+                    "en": "SUNGLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.beryl",
+                  "labels": {
+                    "en": "BERYL"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.pacificGreen",
+                  "labels": {
+                    "en": "PACIFIC GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonGreen",
+                  "labels": {
+                    "en": "NEON GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.brightBlue",
+                  "labels": {
+                    "en": "BRIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.terracotta",
+                  "labels": {
+                    "en": "TERRA COTTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonYellow",
+                  "labels": {
+                    "en": "NEON YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.anchorBlue",
+                  "labels": {
+                    "en": "ANCHOR BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.forest",
+                  "labels": {
+                    "en": "FOREST"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.tumeric",
+                  "labels": {
+                    "en": "TUMERIC"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.caramel",
+                  "labels": {
+                    "en": "CARAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.sageGray",
+                  "labels": {
+                    "en": "SAGE GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.midnightPurple",
+                  "labels": {
+                    "en": "MIDNIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.peony",
+                  "labels": {
+                    "en": "PEONY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.tangerine",
+                  "labels": {
+                    "en": "TANGERINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.aquamarine",
+                  "labels": {
+                    "en": "AQUAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.periwinkle",
+                  "labels": {
+                    "en": "PERIWINKLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.northernLights",
+                  "labels": {
+                    "en": "NORTHERN LIGHTS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.sage",
+                  "labels": {
+                    "en": "SAGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.iceBlue",
+                  "labels": {
+                    "en": "ICE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkGreen",
+                  "labels": {
+                    "en": "DARK GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.tan",
+                  "labels": {
+                    "en": "TAN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.silver",
+                  "labels": {
+                    "en": "SILVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.roseGold",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.natural",
+                  "labels": {
+                    "en": "NATURAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.slate",
+                  "labels": {
+                    "en": "SLATE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lakeGreen",
+                  "labels": {
+                    "en": "LAKE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.denim",
+                  "labels": {
+                    "en": "DENIM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lightBlush",
+                  "labels": {
+                    "en": "LIGHT BLUSH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.starFruit",
+                  "labels": {
+                    "en": "STAR FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ultramarine",
+                  "labels": {
+                    "en": "ULTRAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.chartreuse",
+                  "labels": {
+                    "en": "CHARTREUSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.magenta",
+                  "labels": {
+                    "en": "MAGENTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ink",
+                  "labels": {
+                    "en": "INK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.blueCloud",
+                  "labels": {
+                    "en": "BLUE CLOUD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkTaupe",
+                  "labels": {
+                    "en": "DARK TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.sunshine",
+                  "labels": {
+                    "en": "SUNSHINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.softMint",
+                  "labels": {
+                    "en": "SOFT MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.raspberry",
+                  "labels": {
+                    "en": "RASPBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.indigo",
+                  "labels": {
+                    "en": "INDIGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.clay",
+                  "labels": {
+                    "en": "CLAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.mulberry",
+                  "labels": {
+                    "en": "MULBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.winterBlue",
+                  "labels": {
+                    "en": "WINTER BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.orangeSorbet",
+                  "labels": {
+                    "en": "ORANGE SORBET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.alaskanBlue",
+                  "labels": {
+                    "en": "ALASKAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.sky",
+                  "labels": {
+                    "en": "SKY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.sproutGreen",
+                  "labels": {
+                    "en": "SPROUT GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.succulent",
+                  "labels": {
+                    "en": "SUCCULENT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.elderberry",
+                  "labels": {
+                    "en": "ELDERBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.slateBlue",
+                  "labels": {
+                    "en": "SLATE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.stormBlue",
+                  "labels": {
+                    "en": "STORM BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.green3",
+                  "labels": {
+                    "en": "BRIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.green5",
+                  "labels": {
+                    "en": "EUCALYPTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.orange2",
+                  "labels": {
+                    "en": "NECTARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.pink6t",
+                  "labels": {
+                    "en": "FLAMINGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.purple2",
+                  "labels": {
+                    "en": "ENGLISH LAVENDER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.purple1",
+                  "labels": {
+                    "en": "DARK CHERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.green3",
+                  "labels": {
+                    "en": "CLOVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust",
+                  "labels": {
+                    "en": "STARLIGHT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.red2sg",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.blue11",
+                  "labels": {
+                    "en": "ABYSS BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.electricOrange",
+                  "labels": {
+                    "en": "ELECTRIC ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.cloudBlue",
+                  "labels": {
+                    "en": "CLOUD BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.olive",
+                  "labels": {
+                    "en": "OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.sunflower",
+                  "labels": {
+                    "en": "SUNFLOWER"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.pistachio",
+                  "labels": {
+                    "en": "PISTACHIO"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.abyss",
+                  "labels": {
+                    "en": "ABYSS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.seaSalt",
+                  "labels": {
+                    "en": "SEA SALT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.mallardGreen",
+                  "labels": {
+                    "en": "MALLARD GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.pinkCitrus",
+                  "labels": {
+                    "en": "PINK CITRUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.deepNavy",
+                  "labels": {
+                    "en": "DEEP NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.northernBlue",
+                  "labels": {
+                    "en": "NORTHERN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.kumquat",
+                  "labels": {
+                    "en": "KUMQUAT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cyprusGreen",
+                  "labels": {
+                    "en": "CYPRUS GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.seaFoam",
+                  "labels": {
+                    "en": "SEA FOAM"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.linenBlue",
+                  "labels": {
+                    "en": "LINEN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.coastalGray",
+                  "labels": {
+                    "en": "COASTAL GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.cactus",
+                  "labels": {
+                    "en": "CACTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.surfBlue",
+                  "labels": {
+                    "en": "SURF BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.grapefruit",
+                  "labels": {
+                    "en": "GRAPEFRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.neonPink",
+                  "labels": {
+                    "en": "NEON PINK"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.pomegranate",
+                  "labels": {
+                    "en": "POMEGRANATE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.khaki",
+                  "labels": {
+                    "en": "KHAKI"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.clementine",
+                  "labels": {
+                    "en": "CLEMENTINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.lemonCream",
+                  "labels": {
+                    "en": "LEMON CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.pineGreen",
+                  "labels": {
+                    "en": "PINE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.camel",
+                  "labels": {
+                    "en": "CAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.summer2019.canaryYellow",
+                  "labels": {
+                    "en": "CANARY YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.summer2019.dragonFruit",
+                  "labels": {
+                    "en": "DRAGON FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.papaya",
+                  "labels": {
+                    "en": "PAPAYA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.spearmint",
+                  "labels": {
+                    "en": "SPEARMINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.cerulean",
+                  "labels": {
+                    "en": "CERULEAN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.lilac",
+                  "labels": {
+                    "en": "LILAC"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.delftBlue",
+                  "labels": {
+                    "en": "DELFT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.mellowYellow",
+                  "labels": {
+                    "en": "MELLOW YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.hibiscus",
+                  "labels": {
+                    "en": "HIBISCUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.stormGray",
+                  "labels": {
+                    "en": "STORM GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.blueHorizon",
+                  "labels": {
+                    "en": "BLUE HORIZON"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.indigo",
+                  "labels": {
+                    "en": "INDIGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.lavenderGray",
+                  "labels": {
+                    "en": "LAVENDER GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.peach",
+                  "labels": {
+                    "en": "PEACH"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.flashLight",
+                  "labels": {
+                    "en": "FLASH LIGHT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.denimBlue",
+                  "labels": {
+                    "en": "DENIM BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2017.darkTeal",
+                  "labels": {
+                    "en": "DARK TEAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.flash",
+                  "labels": {
+                    "en": "FLASH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.blueCobalt",
+                  "labels": {
+                    "en": "BLUE COBALT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.violet",
+                  "labels": {
+                    "en": "ULTRA VIOLET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.pinkSand",
+                  "labels": {
+                    "en": "PINK SAND"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.electricPink",
+                  "labels": {
+                    "en": "ELECTRIC PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.roseRed",
+                  "labels": {
+                    "en": "ROSE RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.softWhite",
+                  "labels": {
+                    "en": "SOFT WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.darkOlive",
+                  "labels": {
+                    "en": "DARK OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.pollen",
+                  "labels": {
+                    "en": "POLLEN"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.mistBlue",
+                  "labels": {
+                    "en": "MIST BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.flamingo",
+                  "labels": {
+                    "en": "FLAMINGO"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.azure",
+                  "labels": {
+                    "en": "AZURE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.camellia",
+                  "labels": {
+                    "en": "CAMELLIA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.pebble",
+                  "labels": {
+                    "en": "PEBBLE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2016.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2016.cocoa",
+                  "labels": {
+                    "en": "COCOA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.apricot",
+                  "labels": {
+                    "en": "APRICOT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.mint",
+                  "labels": {
+                    "en": "MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.royalBlue",
+                  "labels": {
+                    "en": "ROYAL BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.turquoise",
+                  "labels": {
+                    "en": "TURQUOISE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.midnightBlue",
+                  "labels": {
+                    "en": "MIDNIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.lavender",
+                  "labels": {
+                    "en": "LAVENDER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.vintageRose",
+                  "labels": {
+                    "en": "VINTAGE ROSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.walnut",
+                  "labels": {
+                    "en": "WALNUT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.antiqueWhite",
+                  "labels": {
+                    "en": "ANTIQUE WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.white",
+                  "labels": {
+                    "en": "WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.goldRose",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.goldYellow",
+                  "labels": {
+                    "en": "YELLOW GOLD"
+                  }
+                }
+              ],
+              "rememberPath": [
+                "customData",
+                "6"
+              ]
+            },
+            "colorBackdrop": {
+              "values": [
+                {
+                  "value": "standard.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "standard.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightYellow",
+                  "labels": {
+                    "en": "LIGHT YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightGreen",
+                  "labels": {
+                    "en": "LIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "standard.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "standard.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "standard.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "standard.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "standard.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPurple",
+                  "labels": {
+                    "en": "LIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "standard.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "standard.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "standard.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "standard.warmGray",
+                  "labels": {
+                    "en": "WARM GRAY"
+                  }
+                },
+                {
+                  "value": "standard.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "standard.gray",
+                  "labels": {
+                    "en": "GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.blue2",
+                  "labels": {
+                    "en": "BLUE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.cypress",
+                  "labels": {
+                    "en": "CYPRESS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.guava",
+                  "labels": {
+                    "en": "GUAVA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.taupe",
+                  "labels": {
+                    "en": "TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.sunglow",
+                  "labels": {
+                    "en": "SUNGLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.beryl",
+                  "labels": {
+                    "en": "BERYL"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.pacificGreen",
+                  "labels": {
+                    "en": "PACIFIC GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonGreen",
+                  "labels": {
+                    "en": "NEON GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.brightBlue",
+                  "labels": {
+                    "en": "BRIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.terracotta",
+                  "labels": {
+                    "en": "TERRA COTTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonYellow",
+                  "labels": {
+                    "en": "NEON YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.anchorBlue",
+                  "labels": {
+                    "en": "ANCHOR BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.forest",
+                  "labels": {
+                    "en": "FOREST"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.tumeric",
+                  "labels": {
+                    "en": "TUMERIC"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.caramel",
+                  "labels": {
+                    "en": "CARAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.sageGray",
+                  "labels": {
+                    "en": "SAGE GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.midnightPurple",
+                  "labels": {
+                    "en": "MIDNIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.peony",
+                  "labels": {
+                    "en": "PEONY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.tangerine",
+                  "labels": {
+                    "en": "TANGERINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.aquamarine",
+                  "labels": {
+                    "en": "AQUAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.periwinkle",
+                  "labels": {
+                    "en": "PERIWINKLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.northernLights",
+                  "labels": {
+                    "en": "NORTHERN LIGHTS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.sage",
+                  "labels": {
+                    "en": "SAGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.iceBlue",
+                  "labels": {
+                    "en": "ICE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkGreen",
+                  "labels": {
+                    "en": "DARK GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.tan",
+                  "labels": {
+                    "en": "TAN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.silver",
+                  "labels": {
+                    "en": "SILVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.roseGold",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.natural",
+                  "labels": {
+                    "en": "NATURAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.slate",
+                  "labels": {
+                    "en": "SLATE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lakeGreen",
+                  "labels": {
+                    "en": "LAKE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.denim",
+                  "labels": {
+                    "en": "DENIM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lightBlush",
+                  "labels": {
+                    "en": "LIGHT BLUSH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.starFruit",
+                  "labels": {
+                    "en": "STAR FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ultramarine",
+                  "labels": {
+                    "en": "ULTRAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.chartreuse",
+                  "labels": {
+                    "en": "CHARTREUSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.magenta",
+                  "labels": {
+                    "en": "MAGENTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ink",
+                  "labels": {
+                    "en": "INK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.blueCloud",
+                  "labels": {
+                    "en": "BLUE CLOUD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkTaupe",
+                  "labels": {
+                    "en": "DARK TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.sunshine",
+                  "labels": {
+                    "en": "SUNSHINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.softMint",
+                  "labels": {
+                    "en": "SOFT MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.raspberry",
+                  "labels": {
+                    "en": "RASPBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.indigo",
+                  "labels": {
+                    "en": "INDIGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.clay",
+                  "labels": {
+                    "en": "CLAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.mulberry",
+                  "labels": {
+                    "en": "MULBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.winterBlue",
+                  "labels": {
+                    "en": "WINTER BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.orangeSorbet",
+                  "labels": {
+                    "en": "ORANGE SORBET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.alaskanBlue",
+                  "labels": {
+                    "en": "ALASKAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.sky",
+                  "labels": {
+                    "en": "SKY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.sproutGreen",
+                  "labels": {
+                    "en": "SPROUT GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.succulent",
+                  "labels": {
+                    "en": "SUCCULENT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.elderberry",
+                  "labels": {
+                    "en": "ELDERBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.slateBlue",
+                  "labels": {
+                    "en": "SLATE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.stormBlue",
+                  "labels": {
+                    "en": "STORM BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.green3",
+                  "labels": {
+                    "en": "BRIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.green5",
+                  "labels": {
+                    "en": "EUCALYPTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.orange2",
+                  "labels": {
+                    "en": "NECTARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.pink6t",
+                  "labels": {
+                    "en": "FLAMINGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.purple2",
+                  "labels": {
+                    "en": "ENGLISH LAVENDER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.purple1",
+                  "labels": {
+                    "en": "DARK CHERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.green3",
+                  "labels": {
+                    "en": "CLOVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust",
+                  "labels": {
+                    "en": "STARLIGHT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.red2sg",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.blue11",
+                  "labels": {
+                    "en": "ABYSS BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.electricOrange",
+                  "labels": {
+                    "en": "ELECTRIC ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.cloudBlue",
+                  "labels": {
+                    "en": "CLOUD BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.olive",
+                  "labels": {
+                    "en": "OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.sunflower",
+                  "labels": {
+                    "en": "SUNFLOWER"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.pistachio",
+                  "labels": {
+                    "en": "PISTACHIO"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.abyss",
+                  "labels": {
+                    "en": "ABYSS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.seaSalt",
+                  "labels": {
+                    "en": "SEA SALT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.mallardGreen",
+                  "labels": {
+                    "en": "MALLARD GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.pinkCitrus",
+                  "labels": {
+                    "en": "PINK CITRUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.deepNavy",
+                  "labels": {
+                    "en": "DEEP NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.northernBlue",
+                  "labels": {
+                    "en": "NORTHERN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.kumquat",
+                  "labels": {
+                    "en": "KUMQUAT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cyprusGreen",
+                  "labels": {
+                    "en": "CYPRUS GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.seaFoam",
+                  "labels": {
+                    "en": "SEA FOAM"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.linenBlue",
+                  "labels": {
+                    "en": "LINEN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.coastalGray",
+                  "labels": {
+                    "en": "COASTAL GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.cactus",
+                  "labels": {
+                    "en": "CACTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.surfBlue",
+                  "labels": {
+                    "en": "SURF BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.grapefruit",
+                  "labels": {
+                    "en": "GRAPEFRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.neonPink",
+                  "labels": {
+                    "en": "NEON PINK"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.pomegranate",
+                  "labels": {
+                    "en": "POMEGRANATE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.khaki",
+                  "labels": {
+                    "en": "KHAKI"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.clementine",
+                  "labels": {
+                    "en": "CLEMENTINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.lemonCream",
+                  "labels": {
+                    "en": "LEMON CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.pineGreen",
+                  "labels": {
+                    "en": "PINE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.camel",
+                  "labels": {
+                    "en": "CAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.summer2019.canaryYellow",
+                  "labels": {
+                    "en": "CANARY YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.summer2019.dragonFruit",
+                  "labels": {
+                    "en": "DRAGON FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.papaya",
+                  "labels": {
+                    "en": "PAPAYA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.spearmint",
+                  "labels": {
+                    "en": "SPEARMINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.cerulean",
+                  "labels": {
+                    "en": "CERULEAN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.lilac",
+                  "labels": {
+                    "en": "LILAC"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.delftBlue",
+                  "labels": {
+                    "en": "DELFT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.mellowYellow",
+                  "labels": {
+                    "en": "MELLOW YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.hibiscus",
+                  "labels": {
+                    "en": "HIBISCUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.stormGray",
+                  "labels": {
+                    "en": "STORM GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.blueHorizon",
+                  "labels": {
+                    "en": "BLUE HORIZON"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.indigo",
+                  "labels": {
+                    "en": "INDIGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.lavenderGray",
+                  "labels": {
+                    "en": "LAVENDER GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.peach",
+                  "labels": {
+                    "en": "PEACH"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.flashLight",
+                  "labels": {
+                    "en": "FLASH LIGHT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.denimBlue",
+                  "labels": {
+                    "en": "DENIM BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2017.darkTeal",
+                  "labels": {
+                    "en": "DARK TEAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.flash",
+                  "labels": {
+                    "en": "FLASH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.blueCobalt",
+                  "labels": {
+                    "en": "BLUE COBALT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.violet",
+                  "labels": {
+                    "en": "ULTRA VIOLET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.pinkSand",
+                  "labels": {
+                    "en": "PINK SAND"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.electricPink",
+                  "labels": {
+                    "en": "ELECTRIC PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.roseRed",
+                  "labels": {
+                    "en": "ROSE RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.softWhite",
+                  "labels": {
+                    "en": "SOFT WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.darkOlive",
+                  "labels": {
+                    "en": "DARK OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.pollen",
+                  "labels": {
+                    "en": "POLLEN"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.mistBlue",
+                  "labels": {
+                    "en": "MIST BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.flamingo",
+                  "labels": {
+                    "en": "FLAMINGO"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.azure",
+                  "labels": {
+                    "en": "AZURE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.camellia",
+                  "labels": {
+                    "en": "CAMELLIA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.pebble",
+                  "labels": {
+                    "en": "PEBBLE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2016.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2016.cocoa",
+                  "labels": {
+                    "en": "COCOA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.apricot",
+                  "labels": {
+                    "en": "APRICOT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.mint",
+                  "labels": {
+                    "en": "MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.royalBlue",
+                  "labels": {
+                    "en": "ROYAL BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.turquoise",
+                  "labels": {
+                    "en": "TURQUOISE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.midnightBlue",
+                  "labels": {
+                    "en": "MIDNIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.lavender",
+                  "labels": {
+                    "en": "LAVENDER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.vintageRose",
+                  "labels": {
+                    "en": "VINTAGE ROSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.walnut",
+                  "labels": {
+                    "en": "WALNUT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.antiqueWhite",
+                  "labels": {
+                    "en": "ANTIQUE WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.white",
+                  "labels": {
+                    "en": "WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.goldRose",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.goldYellow",
+                  "labels": {
+                    "en": "YELLOW GOLD"
+                  }
+                }
+              ],
+              "rememberPath": [
+                "customData",
+                "5"
+              ]
+            },
+            "bw": {
+              "values": [
+                {
+                  "value": "plain.plain",
+                  "labels": {
+                    "en": "NO OPTIONS"
+                  }
+                }
+              ]
+            },
+            "natural": {
+              "values": [
+                {
+                  "value": "plain.plain",
+                  "labels": {
+                    "en": "NO OPTIONS"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "path": [
+            "customization",
+            "color",
+            "slots",
+            "time-color"
+          ],
+          "titles": {
+            "en": "Time Color"
+          },
+          "groups": {
+            "*": {
+              "values": [
+                {
+                  "value": "standard.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "standard.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "standard.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightYellow",
+                  "labels": {
+                    "en": "LIGHT YELLOW"
+                  }
+                },
+                {
+                  "value": "standard.lightGreen",
+                  "labels": {
+                    "en": "LIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "standard.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "standard.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "standard.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "standard.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "standard.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPurple",
+                  "labels": {
+                    "en": "LIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "standard.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "standard.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "standard.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "standard.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "standard.warmGray",
+                  "labels": {
+                    "en": "WARM GRAY"
+                  }
+                },
+                {
+                  "value": "standard.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "standard.gray",
+                  "labels": {
+                    "en": "GRAY"
+                  }
+                },
+                {
+                  "value": "time.glass_05",
+                  "labels": {
+                    "en": "GLASS"
+                  }
+                },
+                {
+                  "value": "time.vibrant",
+                  "labels": {
+                    "en": "VIBRANT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.blue2",
+                  "labels": {
+                    "en": "BLUE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.cypress",
+                  "labels": {
+                    "en": "CYPRESS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.guava",
+                  "labels": {
+                    "en": "GUAVA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.taupe",
+                  "labels": {
+                    "en": "TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.sunglow",
+                  "labels": {
+                    "en": "SUNGLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.beryl",
+                  "labels": {
+                    "en": "BERYL"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.pacificGreen",
+                  "labels": {
+                    "en": "PACIFIC GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonGreen",
+                  "labels": {
+                    "en": "NEON GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.brightBlue",
+                  "labels": {
+                    "en": "BRIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.terracotta",
+                  "labels": {
+                    "en": "TERRA COTTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.neonYellow",
+                  "labels": {
+                    "en": "NEON YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.anchorBlue",
+                  "labels": {
+                    "en": "ANCHOR BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.forest",
+                  "labels": {
+                    "en": "FOREST"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.tumeric",
+                  "labels": {
+                    "en": "TUMERIC"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.caramel",
+                  "labels": {
+                    "en": "CARAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.sageGray",
+                  "labels": {
+                    "en": "SAGE GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2025.midnightPurple",
+                  "labels": {
+                    "en": "MIDNIGHT PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.peony",
+                  "labels": {
+                    "en": "PEONY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.tangerine",
+                  "labels": {
+                    "en": "TANGERINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.aquamarine",
+                  "labels": {
+                    "en": "AQUAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.periwinkle",
+                  "labels": {
+                    "en": "PERIWINKLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.northernLights",
+                  "labels": {
+                    "en": "NORTHERN LIGHTS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2025.sage",
+                  "labels": {
+                    "en": "SAGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.iceBlue",
+                  "labels": {
+                    "en": "ICE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.navy",
+                  "labels": {
+                    "en": "NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkGreen",
+                  "labels": {
+                    "en": "DARK GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.tan",
+                  "labels": {
+                    "en": "TAN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.silver",
+                  "labels": {
+                    "en": "SILVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.roseGold",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.natural",
+                  "labels": {
+                    "en": "NATURAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.slate",
+                  "labels": {
+                    "en": "SLATE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lakeGreen",
+                  "labels": {
+                    "en": "LAKE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.denim",
+                  "labels": {
+                    "en": "DENIM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.lightBlush",
+                  "labels": {
+                    "en": "LIGHT BLUSH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.starFruit",
+                  "labels": {
+                    "en": "STAR FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ultramarine",
+                  "labels": {
+                    "en": "ULTRAMARINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.chartreuse",
+                  "labels": {
+                    "en": "CHARTREUSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.magenta",
+                  "labels": {
+                    "en": "MAGENTA"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.ink",
+                  "labels": {
+                    "en": "INK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.blueCloud",
+                  "labels": {
+                    "en": "BLUE CLOUD"
+                  }
+                },
+                {
+                  "value": "seasons.fall2024.darkTaupe",
+                  "labels": {
+                    "en": "DARK TAUPE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.sunshine",
+                  "labels": {
+                    "en": "SUNSHINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.softMint",
+                  "labels": {
+                    "en": "SOFT MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2024.raspberry",
+                  "labels": {
+                    "en": "RASPBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.indigo",
+                  "labels": {
+                    "en": "INDIGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.clay",
+                  "labels": {
+                    "en": "CLAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.mulberry",
+                  "labels": {
+                    "en": "MULBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.winterBlue",
+                  "labels": {
+                    "en": "WINTER BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2023.orangeSorbet",
+                  "labels": {
+                    "en": "ORANGE SORBET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.alaskanBlue",
+                  "labels": {
+                    "en": "ALASKAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.sky",
+                  "labels": {
+                    "en": "SKY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.purpleFog",
+                  "labels": {
+                    "en": "PURPLE FOG"
+                  }
+                },
+                {
+                  "value": "seasons.spring2023.sproutGreen",
+                  "labels": {
+                    "en": "SPROUT GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.succulent",
+                  "labels": {
+                    "en": "SUCCULENT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.elderberry",
+                  "labels": {
+                    "en": "ELDERBERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.slateBlue",
+                  "labels": {
+                    "en": "SLATE BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2022.stormBlue",
+                  "labels": {
+                    "en": "STORM BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.green3",
+                  "labels": {
+                    "en": "BRIGHT GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.green5",
+                  "labels": {
+                    "en": "EUCALYPTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.orange2",
+                  "labels": {
+                    "en": "NECTARINE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2022.pink6t",
+                  "labels": {
+                    "en": "FLAMINGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.purple2",
+                  "labels": {
+                    "en": "ENGLISH LAVENDER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.purple1",
+                  "labels": {
+                    "en": "DARK CHERRY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.green3",
+                  "labels": {
+                    "en": "CLOVER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.stardust",
+                  "labels": {
+                    "en": "STARLIGHT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.red2sg",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2021.blue11",
+                  "labels": {
+                    "en": "ABYSS BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.electricOrange",
+                  "labels": {
+                    "en": "ELECTRIC ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.cloudBlue",
+                  "labels": {
+                    "en": "CLOUD BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2021.olive",
+                  "labels": {
+                    "en": "OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.sunflower",
+                  "labels": {
+                    "en": "SUNFLOWER"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.pistachio",
+                  "labels": {
+                    "en": "PISTACHIO"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.abyss",
+                  "labels": {
+                    "en": "ABYSS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.seaSalt",
+                  "labels": {
+                    "en": "SEA SALT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2021.mallardGreen",
+                  "labels": {
+                    "en": "MALLARD GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.pinkCitrus",
+                  "labels": {
+                    "en": "PINK CITRUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.deepNavy",
+                  "labels": {
+                    "en": "DEEP NAVY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.northernBlue",
+                  "labels": {
+                    "en": "NORTHERN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.kumquat",
+                  "labels": {
+                    "en": "KUMQUAT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cream",
+                  "labels": {
+                    "en": "CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.cyprusGreen",
+                  "labels": {
+                    "en": "CYPRUS GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2020.plum",
+                  "labels": {
+                    "en": "PLUM"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.seaFoam",
+                  "labels": {
+                    "en": "SEA FOAM"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.linenBlue",
+                  "labels": {
+                    "en": "LINEN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2020.coastalGray",
+                  "labels": {
+                    "en": "COASTAL GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.cactus",
+                  "labels": {
+                    "en": "CACTUS"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.surfBlue",
+                  "labels": {
+                    "en": "SURF BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.grapefruit",
+                  "labels": {
+                    "en": "GRAPEFRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2020.neonPink",
+                  "labels": {
+                    "en": "NEON PINK"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.pomegranate",
+                  "labels": {
+                    "en": "POMEGRANATE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2019.khaki",
+                  "labels": {
+                    "en": "KHAKI"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.clementine",
+                  "labels": {
+                    "en": "CLEMENTINE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.lemonCream",
+                  "labels": {
+                    "en": "LEMON CREAM"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.pineGreen",
+                  "labels": {
+                    "en": "PINE GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.fall2019.camel",
+                  "labels": {
+                    "en": "CAMEL"
+                  }
+                },
+                {
+                  "value": "seasons.summer2019.canaryYellow",
+                  "labels": {
+                    "en": "CANARY YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.summer2019.dragonFruit",
+                  "labels": {
+                    "en": "DRAGON FRUIT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.papaya",
+                  "labels": {
+                    "en": "PAPAYA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.spearmint",
+                  "labels": {
+                    "en": "SPEARMINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.cerulean",
+                  "labels": {
+                    "en": "CERULEAN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.lilac",
+                  "labels": {
+                    "en": "LILAC"
+                  }
+                },
+                {
+                  "value": "seasons.spring2019.delftBlue",
+                  "labels": {
+                    "en": "DELFT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.mellowYellow",
+                  "labels": {
+                    "en": "MELLOW YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.winter2018.hibiscus",
+                  "labels": {
+                    "en": "HIBISCUS"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.stormGray",
+                  "labels": {
+                    "en": "STORM GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.blueHorizon",
+                  "labels": {
+                    "en": "BLUE HORIZON"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.indigo",
+                  "labels": {
+                    "en": "INDIGO"
+                  }
+                },
+                {
+                  "value": "seasons.fall2018.lavenderGray",
+                  "labels": {
+                    "en": "LAVENDER GRAY"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.peach",
+                  "labels": {
+                    "en": "PEACH"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.flashLight",
+                  "labels": {
+                    "en": "FLASH LIGHT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2018.denimBlue",
+                  "labels": {
+                    "en": "DENIM BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.winter2017.darkTeal",
+                  "labels": {
+                    "en": "DARK TEAL"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.flash",
+                  "labels": {
+                    "en": "FLASH"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.blueCobalt",
+                  "labels": {
+                    "en": "BLUE COBALT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.violet",
+                  "labels": {
+                    "en": "ULTRA VIOLET"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.pinkSand",
+                  "labels": {
+                    "en": "PINK SAND"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.electricPink",
+                  "labels": {
+                    "en": "ELECTRIC PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.roseRed",
+                  "labels": {
+                    "en": "ROSE RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.softWhite",
+                  "labels": {
+                    "en": "SOFT WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2017.darkOlive",
+                  "labels": {
+                    "en": "DARK OLIVE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.pollen",
+                  "labels": {
+                    "en": "POLLEN"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.mistBlue",
+                  "labels": {
+                    "en": "MIST BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.summer2017.flamingo",
+                  "labels": {
+                    "en": "FLAMINGO"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.azure",
+                  "labels": {
+                    "en": "AZURE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.camellia",
+                  "labels": {
+                    "en": "CAMELLIA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2017.pebble",
+                  "labels": {
+                    "en": "PEBBLE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2016.oceanBlue",
+                  "labels": {
+                    "en": "OCEAN BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2016.cocoa",
+                  "labels": {
+                    "en": "COCOA"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.apricot",
+                  "labels": {
+                    "en": "APRICOT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.yellow",
+                  "labels": {
+                    "en": "YELLOW"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.mint",
+                  "labels": {
+                    "en": "MINT"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.royalBlue",
+                  "labels": {
+                    "en": "ROYAL BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2016.lightPink",
+                  "labels": {
+                    "en": "LIGHT PINK"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.red",
+                  "labels": {
+                    "en": "RED"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.orange",
+                  "labels": {
+                    "en": "ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.turquoise",
+                  "labels": {
+                    "en": "TURQUOISE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.lightBlue",
+                  "labels": {
+                    "en": "LIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.midnightBlue",
+                  "labels": {
+                    "en": "MIDNIGHT BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.lavender",
+                  "labels": {
+                    "en": "LAVENDER"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.vintageRose",
+                  "labels": {
+                    "en": "VINTAGE ROSE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.walnut",
+                  "labels": {
+                    "en": "WALNUT"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.stone",
+                  "labels": {
+                    "en": "STONE"
+                  }
+                },
+                {
+                  "value": "seasons.fall2015.antiqueWhite",
+                  "labels": {
+                    "en": "ANTIQUE WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.white",
+                  "labels": {
+                    "en": "WHITE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.green",
+                  "labels": {
+                    "en": "GREEN"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.blue",
+                  "labels": {
+                    "en": "BLUE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.pink",
+                  "labels": {
+                    "en": "PINK"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.purple",
+                  "labels": {
+                    "en": "PURPLE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.lightOrange",
+                  "labels": {
+                    "en": "LIGHT ORANGE"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.gold",
+                  "labels": {
+                    "en": "GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.goldRose",
+                  "labels": {
+                    "en": "ROSE GOLD"
+                  }
+                },
+                {
+                  "value": "seasons.spring2015.goldYellow",
+                  "labels": {
+                    "en": "YELLOW GOLD"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

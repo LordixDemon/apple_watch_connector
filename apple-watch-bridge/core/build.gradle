@@ -1,0 +1,29 @@
+plugins {
+    id "java-library"
+}
+
+apply from: rootProject.file("gradle/portable-java.gradle")
+
+dependencies {
+    api "org.bouncycastle:bcprov-jdk18on:1.79"
+    api "com.squareup.okhttp3:okhttp:4.12.0"
+    testImplementation "junit:junit:4.13.2"
+}
+
+// Desktop protocol worker uses exactly the portable core's resolved dependencies.
+tasks.register("desktopRuntime", Sync) {
+    from configurations.runtimeClasspath
+    into layout.buildDirectory.dir("desktop-runtime")
+}
+
+// Offline inspection tools are opt-in and never enter the Android/desktop runtime.
+sourceSets {
+    research {
+        compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
+        runtimeClasspath += sourceSets.main.output + configurations.runtimeClasspath
+    }
+}
+tasks.register("researchJar", Jar) {
+    archiveClassifier = "research"
+    from sourceSets.research.output
+}

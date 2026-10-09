@@ -1,0 +1,122 @@
+{
+  "nativeScreenMargin" : 20,
+  "tableHeaderFrame" : [
+    0,
+    0,
+    393,
+    26.333333969116211
+  ],
+  "tableCellInTable" : [
+    16,
+    26.333333969116211,
+    361,
+    88.333335876464844
+  ],
+  "headerLabels" : [
+    {
+      "symbolicTraits" : 0,
+      "frame" : [
+        281.33333333333331,
+        5.9999999999999982,
+        75.666666666666686,
+        20.333333333333329
+      ],
+      "lineHeight" : 20.287109375,
+      "rgba" : [
+        0.92156862745098034,
+        0.92156862745098034,
+        0.96078431372549022,
+        0.59999999999999998
+      ],
+      "pointSize" : 17,
+      "text" : "Multicolor",
+      "descender" : -4.1005859375,
+      "alignment" : 2,
+      "ascender" : 16.1865234375,
+      "numberOfLines" : 1
+    },
+    {
+      "symbolicTraits" : 0,
+      "frame" : [
+        36,
+        5.9999999999999982,
+        42,
+        20.333333333333329
+      ],
+      "lineHeight" : 20.287109375,
+      "rgba" : [
+        1.0000001192092896,
+        1.0000001192092896,
+        1.0000001192092896,
+        1
+      ],
+      "pointSize" : 17,
+      "text" : "Color",
+      "descender" : -4.1005859375,
+      "alignment" : 4,
+      "ascender" : 16.1865234375,
+      "numberOfLines" : 0
+    }
+  ],
+  "separatorInset" : [
+    0,
+    20,
+    0,
+    0
+  ],
+  "collectionType" : 1,
+  "runtime" : "26.2",
+  "windowAttached" : true,
+  "pigmentClassOptionsDescription" : null,
+  "mode" : 10,
+  "collectionFrame" : [
+    0,
+    0,
+    361,
+    88.333333333333343
+  ],
+  "tableStyle" : 2,
+  "tableCellFrame" : [
+    0,
+    26.333333969116211,
+    361,
+    88.333335876464844
+  ],
+  "contentInset" : [
+    0,
+    13.333333333333334,
+    0,
+    13.333333333333334
+  ],
+  "rowHeight" : 88.333333333333343,
+  "cellLabels" : [
+
+  ],
+  "headerHeight" : 26.333333333333332,
+  "swatchFrame" : [
+    6.6666666666666661,
+    23,
+    42.333333333333336,
+    42.333333333333336
+  ],
+  "standalone" : {
+    "collectionFrame" : [
+      0,
+      0,
+      393,
+      88.333333333333343
+    ],
+    "contentInset" : [
+      0,
+      1.3333333333333339,
+      0,
+      1.3333333333333339
+    ],
+    "separatorInset" : [
+      0,
+      8,
+      0,
+      8
+    ]
+  }
+}

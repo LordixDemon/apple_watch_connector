@@ -1,0 +1,202 @@
+<resources>
+    <string name="app_name">"Apple Watch Bridge"</string>
+    <string name="ui_title">Apple Watch Bridge</string>
+    <string name="ui_subtitle">Connection &amp; setup</string>
+    <string name="ui_watch_name">Apple Watch</string>
+    <string name="ui_connected">Connected</string>
+    <string name="ui_disconnected">Disconnected</string>
+    <string name="ui_connect">Connect</string>
+    <string name="ui_connected_detail">Secure connection is active.</string>
+    <string name="ui_connecting_detail">Establishing the connection to your watch.</string>
+    <string name="ui_disconnected_detail">Connect to resume your saved pair.</string>
+    <string name="ui_wifi">Sync current Wi-Fi</string>
+    <string name="ui_flashlight">Allow Find Phone flashlight</string>
+    <string name="ui_setup">Pairing &amp; setup</string>
+    <string name="ui_setup_detail">PIN and setup controls</string>
+    <string name="ui_advanced">Advanced tools</string>
+    <string name="ui_advanced_detail">Bond, identity and transport</string>
+    <string name="ui_log">Bluetooth log</string>
+    <string name="ui_copy_log">Copy log</string>
+    <string name="ui_version">Bridge %1$s</string>
+    <string name="ui_expanded">Expanded</string>
+    <string name="ui_collapsed">Collapsed</string>
+    <string name="ui_confirm_setup">Save completed setup</string>
+    <string name="ui_notify_connected">Your watch stays connected when Bridge is in the background.</string>
+    <string name="ui_notify_waiting">Bridge is restoring the connection to your saved pair.</string>
+    <string name="ui_open_bridge">Open Companion</string>
+    <string name="intro">"Rooted OnePlus 13: Apple BT_CL/uIKE → control/pairing IKE with X448, ML-KEM-1024, SPAKE2+ and mandatory PPK → Apple private OOB → Bluetooth LE Secure Connections bond. If CatPlay is running CarPlay over BMW Wi-Fi, Bridge pauses RFCOMM cooperatively, restores Android Bluetooth after the run, and resumes bootstrap. PIN, OOB, LTK, and IRK values are not logged."</string>
+    <string name="connect_button">"Connect Apple Watch"</string>
+    <string name="commit_is_paired_checkbox">"Complete commit, activation (Albert HTTPS), and synchronization"</string>
+    <string name="audit_bond_button">"Audit Watch Bond Import Without Writing"</string>
+    <string name="import_bond_button">"Import Watch Bond into Android Bluetooth"</string>
+    <string name="align_identity_button">"Align Android BLE Identity with Watch"</string>
+    <string name="probe_stock_button">"Probe Exact-Identity ACL Without GATT"</string>
+    <string name="pin_hint">"6 digits from the watch screen"</string>
+    <string name="pin_button">"Continue with PIN"</string>
+    <string name="stop_button">"Stop and Release Bluetooth"</string>
+    <string name="copy_button">"Copy Full Bluetooth Log"</string>
+    <string name="no_message" formatted="false">"(no message)"</string>
+    <string name="watch_face_confirmation_does_not_match_the_saved_pair" formatted="false">"Watch face confirmation does not match the saved pair"</string>
+    <string name="ids_identity_persistent_phone_identifier_created" formatted="false">"IDS identity: persistent phone identifier created."</string>
+    <string name="ids_identity_existing_pair_identifier_saved_as_the_persistent" formatted="false">"IDS identity: existing pair identifier saved as the persistent phone identifier."</string>
+    <string name="reply" formatted="false">"Reply"</string>
+    <string name="send" formatted="false">"Send"</string>
+    <string name="test_reply" formatted="false">"Test reply"</string>
+    <string name="watch_reply_test" formatted="false">"Watch Reply Test"</string>
+    <string name="watch_reply_bridge_test" formatted="false">"Watch Reply — Bridge Test"</string>
+    <string name="tap_reply_your_reply_stays_in_bridge_on_this" formatted="false">"Tap Reply. Your reply stays in Bridge on this phone."</string>
+    <string name="command_not_accepted_by_the_service_delivery_is_not" formatted="false">"Command not accepted by the service; delivery is not confirmed."</string>
+    <string name="ipc_finish_setup_requested_finish_initial_synchronization" formatted="false">"IPC: FINISH_SETUP requested (finish initial synchronization)"</string>
+    <string name="ipc_publish_paired_sync_requested_diagnostic_pairedsync_republish" formatted="false">"IPC: PUBLISH_PAIRED_SYNC requested (diagnostic PairedSync republish)"</string>
+    <string name="ipc_force_activation_confirmed_requested_manual_activation_confirmation" formatted="false">"IPC: FORCE_ACTIVATION_CONFIRMED requested (manual activation confirmation)"</string>
+    <string name="ipc_redrive_activation_requested_reset_durable_activation_and_repeat" formatted="false">"IPC: REDRIVE_ACTIVATION requested (reset durable activation and repeat CanBeginActivation)"</string>
+    <string name="ipc_retry_activation_requested_pbbridge_retryactivation_15_restart_watch" formatted="false">"IPC: RETRY_ACTIVATION requested (PBBridge RetryActivation 15 — restart watch activation)"</string>
+    <string name="local_target_oneplus_cph2653" formatted="false">"Local target: OnePlus CPH2653; "</string>
+    <string name="runtime_25_26_dynamic_advertising_identifier" formatted="false">"runtime 25..26; dynamic advertising identifier."</string>
+    <string name="no_action_until_a_button_is_pressed" formatted="false">"No action until a button is pressed."</string>
+    <string name="persistent_bluetooth_log" formatted="false">"Persistent Bluetooth log: "</string>
+    <string name="external_mutation_probe_intent_ignored" formatted="false">"External mutation/probe intent ignored; "</string>
+    <string name="operations_require_a_dedicated_button" formatted="false">"operations require a dedicated button "</string>
+    <string name="in_the_foreground_activity" formatted="false">"in the foreground Activity."</string>
+    <string name="finish_watch_setup" formatted="false">"Finish Watch Setup"</string>
+    <string name="finish_setup_sent_finish_initial_synchronization" formatted="false">"FINISH_SETUP sent (finish initial synchronization)"</string>
+    <string name="watch_face_appeared_save_normal_mode" formatted="false">"Watch Face Appeared — Save Normal Mode"</string>
+    <string name="send_current_wi_fi_network_to_watch" formatted="false">"Send Current Wi-Fi Network to Watch"</string>
+    <string name="wi_fi_request_accepted_after_delivery_check_settings_wi" formatted="false">"Wi-Fi: request accepted. After delivery, check Settings → Wi-Fi on the watch."</string>
+    <string name="wi_fi_wait_for_the_activated_pair_to_connect" formatted="false">"Wi-Fi: wait for the activated pair to connect first."</string>
+    <string name="allow_flashlight_for_find_phone_from_watch" formatted="false">"Allow Flashlight for Find Phone from Watch"</string>
+    <string name="find_phone_flashlight_permission_is_already_granted" formatted="false">"Find Phone flashlight permission is already granted."</string>
+    <string name="no_saved_pair" formatted="false">"No saved pair"</string>
+    <string name="stop_the_current_run_first_confirmation_applies_to_the" formatted="false">"Stop the current run first; confirmation applies to the next connection."</string>
+    <string name="could_not_save_confirmation" formatted="false">"Could not save confirmation"</string>
+    <string name="normal_mode_saved_for_this_pair_with_owner_confirmation" formatted="false">"Normal mode saved for this pair with owner confirmation. "</string>
+    <string name="setup_will_not_repeat_native_issetup_and_operational_health" formatted="false">"Setup will not repeat; native isSetup and operational health are not overridden."</string>
+    <string name="setup_confirmation_not_saved" formatted="false">"Setup confirmation not saved: "</string>
+    <string name="root_hal_host_is_already_running" formatted="false">"Root HAL host is already running."</string>
+    <string name="new_pairing_rejected_an_activated_pair_is_saved_normal" formatted="false">"New pairing rejected: an activated pair is saved. Normal connection preserves its keys."</string>
+    <string name="allow_bluetooth_access_and_connect_again" formatted="false">"Allow Bluetooth access and connect again."</string>
+    <string name="connection_handed_to_the_background_service_closing_this_screen" formatted="false">"Connection handed to the background service; closing this screen does not stop HAL."</string>
+    <string name="background_connection_did_not_start" formatted="false">"Background connection did not start: "</string>
+    <string name="new_run" formatted="false">"=== New run: "</string>
+    <string name="commit_and_activation_albert_https" formatted="false">"Commit and activation (Albert HTTPS): "</string>
+    <string name="enabled" formatted="false">"ENABLED"</string>
+    <string name="disabled" formatted="false">"DISABLED"</string>
+    <string name="fresh_pairing_a_new_code_is_required_for_this" formatted="false">"FRESH PAIRING: a new code is required for this run; "</string>
+    <string name="the_saved_session_is_not_sent_to_the_helper" formatted="false">"the saved session is not sent to the helper. "</string>
+    <string name="its_encrypted_file_is_retained_until_a_new_pair" formatted="false">"Its encrypted file is retained until a new pair is created."</string>
+    <string name="requires_magisk_root_and_the_installed_bridge_module" formatted="false">"Requires Magisk root and the installed bridge module."</string>
+    <string name="fail_closed_direct_mode_requires_bluetooth_off" formatted="false">"Fail-closed: direct mode requires Bluetooth OFF; "</string>
+    <string name="with_bluetooth_on_only_a_signed_catplay" formatted="false">"with Bluetooth ON, only a signed CatPlay "</string>
+    <string name="handoff_after_bmw_wi_fi_and_media_are_ready" formatted="false">"handoff after BMW Wi-Fi and media are ready is allowed."</string>
+    <string name="normal_activated_pair_connection_setup_albert_and_new_pin" formatted="false">"Normal activated-pair connection; Setup, Albert, and new PIN pairing are disabled."</string>
+    <string name="ids_identity_protection_keys_stored_in_android_keystore_helper" formatted="false">"IDS identity: protection keys stored in Android Keystore; helper received public keys and the persistent phone identifier."</string>
+    <string name="persistent_static_random_ble_identity" formatted="false">"Persistent static-random BLE identity "</string>
+    <string name="derived_from_a_non_exportable_android_keystore" formatted="false">"derived from a non-exportable Android Keystore "</string>
+    <string name="key_and_sent_to_the_helper_address_irk" formatted="false">"key and sent to the helper; address/IRK "</string>
+    <string name="saved_pairing_session_state" formatted="false">"Saved pairing session (state="</string>
+    <string name="sent_to_the_helper_for_direct_reconnection" formatted="false">") sent to the helper for direct reconnection."</string>
+    <string name="could_not_send_the_saved_session_to_the_helper" formatted="false">"Could not send the saved session to the helper: "</string>
+    <string name="pairingsessionrecord_v2_saved" formatted="false">"PairingSessionRecord v2 saved "</string>
+    <string name="atomically_using_android_keystore" formatted="false">"atomically using Android Keystore "</string>
+    <string name="aes_gcm_and_verified_by_readback" formatted="false">"AES-GCM and verified by readback; "</string>
+    <string name="could_not_securely_save" formatted="false">"Could not securely save "</string>
+    <string name="will_stop_pairing_before_the_next" formatted="false">"will stop pairing before the next "</string>
+    <string name="irreversible_boundary" formatted="false">"irreversible boundary."</string>
+    <string name="bluetooth_bond_material_saved" formatted="false">"Bluetooth bond material saved "</string>
+    <string name="helper_will_stop_smp_before" formatted="false">"helper will stop SMP before "</string>
+    <string name="final_key_distribution" formatted="false">"final key distribution."</string>
+    <string name="root_hal_host_exited_exit" formatted="false">"Root HAL host exited, exit="</string>
+    <string name="success_requires_both_exit_0" formatted="false">"success requires both exit=0 "</string>
+    <string name="and_exactly_one_result_pass_carplay" formatted="false">"and exactly one RESULT: PASS; CarPlay "</string>
+    <string name="mode_also_requires_manager_restore_pass" formatted="false">"mode also requires manager restore PASS."</string>
+    <string name="startup_error" formatted="false">"STARTUP ERROR: "</string>
+    <string name="bluetooth_manager_must_be_off_helper_reads" formatted="false">"Bluetooth Manager must be OFF. Helper reads "</string>
+    <string name="the_config_and_prepares_a_redacted_hypothetical_diff" formatted="false">"the config and prepares a redacted hypothetical diff, "</string>
+    <string name="without_opening_any_file_for_writing" formatted="false">"without opening any file for writing."</string>
+    <string name="fail_closed_bluetooth_manager_must_be_off" formatted="false">"Fail-closed: Bluetooth Manager must be OFF; "</string>
+    <string name="the_existing_bmw_config_must_remain" formatted="false">"the existing BMW config must remain "</string>
+    <string name="byte_for_byte_unchanged" formatted="false">"byte-for-byte unchanged."</string>
+    <string name="root_helper_is_already_running" formatted="false">"Root helper is already running."</string>
+    <string name="no_encrypted_bond_record" formatted="false">"No encrypted bond record; "</string>
+    <string name="stock_import_did_not_start" formatted="false">"stock import did not start."</string>
+    <string name="root_stock_bond_helper_exited" formatted="false">"Root stock-bond helper exited, "</string>
+    <string name="and_result_pass" formatted="false">"and RESULT: PASS."</string>
+    <string name="error" formatted="false">"ERROR "</string>
+    <string name="bluetooth_helper_probe_is_already_running" formatted="false">"Bluetooth helper/probe is already running."</string>
+    <string name="acl_only_probe_did_not_start" formatted="false">"ACL-only probe did not start."</string>
+    <string name="could_not_open_the_exact_bond_identity" formatted="false">"Could not open the exact bond identity; "</string>
+    <string name="acl_only_probe_did_not_start2" formatted="false">"ACL-only probe did not start: "</string>
+    <string name="only_public_bluetooth_apis_and_the_identity_from" formatted="false">"Only public Bluetooth APIs and the identity from "</string>
+    <string name="the_encrypted_bond_record_scan_connectgatt" formatted="false">"the encrypted bond record: scan + connectGatt. "</string>
+    <string name="cccd_and_application_payloads_are_prohibited" formatted="false">"CCCD and application payloads are prohibited."</string>
+    <string name="identity_alignment_did_not_start" formatted="false">"identity alignment did not start."</string>
+    <string name="fail_closed_bluetooth_manager_must_be_off2" formatted="false">"Fail-closed: Bluetooth Manager must be OFF; "</string>
+    <string name="only_bmw_br_edr_and_this_watch_are_allowed" formatted="false">"only BMW BR/EDR and this Watch are allowed. "</string>
+    <string name="one_adapter_irk_line_changes_with_a_separate" formatted="false">"One Adapter IRK line changes, with a separate "</string>
+    <string name="protected_backup" formatted="false">"protected backup."</string>
+    <string name="root_identity_aligner_exited_exit" formatted="false">"Root identity aligner exited, exit="</string>
+    <string name="identity_alignment_error" formatted="false">"IDENTITY ALIGNMENT ERROR: "</string>
+    <string name="could_not_confirm_the_helper_result_for" formatted="false">"Could not confirm the helper result for "</string>
+    <string name="protected_bond_material_storage" formatted="false">"protected bond material storage."</string>
+    <string name="protected_pairing_session_storage" formatted="false">"protected pairing session storage."</string>
+    <string name="root_hal_host_is_not_running" formatted="false">"Root HAL host is not running"</string>
+    <string name="enter_exactly_six_digits_from_the_watch_screen" formatted="false">"Enter exactly six digits from the watch screen"</string>
+    <string name="pin_must_contain_digits_only" formatted="false">"PIN must contain digits only"</string>
+    <string name="six_digit_pin_sent_to_the_root_process" formatted="false">"Six-digit PIN sent to the root process; "</string>
+    <string name="its_value_was_not_logged" formatted="false">"its value was not logged."</string>
+    <string name="could_not_send_pin" formatted="false">"Could not send PIN: "</string>
+    <string name="activation_lock_albert_requested_owner_confirmation" formatted="false">"Activation Lock: Albert requested owner confirmation ("</string>
+    <string name="account" formatted="false">", account "</string>
+    <string name="retry_after_a_rejected_attempt" formatted="false">", retry after a rejected attempt"</string>
+    <string name="watch_is_waiting_buddyml_page_was_not_sent_to" formatted="false">"); watch is waiting, buddyml page was NOT sent to it. "</string>
+    <string name="waiting_for_input_in_the_dialog" formatted="false">"Waiting for input in the dialog."</string>
+    <string name="could_not_parse_activation_challenge" formatted="false">"Could not parse activation challenge: "</string>
+    <string name="activation_lock_albert_returned_message" formatted="false">"Activation Lock: Albert returned message \\""</string>
+    <string name="waiting_for_a_choice_in_the_dialog" formatted="false">"; waiting for a choice in the dialog."</string>
+    <string name="could_not_parse_activation_alert" formatted="false">"Could not parse activation alert: "</string>
+    <string name="albert_response" formatted="false">"Albert response: "</string>
+    <string name="apple_watch_activation" formatted="false">"Apple Watch Activation"</string>
+    <string name="n_nretry_the_activation_request" formatted="false">"\n\nRetry the activation request "</string>
+    <string name="to_albert_the_watch_is_still_waiting_for_a" formatted="false">"to Albert? The watch is still waiting for a reply."</string>
+    <string name="retry" formatted="false">"Retry"</string>
+    <string name="cancel" formatted="false">"Cancel"</string>
+    <string name="activation_retry_requested_from_albert" formatted="false">"Activation retry requested from Albert; "</string>
+    <string name="waiting_for_a_new_confirmation_page" formatted="false">"waiting for a new confirmation page."</string>
+    <string name="apple_account_password" formatted="false">"Apple Account Password"</string>
+    <string name="apple_watch_is_locked_to_account" formatted="false">"Apple Watch is locked to account "</string>
+    <string name="enter_its_apple_account_and_password_they_are_sent" formatted="false">". Enter its Apple Account and password: they are sent only "</string>
+    <string name="to_albert_apple_com_as_an_iphone_would_and" formatted="false">"to albert.apple.com (as an iPhone would) and are not "</string>
+    <string name="logged" formatted="false">"logged."</string>
+    <string name="apple_requires_owner_confirmation_page" formatted="false">"Apple requires owner confirmation (page "</string>
+    <string name="values_are_sent_only_to_albert_apple_com" formatted="false">"). Values are sent only to albert.apple.com."</string>
+    <string name="albert_rejected_the_previous_attempt_check_your" formatted="false">"Albert rejected the previous attempt — check your "</string>
+    <string name="account_and_password_n_n" formatted="false">"account and password.\n\n"</string>
+    <string name="apple_watch_activation_lock" formatted="false">"Apple Watch Activation Lock"</string>
+    <string name="unlock" formatted="false">"Unlock"</string>
+    <string name="fill_in_all_fields" formatted="false">"Fill in all fields"</string>
+    <string name="owner_credentials_sent_to_the_root_process" formatted="false">"Owner credentials sent to the root process "</string>
+    <string name="for_an_albert_retry_values_are_not" formatted="false">"for an Albert retry; values are not "</string>
+    <string name="could_not_send_credentials" formatted="false">"Could not send credentials: "</string>
+    <string name="credential_entry_cancelled_the_watch_may_repeat" formatted="false">"Credential entry cancelled; the watch may repeat "</string>
+    <string name="the_activation_request" formatted="false">"the activation request."</string>
+    <string name="stock_ble_probe_stop_requested" formatted="false">"Stock BLE probe stop requested."</string>
+    <string name="safe_stop_disconnect_requested_source" formatted="false">"Safe stop/disconnect requested; source="</string>
+    <string name="could_not_send_stop" formatted="false">"Could not send STOP: "</string>
+    <string name="could_not_read_the_full_log_copied_the_current" formatted="false">"Could not read the full log; copied the current log"</string>
+    <string name="full_log_copied" formatted="false">"Full log copied"</string>
+    <string name="ui_log_recent_copied">Recent log copied. Full journal is saved in the app files.</string>
+    <string name="ui_log_copy_failed">Could not copy the log. The journal is still saved in the app files.</string>
+    <string name="bluetooth_log_is_not_being_recorded" formatted="false">"Bluetooth log is not being recorded: "</string>
+    <string name="apple_watch_connection" formatted="false">"Apple Watch Connection"</string>
+    <string name="watch_connected" formatted="false">"Watch connected"</string>
+    <string name="watch_disconnected" formatted="false">"Watch disconnected"</string>
+    <string name="connecting" formatted="false">"Connecting…"</string>
+    <string name="disconnect" formatted="false">"Disconnect"</string>
+    <string name="stop_alert" formatted="false">"Stop Alert"</string>
+    <string name="no_confirmed_activated_pair" formatted="false">"No confirmed activated pair"</string>
+    <string name="invalid_transport_state" formatted="false">"Invalid transport state"</string>
+    <string name="reconnecting" formatted="false">"Reconnecting…"</string>
+    <string name="disconnecting" formatted="false">"Disconnecting…"</string>
+    <string name="camera_permission_enables_the_phone_flashlight_when_finding_it" formatted="false">"Camera permission enables the phone flashlight when finding it from your watch. No photos or videos are taken."</string>
+    <string name="allow_flashlight" formatted="false">"Allow Flashlight"</string>
+</resources>
