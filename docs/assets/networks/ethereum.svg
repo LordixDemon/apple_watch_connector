@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">Ethereum</title>
+  <circle cx="24" cy="24" r="24" fill="#202638"/>
+  <path d="m24 6-11 18 11 6Z" fill="#c9d1e7"/>
+  <path d="m24 6 11 18-11 6Z" fill="#8592b7"/>
+  <path d="m24 19-11 5 11 6Z" fill="#9aa7cc"/>
+  <path d="m24 19 11 5-11 6Z" fill="#626f96"/>
+  <path d="m13 26 11 16V32Z" fill="#c9d1e7"/>
+  <path d="m35 26-11 16V32Z" fill="#8592b7"/>
+</svg>

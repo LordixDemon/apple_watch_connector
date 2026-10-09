@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">Polygon</title>
+  <circle cx="24" cy="24" r="24" fill="#8247e5"/>
+  <path d="m23 19 9-5 8 5v9l-8 5-8-5v-4m1 5-9 5-8-5v-9l8-5 8 5v4" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

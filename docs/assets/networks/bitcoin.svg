@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">Bitcoin</title>
+  <circle cx="24" cy="24" r="24" fill="#f7931a"/>
+  <g transform="rotate(14 24 24)" fill="#fff">
+    <path d="M14 12h12c5 0 8 2.3 8 6 0 2.2-1.2 3.9-3.1 4.8 2.6.9 4.1 2.8 4.1 5.4 0 4.3-3.6 6.8-9.3 6.8H14v-4h3V16h-3Zm8 4v6h3.5c2.2 0 3.4-1.1 3.4-3s-1.2-3-3.4-3Zm0 10v5h4c2.7 0 4-1 4-2.6 0-1.5-1.3-2.4-4-2.4Z"/>
+    <path d="M21 8h3v5h-3Zm6 0h3v5h-3ZM21 34h3v6h-3Zm6 0h3v6h-3Z"/>
+  </g>
+</svg>

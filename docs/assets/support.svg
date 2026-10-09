@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="42" viewBox="0 0 224 42" role="img" aria-labelledby="title">
+  <title id="title">Support · Поддержать</title>
+  <rect x=".5" y=".5" width="223" height="41" rx="10" fill="#3d2535" stroke="#ac728b"/>
+  <rect x="10" y="10" width="28" height="22" rx="5" fill="#ffb4cd"/>
+  <path d="M24 27.5 18.4 22a3.5 3.5 0 0 1 5-4.9l.6.6.6-.6a3.5 3.5 0 0 1 5 4.9Z" fill="#52233b"/>
+  <text x="129" y="26" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#fff0f6">Support · Поддержать</text>
+</svg>

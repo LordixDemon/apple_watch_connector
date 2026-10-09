@@ -14,6 +14,8 @@
   <a href="#english"><img src="docs/assets/language-en.svg" alt="English" width="136" height="42"></a>
   &nbsp;
   <a href="#russian"><img src="docs/assets/language-ru.svg" alt="Русский" width="136" height="42"></a>
+  &nbsp;
+  <a href="docs/DONATIONS.md"><img src="docs/assets/support.svg" alt="Support the developer · Поддержать разработчика" width="224" height="42"></a>
 </p>
 
 <p align="center">
@@ -1119,6 +1121,8 @@ Third-party tree/binary licenses and provenance remain in their own `LICENSE`/`N
   <a href="#english"><img src="docs/assets/language-en.svg" alt="English" width="136" height="42"></a>
   &nbsp;
   <a href="#russian"><img src="docs/assets/language-ru.svg" alt="Русский" width="136" height="42"></a>
+  &nbsp;
+  <a href="docs/DONATIONS.md"><img src="docs/assets/support.svg" alt="Поддержать разработчика · Support the developer" width="224" height="42"></a>
 </p>
 
 <p align="center">

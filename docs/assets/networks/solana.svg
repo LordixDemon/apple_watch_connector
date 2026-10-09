@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">Solana</title>
+  <defs>
+    <linearGradient id="solana" x1="35" y1="11" x2="13" y2="37" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14f195"/>
+      <stop offset="1" stop-color="#9945ff"/>
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="24" fill="#10131a"/>
+  <path d="m15 12-5 5a1 1 0 0 0 .7 1.7h22a1 1 0 0 0 .7-.3l5-5a1 1 0 0 0-.7-1.7h-22a1 1 0 0 0-.7.3Zm-4.3 9a1 1 0 0 0-.7 1.7l5 5a1 1 0 0 0 .7.3h22a1 1 0 0 0 .7-1.7l-5-5a1 1 0 0 0-.7-.3Zm4.3 9-5 5a1 1 0 0 0 .7 1.7h22a1 1 0 0 0 .7-.3l5-5a1 1 0 0 0-.7-1.7h-22a1 1 0 0 0-.7.3Z" fill="url(#solana)"/>
+</svg>
