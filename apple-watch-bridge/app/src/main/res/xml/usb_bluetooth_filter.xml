@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- USB Bluetooth controllers: Wireless Controller / RF / Bluetooth Programming.
+     Android also matches this against interface classes of composite devices. -->
+<resources>
+    <usb-device class="224" subclass="1" protocol="1" />
+</resources>

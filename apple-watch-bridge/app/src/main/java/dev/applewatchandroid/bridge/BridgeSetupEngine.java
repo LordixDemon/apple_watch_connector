@@ -342,6 +342,7 @@ final class BridgeSetupEngine implements AutoCloseable {
                     + getString(R.string.the_saved_session_is_not_sent_to_the_helper)
                     + getString(R.string.its_encrypted_file_is_retained_until_a_new_pair));
         }
+        appendLog(getString(R.string.requires_usb_bluetooth_adapter));
         appendLog(getString(R.string.requires_magisk_root_and_the_installed_bridge_module));
         appendLog(getString(R.string.fail_closed_direct_mode_requires_bluetooth_off)
                 + getString(R.string.with_bluetooth_on_only_a_signed_catplay)
@@ -371,88 +372,107 @@ final class BridgeSetupEngine implements AutoCloseable {
                 idsPublicBundle = boundPublicBundle;
                 localIdentityRecord =
                         deriveStableLocalIdentityRecord();
-                int bluetoothState = stockBluetoothState();
-                CarPlayBluetoothHandoffClient.Status handoffStatus =
-                        CarPlayBluetoothHandoffClient.Status
-                                .unavailable();
-                if (bluetoothState
-                        == BluetoothAdapter.STATE_ON) {
-                    handoffClient =
-                            new CarPlayBluetoothHandoffClient(
-                                    context.getContentResolver());
-                    handoffStatus = handoffClient.status();
-                }
-                CarPlayHandoffDecision.Mode mode =
-                        CarPlayHandoffDecision.decide(
-                                bluetoothState
-                                        == BluetoothAdapter.STATE_OFF,
-                                bluetoothState
-                                        == BluetoothAdapter.STATE_ON,
-                                handoffStatus.available,
-                                handoffStatus.wifiReady,
-                                handoffStatus.vehicleMediaActive,
-                                handoffStatus.prepared);
-                if (mode
-                        == CarPlayHandoffDecision.Mode.REFUSE) {
-                    throw new IOException(
-                            "Bluetooth/CarPlay readiness gate refused "
-                                    + "startup: adapterState="
-                                    + bluetoothState
-                                    + " provider="
-                                    + handoffStatus.available
-                                    + " wifiReady="
-                                    + handoffStatus.wifiReady
-                                    + " vehicleMediaActive="
-                                    + handoffStatus
-                                    .vehicleMediaActive
-                                    + " alreadyPrepared="
-                                    + handoffStatus.prepared);
-                }
-                if (mode
-                        == CarPlayHandoffDecision.Mode
-                        .COOPERATIVE_CARPLAY) {
-                    handoffMayBePrepared = true;
-                    CarPlayBluetoothHandoffClient.Status prepared =
-                            handoffClient.prepare();
-                    if (!prepared.available
-                            || !prepared.ready
-                            || !prepared.prepared) {
-                        throw new IOException(
-                                "CarPlay handoff preparation failed: "
-                                        + "ready="
-                                        + prepared.ready
-                                        + " prepared="
-                                        + prepared.prepared);
+                // No-root mode: an attached USB adapter replaces the HAL lease, so
+                // stock Bluetooth may stay on and no CarPlay handoff is needed.
+                String usbAdapter = UsbBluetoothAccess.attached(context)
+                        ? UsbBluetoothAccess.requireAdapter(context, this::appendLog) : null;
+                if (usbAdapter == null) {
+                    int bluetoothState = stockBluetoothState();
+                    CarPlayBluetoothHandoffClient.Status handoffStatus =
+                            CarPlayBluetoothHandoffClient.Status
+                                    .unavailable();
+                    if (bluetoothState
+                            == BluetoothAdapter.STATE_ON) {
+                        handoffClient =
+                                new CarPlayBluetoothHandoffClient(
+                                        context.getContentResolver());
+                        handoffStatus = handoffClient.status();
                     }
-                    handoffPrepared = true;
-                    appendLog("Cooperative CarPlay handoff prepared; "
-                            + "root manager session active.");
-                } else {
-                    appendLog("DIRECT HAL MODE: stock Bluetooth OFF; "
-                            + "CatPlay handoff not requested.");
+                    CarPlayHandoffDecision.Mode mode =
+                            CarPlayHandoffDecision.decide(
+                                    bluetoothState
+                                            == BluetoothAdapter.STATE_OFF,
+                                    bluetoothState
+                                            == BluetoothAdapter.STATE_ON,
+                                    handoffStatus.available,
+                                    handoffStatus.wifiReady,
+                                    handoffStatus.vehicleMediaActive,
+                                    handoffStatus.prepared);
+                    if (mode
+                            == CarPlayHandoffDecision.Mode.REFUSE) {
+                        throw new IOException(
+                                "Bluetooth/CarPlay readiness gate refused "
+                                        + "startup: adapterState="
+                                        + bluetoothState
+                                        + " provider="
+                                        + handoffStatus.available
+                                        + " wifiReady="
+                                        + handoffStatus.wifiReady
+                                        + " vehicleMediaActive="
+                                        + handoffStatus
+                                        .vehicleMediaActive
+                                        + " alreadyPrepared="
+                                        + handoffStatus.prepared);
+                    }
+                    if (mode
+                            == CarPlayHandoffDecision.Mode
+                            .COOPERATIVE_CARPLAY) {
+                        handoffMayBePrepared = true;
+                        CarPlayBluetoothHandoffClient.Status prepared =
+                                handoffClient.prepare();
+                        if (!prepared.available
+                                || !prepared.ready
+                                || !prepared.prepared) {
+                            throw new IOException(
+                                    "CarPlay handoff preparation failed: "
+                                            + "ready="
+                                            + prepared.ready
+                                            + " prepared="
+                                            + prepared.prepared);
+                        }
+                        handoffPrepared = true;
+                        appendLog("Cooperative CarPlay handoff prepared; "
+                                + "root manager session active.");
+                    } else {
+                        appendLog("DIRECT HAL MODE: stock Bluetooth OFF; "
+                                + "CatPlay handoff not requested.");
+                    }
                 }
-                String apk = context.getApplicationInfo().sourceDir;
-                String rootMain = handoffPrepared
-                        ? ROOT_CARPLAY_MAIN
-                        : ROOT_MAIN;
                 if (stopping) throw new IOException("Session cancelled before HAL startup");
                 if (opticalCode != null) {
                     if (replacedPair != null) retirePairForOpticalReplacement(replacedPair);
                     else if (encryptedPairingSessionFile.exists()) throw new IOException("A saved pair appeared before optical setup");
                 }
-                String command =
-                        "CLASSPATH=" + shellQuote(apk)
-                                + " app_process /system/bin "
-                                + rootMain
-                                + " --acknowledge-target "
-                                + TARGET_ACK
-                                + (operationalPairing != null
-                                    ? " --operational-pairing " + shellQuote(operationalPairing)
-                                    : (commitAuthorized ? " --commit-is-paired" : ""))
-                                + (opticalCode == null ? "" : " --optical-pairing");
-                process = new ProcessBuilder("su", "-c", command)
-                        .redirectErrorStream(true)
-                        .start();
+                if (usbAdapter != null) {
+                    java.util.List<String> hostArgs = new java.util.ArrayList<>(java.util.List.of(
+                            "--acknowledge-target", TARGET_ACK));
+                    if (operationalPairing != null) {
+                        hostArgs.add("--operational-pairing");
+                        hostArgs.add(operationalPairing);
+                    } else if (commitAuthorized) {
+                        hostArgs.add("--commit-is-paired");
+                    }
+                    if (opticalCode != null) hostArgs.add("--optical-pairing");
+                    process = UsbHostProcess.start(context, hostArgs.toArray(new String[0]), usbAdapter);
+                } else {
+                    String apk = context.getApplicationInfo().sourceDir;
+                    String rootMain = handoffPrepared
+                            ? ROOT_CARPLAY_MAIN
+                            : ROOT_MAIN;
+                    String command =
+                            "CLASSPATH=" + shellQuote(apk)
+                                    + " app_process /system/bin "
+                                    + rootMain
+                                    + " --acknowledge-target "
+                                    + TARGET_ACK
+                                    + (operationalPairing != null
+                                        ? " --operational-pairing " + shellQuote(operationalPairing)
+                                        : (commitAuthorized ? " --commit-is-paired" : ""))
+                                    + (opticalCode == null ? "" : " --optical-pairing");
+                    process = new ProcessBuilder("su", "-c", command)
+                            .redirectErrorStream(true)
+                            .start();
+                }
                 rootProcess = process;
                 rootInput = new BufferedWriter(new OutputStreamWriter(
                         process.getOutputStream(), StandardCharsets.UTF_8));

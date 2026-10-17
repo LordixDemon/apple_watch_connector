@@ -7,8 +7,11 @@ final class CompanionPlatform {
     required this.androidDiagnostics,
     required this.codeOnlyPairing,
   });
+  // Camera pairing needs the iOS VisualPairing asset, which is not part of the
+  // source tree. Builds without it pass --dart-define=OPTICAL_PAIRING=false and
+  // pair with the watch's six-digit code instead.
   static const android = CompanionPlatform(
-    opticalPairing: true,
+    opticalPairing: bool.fromEnvironment('OPTICAL_PAIRING', defaultValue: true),
     androidDiagnostics: true,
     codeOnlyPairing: false,
   );
