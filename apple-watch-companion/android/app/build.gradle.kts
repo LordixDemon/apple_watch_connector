@@ -5,6 +5,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val opticalFirmwareAvailable = rootProject.projectDir.resolve("../../firmware/ios-26.6-23G71/extracted/VisualPairing").isFile
+
 android {
     namespace = "dev.applewatchandroid.companion.apple_watch_companion"
     compileSdk = flutter.compileSdkVersion
@@ -31,10 +33,14 @@ android {
         versionName = flutter.versionName
         testInstrumentationRunner = "dev.applewatchandroid.companion.apple_watch_companion.OpticalDecoderInstrumentation"
         ndk { abiFilters += "arm64-v8a" }
-        externalNativeBuild { cmake { cppFlags += "-O2" } }
+        if (opticalFirmwareAvailable) externalNativeBuild { cmake { cppFlags += "-O2" } }
     }
 
-    externalNativeBuild { cmake { path = file("src/main/cpp/CMakeLists.txt"); version = "3.22.1" } }
+    // The optical reader only runs Apple's VisualPairing asset; without it the
+    // camera path is disabled and neither the NDK nor CMake is required.
+    if (opticalFirmwareAvailable) {
+        externalNativeBuild { cmake { path = file("src/main/cpp/CMakeLists.txt"); version = "3.22.1" } }
+    }
     testBuildType = "release"
     sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/opticalAssets"))
 
@@ -69,7 +75,7 @@ val prepareOpticalAsset = tasks.register<Exec>("prepareOpticalAsset") {
         opticalRepository.resolve("research-tools/prepare_optical_android_asset.py"),
         opticalRepository.resolve("firmware/ios-26.6-23G71/extracted/VisualPairing"), opticalAsset.get().asFile)
 }
-tasks.named("preBuild") { dependsOn(prepareOpticalAsset) }
+if (opticalFirmwareAvailable) tasks.named("preBuild") { dependsOn(prepareOpticalAsset) }
 
 flutter {
     source = "../.."
