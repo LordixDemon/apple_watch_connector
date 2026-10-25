@@ -1,9 +1,9 @@
 # Application localization
 
 Bridge 0.2.377 and Companion 1.0.8 use English as the application language.
-Only English translations ship currently, so a phone configured for another
-language falls back to English. This changes application presentation; it does
-not send a language or region setting to the Watch.
+Companion also ships a Simplified Chinese catalog; a phone configured for any
+other language falls back to English. This changes application presentation; it
+does not send a language or region setting to the Watch.
 
 ## Android Bridge
 
@@ -25,9 +25,20 @@ the codec's independent default is English. It does not localize action IDs.
 ## Flutter Companion
 
 The source catalog is `apple-watch-companion/lib/l10n/app_en.arb`. Messages have
-stable keys, with placeholders for dynamic values and an ICU plural message
-for the watch face collection count. Date formatting uses the application's
-resolved locale instead of the phone's unsupported locale.
+stable keys, with placeholders for dynamic values and ICU plural messages for
+the watch face collection count and the photo selection count. Date formatting
+uses the application's resolved locale instead of the phone's unsupported
+locale.
+
+`app_zh.arb` is the Simplified Chinese catalog. Apple's own Simplified Chinese
+terminology is used for watch features and hardware: 数码表冠 (Digital Crown),
+互点两下 (Double Tap), 体能训练 (Workout), 复杂功能 (complications), 表盘
+(watch face), 航点 (waypoint), and 回溯 (Backtrack). Apple Watch face names are
+translated (`Wayfinder` → 寻路者, `Modular` → 模块, `Infograph` → 图文), while
+product and service names stay unchanged (`Apple Watch`, `Ultra`, watchOS
+version numbers, `Nike Bounce Volt`, `Wi-Fi`, `Bridge`, `Companion`).
+`nativePhotoLeading` and `nativePhotoTrailing` describe where the time sits on
+a photo face and read 靠左 / 靠右.
 
 `lib/l10n/strings.dart` exposes the locale loaded by the app delegate, including
 an English fallback for presentation models constructed before widget startup.
