@@ -6,7 +6,6 @@ android {
     namespace "dev.applewatchandroid.bridge"
     compileSdk 36
     buildToolsVersion "36.1.0"
-    ndkVersion "28.2.13676358"
 
     defaultConfig {
         applicationId "dev.applewatchandroid.bridge"
@@ -78,8 +77,15 @@ tasks.register("buildReplicatorQuic") {
         }
     }
 }
-android.sourceSets.main.jniLibs.srcDir(files(quicJniOutput).builtBy(tasks.named("buildReplicatorQuic")))
-tasks.named("preBuild").configure { dependsOn("buildReplicatorQuic") }
+// A prebuilt arm64 QUIC library (extracted from the published release) avoids
+// requiring Rust and the NDK for a plain APK build.
+def prebuiltQuicJni = file("prebuilt-jni")
+if (new File(prebuiltQuicJni, "arm64-v8a/libwatch_replicator_quic.so").isFile()) {
+    android.sourceSets.main.jniLibs.srcDir(prebuiltQuicJni)
+} else {
+    android.sourceSets.main.jniLibs.srcDir(files(quicJniOutput).builtBy(tasks.named("buildReplicatorQuic")))
+    tasks.named("preBuild").configure { dependsOn("buildReplicatorQuic") }
+}
 
 dependencies {
     implementation project(":core")

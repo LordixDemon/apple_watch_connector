@@ -199,4 +199,5 @@
     <string name="disconnecting" formatted="false">"Disconnecting…"</string>
     <string name="camera_permission_enables_the_phone_flashlight_when_finding_it" formatted="false">"Camera permission enables the phone flashlight when finding it from your watch. No photos or videos are taken."</string>
     <string name="allow_flashlight" formatted="false">"Allow Flashlight"</string>
+    <string name="requires_usb_bluetooth_adapter" formatted="false">"No-root mode: when a USB Bluetooth adapter is attached (USB-OTG) it is used directly; stock Bluetooth is not touched and may stay on. Without one:"</string>
 </resources>

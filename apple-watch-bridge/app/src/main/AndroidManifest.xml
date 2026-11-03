@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- No-root transport: an external USB Bluetooth adapter on USB-OTG. -->
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+    <!-- Lets the connectedDevice foreground service start without a runtime grant. -->
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
     <uses-permission
         android:name="android.permission.BLUETOOTH"
@@ -43,7 +47,18 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/usb_bluetooth_filter" />
         </activity>
+
+        <!-- Replaces the Magisk root helper: one protocol host per isolated process. -->
+        <service
+            android:name=".UsbHciHostService"
+            android:exported="false"
+            android:process=":hci" />
 
         <service
             android:name=".OperationalWatchService"

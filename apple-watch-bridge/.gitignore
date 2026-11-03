@@ -4,3 +4,4 @@ app/build/
 core/build/
 hal/build/
 local.properties
+app/prebuilt-jni/
