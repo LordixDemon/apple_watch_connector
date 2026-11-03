@@ -557,7 +557,10 @@ final class BridgeSetupEngine implements AutoCloseable {
                             catch (IllegalArgumentException invalid) { appendLog("Invalid setup progress event ignored."); }
                             continue;
                         }
-                        if (line.startsWith("WATCH_DISCOVERED_V1:")) { discover(line); continue; }
+                        // The helper logs discoveries through ProtocolHost.log, which adds a
+                        // "[WatchHal] [T+...]" prefix, so match the marker anywhere in the line.
+                        String discovery = WatchDiscoveryEvent.find(line);
+                        if (discovery != null) { discover(discovery); continue; }
                         if (line.startsWith(HealthRegistryObservationCodec.PREFIX) || line.startsWith(HealthDataEventCodec.PREFIX) || line.startsWith(HealthPeerIdentityCodec.PREFIX)
                                 || line.startsWith(HealthOutboundIpcCodec.STATUS_PREFIX)) {
                             // Health Data is handled by OperationalWatchService in a ready pair/epoch.
