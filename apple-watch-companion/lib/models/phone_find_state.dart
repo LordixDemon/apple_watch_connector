@@ -56,4 +56,29 @@ class PhoneFindState {
     final age = now.millisecondsSinceEpoch - observedAt!;
     return age >= 5500 || age < -5000;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PhoneFindState &&
+          available == other.available &&
+          flashPermission == other.flashPermission &&
+          active == other.active &&
+          behavior == other.behavior &&
+          localProbe == other.localProbe &&
+          didPlay == other.didPlay &&
+          observedAt == other.observedAt &&
+          stopReason == other.stopReason;
+
+  @override
+  int get hashCode => Object.hash(
+    available,
+    flashPermission,
+    active,
+    behavior,
+    localProbe,
+    didPlay,
+    observedAt,
+    stopReason,
+  );
 }

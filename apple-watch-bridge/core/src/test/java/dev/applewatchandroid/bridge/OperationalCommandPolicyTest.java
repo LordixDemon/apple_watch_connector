@@ -22,6 +22,9 @@ public class OperationalCommandPolicyTest {
         assertTrue(OperationalCommandPolicy.isAllowed("SET_ACTIVE_FACE:3AE33A93-96BD-422A-AA56-C3E312ABABCD"));
         assertTrue(OperationalCommandPolicy.isAllowed("SEND_BULLETIN:YWJjZA=="));
         assertTrue(OperationalCommandPolicy.isAllowed("REMOVE_BULLETIN:YWJjZA=="));
+        assertTrue(OperationalCommandPolicy.isAllowed("SEND_SECTION_INFO:YWJjZA=="));
+        assertFalse(OperationalCommandPolicy.isAllowed("SEND_SECTION_INFO:"));
+        assertFalse(OperationalCommandPolicy.isAllowed("SEND_SECTION_INFO:YWJj\nSTOP"));
         assertEquals(15_000L, OperationalCommandPolicy.reconnectDelayMs(1));
         assertEquals(30_000L, OperationalCommandPolicy.reconnectDelayMs(2));
         assertEquals(60_000L, OperationalCommandPolicy.reconnectDelayMs(Integer.MAX_VALUE));

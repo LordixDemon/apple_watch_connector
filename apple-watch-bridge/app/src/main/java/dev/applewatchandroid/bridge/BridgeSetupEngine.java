@@ -602,10 +602,6 @@ final class BridgeSetupEngine implements AutoCloseable {
                                     line.substring("ACTIVATION-ALERT-V1:".length()));
                             continue;
                         }
-                        if (line.startsWith("EVENT:NOTIFICATION_DISMISS")) {
-                            Intent eventIntent = new Intent("dev.applewatchandroid.companion.ACTION_NOTIFICATION_DISMISS");
-                            context.sendBroadcast(eventIntent);
-                        }
                         if (line.contains("PAIRED IDS LIVE HOLD: session ready")) {
                             BridgeIpcDispatcher.getInstance().updateConnectionState(true, "Apple Watch");
                             Intent eventIntent = new Intent("dev.applewatchandroid.companion.ACTION_CONNECTION_STATE");

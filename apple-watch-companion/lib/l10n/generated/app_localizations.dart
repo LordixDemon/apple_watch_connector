@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_ru.dart';
 
 // ignore_for_file: type=lint
 
@@ -92,7 +93,10 @@ abstract class AppLocalizations {
       ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('ru'),
+  ];
 
   /// No description provided for @bluetoothAdapter.
   ///
@@ -310,12 +314,6 @@ abstract class AppLocalizations {
   /// **'OK'**
   String get ok;
 
-  /// Caption above the face preview time slider.
-  ///
-  /// In en, this message translates to:
-  /// **'DIGITAL CROWN / TIME TRAVEL'**
-  String get digitalCrownTimeTravel;
-
   /// Application UI text.
   ///
   /// In en, this message translates to:
@@ -349,20 +347,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Track activity, heart rate, power zones, and GPS routes.'**
-  String get trackActivityHeartRatePowerZonesAndGpsRoutes;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Activity'**
   String get activity;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Move, Exercise, and Stand rings.'**
-  String get moveExerciseAndStandRings;
 
   /// Application UI text.
   ///
@@ -373,32 +359,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Heart rate measurements and alerts.'**
-  String get heartRateMeasurementsAndAlerts;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Compass & Waypoints'**
-  String get compassWaypoints;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Elevation, incline, coordinates, and Backtrack routes.'**
-  String get elevationInclineCoordinatesAndBacktrackRoutes;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Music'**
   String get music;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Stream audio and control playback.'**
-  String get streamAudioAndControlPlayback;
 
   /// Application UI text.
   ///
@@ -409,20 +371,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Send and receive messages, use dictation and quick replies.'**
-  String get sendAndReceiveMessagesUseDictationAndQuickReplies;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Phone'**
   String get phone;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Calls over Bluetooth or cellular.'**
-  String get callsOverBluetoothOrCellular;
 
   /// Application UI text.
   ///
@@ -433,44 +383,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Forecasts, UV index, precipitation, and wind.'**
-  String get forecastsUvIndexPrecipitationAndWind;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Maps'**
   String get maps;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Turn-by-turn directions with haptic feedback.'**
-  String get turnByTurnDirectionsWithHapticFeedback;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Noise'**
-  String get noise;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Monitor ambient noise levels in decibels.'**
-  String get monitorAmbientNoiseLevelsInDecibels;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Natural Titanium'**
-  String get naturalTitanium;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'49 mm'**
-  String get message49Mm;
 
   /// Application UI text.
   ///
@@ -565,42 +479,6 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Point the camera at your Apple Watch screen'**
-  String get pointTheCameraAtYourAppleWatchScreen;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the 6-digit code shown on your watch'**
-  String get enterThe6DigitCodeShownOnYourWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting for Bridge confirmation…'**
-  String get waitingForBridgeConfirmation;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Setup confirmed by the watch'**
-  String get setupConfirmedByTheWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Setup is not confirmed yet. Apple Watch Bridge is still setting up the watch.'**
-  String get setupIsNotConfirmedYetAppleWatchBridgeIs;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'No setup confirmation from Bridge'**
-  String get noSetupConfirmationFromBridge;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Discover'**
   String get discover;
 
@@ -643,30 +521,6 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Health & Workouts'**
-  String get healthWorkouts;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Set up heart rate zones, GPS routes, and Activity rings'**
-  String get setUpHeartRateZonesGpsRoutesAndActivity;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Compass & Backtrack'**
-  String get compassBacktrack;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Navigate without an internet connection'**
-  String get navigateWithoutAnInternetConnection;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Notification Mirroring'**
   String get notificationMirroring;
 
@@ -685,25 +539,19 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Apple Watch User Guide'**
-  String get appleWatchUserGuide;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'HAL Support & Diagnostics'**
   String get halSupportDiagnostics;
 
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Apple Watch Ultra 2 Controls'**
+  /// **'Apple Watch Controls'**
   String get appleWatchUltra2Controls;
 
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Use Double Tap, the Digital Crown, and the orange Action Button.'**
+  /// **'Use Double Tap, the Digital Crown, and the Action button (Ultra models).'**
   String get useDoubleTapTheDigitalCrownAndTheOrange;
 
   /// Application UI text.
@@ -775,12 +623,6 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'COLOR PALETTE'**
-  String get colorPalette;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Night Mode'**
   String get nightMode;
 
@@ -793,32 +635,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Elevation / Incline'**
-  String get elevationIncline;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Seconds'**
   String get seconds;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'No Bezel'**
-  String get noBezel;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'COMPLICATIONS (TAP TO CHANGE)'**
-  String get complicationsTapToChange;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Save Layout on Phone'**
-  String get saveLayoutOnPhone;
 
   /// Application UI text.
   ///
@@ -829,32 +647,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Choose a complication for {value0}'**
-  String chooseAComplicationFor(String value0);
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'.watchface generated successfully'**
-  String get watchfaceGeneratedSuccessfully;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Created an Apple Watch package ({value0} bytes). '**
-  String createdAnAppleWatchPackageBytes(String value0);
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Includes Face.plist, metadata.plist, and slot configuration.'**
-  String get includesFacePlistMetadataPlistAndSlotConfiguration;
 
   /// Application UI text.
   ///
@@ -909,54 +703,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import'**
   String get import;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Online Gallery'**
-  String get onlineGallery;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloaded from the Apple Watch Face catalog server.'**
-  String get downloadedFromTheAppleWatchFaceCatalogServer;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Imported Wayfinder'**
-  String get importedWayfinder;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Import Apple Watch Face'**
-  String get importAppleWatchFace;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Load a .watchface package (ZIP with Face.plist)'**
-  String get loadAWatchfacePackageZipWithFacePlist;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Watch face imported!'**
-  String get watchFaceImported;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Layout “{value0}” saved on your phone.'**
-  String layoutSavedOnYourPhone(String value0);
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Import Sample .watchface'**
-  String get importSampleWatchface;
 
   /// Application UI text.
   ///
@@ -1057,18 +803,6 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Action Button'**
-  String get actionButton;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick access to workouts, waypoints, the stopwatch, and the safety siren.'**
-  String get quickAccessToWorkoutsWaypointsTheStopwatchAndThe;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'ACTION'**
   String get action;
 
@@ -1081,38 +815,14 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Compass Waypoint'**
-  String get compassWaypoint;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Backtrack'**
   String get backtrack;
 
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Dive & Depth'**
-  String get diveDepth;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Flashlight'**
   String get flashlight;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'SAFETY SIREN'**
-  String get safetySiren;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Hold the Action Button on Apple Watch Ultra to play an 86-decibel alarm audible from up to 180 meters away.'**
-  String get holdTheActionButtonOnAppleWatchUltraTo;
 
   /// Application UI text.
   ///
@@ -1125,18 +835,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{value0} • Version {value1}'**
   String version(String value0, String value1);
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Show App on Apple Watch'**
-  String get showAppOnAppleWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Display & Brightness'**
-  String get displayBrightness;
 
   /// Application UI text.
   ///
@@ -1159,24 +857,6 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Keep the watch face and app information visible when your wrist is down.'**
-  String get keepTheWatchFaceAndAppInformationVisibleWhen;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Always On'**
-  String get alwaysOn;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'WRIST RAISE'**
-  String get wristRaise;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Wake on Wrist Raise'**
   String get wakeOnWristRaise;
 
@@ -1189,74 +869,14 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'70 seconds'**
-  String get message70Seconds;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'15 seconds'**
-  String get message15Seconds;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Screen Wake Duration on Tap'**
-  String get screenWakeDurationOnTap;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Emergency SOS'**
-  String get emergencySos;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'FALL DETECTION'**
   String get fallDetection;
 
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'If Apple Watch detects a hard fall and you remain immobile for about a minute, it gives a haptic alert, sounds an alarm, and contacts emergency services.'**
-  String get ifAppleWatchDetectsAHardFallAndYou;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Fall Detection'**
-  String get fallDetection2;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'CRASH DETECTION'**
   String get crashDetection;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'After a severe car crash, Apple Watch shows the emergency call slider and automatically calls emergency services after 20 seconds.'**
-  String get afterASevereCarCrashAppleWatchShowsThe;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Crash Detection'**
-  String get crashDetection2;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'MEDICAL INFORMATION'**
-  String get medicalInformation;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Set Up Medical ID'**
-  String get setUpMedicalId;
 
   /// Application UI text.
   ///
@@ -1303,38 +923,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'CONNECTIVITY'**
-  String get connectivity;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Airplane Mode'**
   String get airplaneMode;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset & Unpair'**
-  String get resetUnpair;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Unpair Apple Watch'**
-  String get unpairAppleWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'All data, watch faces, and settings will be erased from the device.'**
-  String get allDataWatchFacesAndSettingsWillBeErased;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Unpair'**
-  String get unpair;
 
   /// Application UI text.
   ///
@@ -1501,20 +1091,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Sounds & Haptics'**
-  String get soundsHaptics;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Notifications'**
   String get notifications;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Passcode'**
-  String get passcode;
 
   /// Application UI text.
   ///
@@ -1537,26 +1115,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Manage connected watches'**
-  String get manageConnectedWatches;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Apple Watch'**
-  String get addAppleWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Notification Indicator'**
   String get notificationIndicator;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Shows a red dot at the top of the watch face when you have unread notifications.'**
-  String get showsARedDotAtTheTopOfThe;
 
   /// Application UI text.
   ///
@@ -1567,38 +1127,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Hide notification details until you tap the screen.'**
-  String get hideNotificationDetailsUntilYouTapTheScreen;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Notification Summary'**
-  String get notificationSummary;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'MIRROR PHONE ALERTS'**
   String get mirrorPhoneAlerts;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Forward alerts from these apps to Apple Watch with haptic feedback.'**
-  String get forwardAlertsFromTheseAppsToAppleWatchWith;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Messages (SMS & RCS)'**
-  String get messagesSmsRcs;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Phone & Calls'**
-  String get phoneCalls;
 
   /// Application UI text.
   ///
@@ -1609,38 +1139,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Calendar & Reminders'**
-  String get calendarReminders;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Banking Apps'**
-  String get bankingApps;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'BULLETIN RELAY TEST'**
-  String get bulletinRelayTest;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Send a test notification to Apple Watch over the secure com.apple.private.alloy.bulletindistributor IDS channel.'**
-  String get sendATestNotificationToAppleWatchOverThe;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Send Test Notification'**
   String get sendTestNotification;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Simulated Telegram / SMS with Taptic feedback'**
-  String get simulatedTelegramSmsWithTapticFeedback;
 
   /// Application UI text.
   ///
@@ -1651,92 +1151,14 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Android ↔ Apple Watch connection is working!'**
-  String get androidAppleWatchConnectionIsWorking;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Notification sent'**
-  String get notificationSent;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'BulletinRequest was handed to the watch protocol stack.'**
-  String get bulletinrequestWasHandedToTheWatchProtocolStack;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Change Passcode'**
-  String get changePasscode;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Simple Passcode (4 digits)'**
-  String get simplePasscode4Digits;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Unlock with Phone'**
   String get unlockWithPhone;
 
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Unlocking your phone automatically unlocks your trusted Apple Watch when worn.'**
-  String get unlockingYourPhoneAutomaticallyUnlocksYourTrustedAppleWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'WRIST DETECTION'**
   String get wristDetection;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Lock Apple Watch when you take it off to protect your data and Apple Pay cards.'**
-  String get lockAppleWatchWhenYouTakeItOffTo;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Wrist Detection'**
-  String get wristDetection2;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'DATA SECURITY'**
-  String get dataSecurity;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Erase all Apple Watch data after 10 failed passcode attempts.'**
-  String get eraseAllAppleWatchDataAfter10FailedPasscode;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Erase Data (10 attempts)'**
-  String get eraseData10Attempts;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatic Updates'**
-  String get automaticUpdates;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Beta Updates'**
-  String get betaUpdates;
 
   /// Application UI text.
   ///
@@ -1771,38 +1193,14 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'HAPTIC FEEDBACK'**
-  String get hapticFeedback;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Haptic Alerts'**
   String get hapticAlerts;
 
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Default'**
-  String get defaultHaptic;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Prominent'**
   String get prominent;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Play an additional haptic before a notification.'**
-  String get playAnAdditionalHapticBeforeANotification;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'SYSTEM FEEDBACK'**
-  String get systemFeedback;
 
   /// Application UI text.
   ///
@@ -1821,12 +1219,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cover to Mute'**
   String get coverToMute;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Cover the display with your palm for at least 3 seconds to mute an incoming call or alert.'**
-  String get coverTheDisplayWithYourPalmForAtLeast;
 
   /// Application UI text.
   ///
@@ -1855,176 +1247,14 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Point the Camera'**
-  String get pointTheCamera;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep Apple Watch in the viewfinder'**
-  String get keepAppleWatchInTheViewfinder;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Place the Apple Watch screen in the center of the frame to recognize the pairing animation automatically.'**
-  String get placeTheAppleWatchScreenInTheCenterOf;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Pair Apple Watch Manually'**
-  String get pairAppleWatchManually;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Pair Manually'**
-  String get pairManually;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the 6-digit Code'**
-  String get enterThe6DigitCode;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap the “i” icon on your Apple Watch to see the pairing code.'**
-  String get tapTheIIconOnYourAppleWatchTo;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync complete!'**
-  String get syncComplete;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Syncing Apple Watch'**
-  String get syncingAppleWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Set Up Apple Watch'**
-  String get setUpAppleWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep Bluetooth on and your watch close to your phone.'**
-  String get keepBluetoothOnAndYourWatchCloseToYour;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect Apple Watch to your Android phone to sync notifications, calls, and workouts.'**
-  String get connectAppleWatchToYourAndroidPhoneToSync;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Pair Apple Watch'**
   String get pairAppleWatch;
 
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Continue'**
-  String get continueAction;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish Setup'**
-  String get finishSetup;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Which wrist do you wear your watch on?'**
-  String get whichWristDoYouWearYourWatchOn;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Apple Watch adjusts wrist raise and gesture recognition for your selected wrist.'**
-  String get appleWatchAdjustsWristRaiseAndGestureRecognitionFor;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Digital Crown Position'**
-  String get digitalCrownPosition;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose which side the Digital Crown is on.'**
-  String get chooseWhichSideTheDigitalCrownIsOn;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Digital Crown on Right'**
-  String get digitalCrownOnRight;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Digital Crown on Left'**
-  String get digitalCrownOnLeft;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Always-On Display'**
   String get alwaysOnDisplay;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'The Always-On Retina display shows the time and important information without raising your wrist.'**
-  String get theAlwaysOnRetinaDisplayShowsTheTimeAnd;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Enable Always-On Display'**
-  String get enableAlwaysOnDisplay;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Create a Passcode'**
-  String get createAPasscode;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'A passcode protects your data, Apple Pay cards, and medical information.'**
-  String get aPasscodeProtectsYourDataApplePayCardsAnd;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a 4-digit Passcode'**
-  String get addA4DigitPasscode;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Titanium'**
-  String get titanium;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Sunny'**
-  String get sunny;
 
   /// Application UI text.
   ///
@@ -2155,20 +1385,8 @@ abstract class AppLocalizations {
   /// Application UI text.
   ///
   /// In en, this message translates to:
-  /// **'Selection confirmed by the watch.'**
-  String get selectionConfirmedByTheWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
   /// **'Collection received from the watch.'**
   String get collectionReceivedFromTheWatch;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Incomplete collection received. Refresh again.'**
-  String get incompleteCollectionReceivedRefreshAgain;
 
   /// Application UI text.
   ///
@@ -2193,36 +1411,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New collection not received yet. Refresh again.'**
   String get newCollectionNotReceivedYetRefreshAgain;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting for the new watch face…'**
-  String get waitingForTheNewWatchFace;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting for the selected watch face…'**
-  String get waitingForTheSelectedWatchFace;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Command not sent. Refresh the watch face collection.'**
-  String get commandNotSentRefreshTheWatchFaceCollection;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Result not confirmed. Refresh the watch face collection.'**
-  String get resultNotConfirmedRefreshTheWatchFaceCollection;
-
-  /// Application UI text.
-  ///
-  /// In en, this message translates to:
-  /// **'Last sync: {value0}.'**
-  String lastSync(String value0);
 
   /// Heading when the watch face collection size is unknown.
   ///
@@ -2592,12 +1780,6 @@ abstract class AppLocalizations {
   /// Application UI label.
   ///
   /// In en, this message translates to:
-  /// **'ALWAYS ON'**
-  String get alwaysOn2;
-
-  /// Application UI label.
-  ///
-  /// In en, this message translates to:
   /// **'Bluetooth'**
   String get bluetooth;
 
@@ -2612,12 +1794,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Digital Crown'**
   String get digitalCrown;
-
-  /// Application UI label.
-  ///
-  /// In en, this message translates to:
-  /// **'Apple Watch Ultra 2 Action Button'**
-  String get appleWatchUltra2ActionButton;
 
   /// Application UI label.
   ///
@@ -2750,12 +1926,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow Bluetooth access'**
   String get connectionPermissions;
-
-  /// No description provided for @pairingRunning.
-  ///
-  /// In en, this message translates to:
-  /// **'Setup in progress'**
-  String get pairingRunning;
 
   /// No description provided for @resumeWatchSetup.
   ///
@@ -3153,12 +2323,6 @@ abstract class AppLocalizations {
   /// **'The backend currently stores one pairing. A saved pair is retained when disconnected.'**
   String get oneWatchBackend;
 
-  /// No description provided for @finishInitialSync.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish initial synchronization'**
-  String get finishInitialSync;
-
   /// No description provided for @chooseDiscoveredWatch.
   ///
   /// In en, this message translates to:
@@ -3231,12 +2395,6 @@ abstract class AppLocalizations {
   /// **'The result is not confirmed. Refresh before making another change.'**
   String get nativeFaceUnknown;
 
-  /// No description provided for @nativeFaceImportHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a native .watchface package, including bundled photos and resources (up to 16 MiB). Compatibility is confirmed by the connected watch.'**
-  String get nativeFaceImportHint;
-
   /// No description provided for @nativeFaceCustomization.
   ///
   /// In en, this message translates to:
@@ -3291,23 +2449,11 @@ abstract class AppLocalizations {
   /// **'Native Configuration'**
   String get nativeFaceConfiguration;
 
-  /// No description provided for @nativeFaceConfigurationHint.
-  ///
-  /// In en, this message translates to:
-  /// **'These values come from the watch. Keep unknown fields intact. Available values and complication support depend on the face and watchOS.'**
-  String get nativeFaceConfigurationHint;
-
   /// No description provided for @nativeFaceApply.
   ///
   /// In en, this message translates to:
   /// **'Apply to Watch'**
   String get nativeFaceApply;
-
-  /// No description provided for @nativeFaceEditValue.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Value'**
-  String get nativeFaceEditValue;
 
   /// No description provided for @nativeFaceValueHint.
   ///
@@ -3345,12 +2491,6 @@ abstract class AppLocalizations {
   /// **'This face may need photos or other resources. Export is unavailable until the complete native package can be read.'**
   String get nativeFaceResourceExportUnavailable;
 
-  /// No description provided for @nativeFaceLocalLayoutHint.
-  ///
-  /// In en, this message translates to:
-  /// **'This gallery contains local preview layouts. Native watch faces are managed in My Watch → Manage Watch Faces.'**
-  String get nativeFaceLocalLayoutHint;
-
   /// No description provided for @nativeFaceComplicationHint.
   ///
   /// In en, this message translates to:
@@ -3386,24 +2526,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This face changed or the watch reconnected. Open the face again before applying edits.'**
   String get nativeFaceConflict;
-
-  /// No description provided for @exportLocalFaceLayout.
-  ///
-  /// In en, this message translates to:
-  /// **'Export Local Layout'**
-  String get exportLocalFaceLayout;
-
-  /// No description provided for @localFaceLayoutSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Local layout saved'**
-  String get localFaceLayoutSaved;
-
-  /// No description provided for @localFaceLayoutSavedHint.
-  ///
-  /// In en, this message translates to:
-  /// **'This .watchlayout file contains a Companion preview layout. It is not an installable native watch face.'**
-  String get localFaceLayoutSavedHint;
 
   /// No description provided for @nativeFaceTimeStyle.
   ///
@@ -3662,12 +2784,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add to Watch'**
   String get nativeFaceAddToWatch;
-
-  /// No description provided for @nativeFaceTemplateHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose colors and complications before adding this face to your watch.'**
-  String get nativeFaceTemplateHint;
 
   /// No description provided for @nativeFaceDefaultPreview.
   ///
@@ -4095,6 +3211,54 @@ abstract class AppLocalizations {
   /// **'Could not queue the test alert. Check your watch connection and try again.'**
   String get notificationTestFailedDetails;
 
+  /// No description provided for @notificationOnlyWhenLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Only When Phone Is Locked'**
+  String get notificationOnlyWhenLocked;
+
+  /// No description provided for @notificationOnlyWhenLockedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Suppress Watch notification alerts while your phone screen is unlocked and active.'**
+  String get notificationOnlyWhenLockedDescription;
+
+  /// No description provided for @notificationSearchApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Search apps'**
+  String get notificationSearchApps;
+
+  /// No description provided for @notificationFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get notificationFilterAll;
+
+  /// No description provided for @notificationFilterActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get notificationFilterActive;
+
+  /// No description provided for @notificationRetryPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry Pending Delivery'**
+  String get notificationRetryPending;
+
+  /// No description provided for @notificationTestAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'The Apple Watch acknowledged receipt over IDS. Check the watch screen to confirm it appeared.'**
+  String get notificationTestAcknowledged;
+
+  /// No description provided for @notificationTestDeliveryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The test alert did not reach the Apple Watch in time. Check the watch connection and try again.'**
+  String get notificationTestDeliveryFailed;
+
   /// No description provided for @updateUnavailable.
   ///
   /// In en, this message translates to:
@@ -4256,6 +3420,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Required free space: {size}'**
   String updateRequiredSpace(String size);
+
+  /// No description provided for @opticalCameraPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera permission is required to scan the Apple Watch.'**
+  String get opticalCameraPermissionDenied;
+
+  /// No description provided for @opticalNoCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'No camera is available on this device.'**
+  String get opticalNoCamera;
+
+  /// No description provided for @filterJournal.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter journal'**
+  String get filterJournal;
+
+  /// No description provided for @jumpToBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom'**
+  String get jumpToBottom;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get copiedToClipboard;
+
+  /// No description provided for @noMatchingJournalLines.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching log lines'**
+  String get noMatchingJournalLines;
+
+  /// No description provided for @watchConnectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair, reconnect, and check bridge link status'**
+  String get watchConnectionSubtitle;
 }
 
 class _AppLocalizationsDelegate
@@ -4269,7 +3475,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en'].contains(locale.languageCode);
+      <String>['en', 'ru'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -4280,6 +3486,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'ru':
+      return AppLocalizationsRu();
   }
 
   throw FlutterError(

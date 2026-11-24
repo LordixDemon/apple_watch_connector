@@ -209,6 +209,11 @@ class ProtocolHost {
                 type = BulletinDistributorCodec.TYPE_REMOVE_BULLETIN;
                 payload = BridgeBase64.decode(command.substring("REMOVE_BULLETIN:".length()), BridgeBase64.NO_WRAP);
                 BulletinDistributorCodec.RemoveBulletinRequest.decodeExact(payload);
+            } else if (command.startsWith("SEND_SECTION_INFO:")) {
+                topic = IdsApplicationRoute.BULLETIN_SETTINGS_SERVICE;
+                type = BulletinDistributorCodec.TYPE_SET_SECTION_INFO;
+                payload = BridgeBase64.decode(command.substring("SEND_SECTION_INFO:".length()), BridgeBase64.NO_WRAP);
+                BulletinDistributorCodec.SetSectionInfoRequest.decodeExact(payload);
             } else {
                 topic = IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE;
                 type = BulletinDistributorCodec.TYPE_ADD_BULLETIN;

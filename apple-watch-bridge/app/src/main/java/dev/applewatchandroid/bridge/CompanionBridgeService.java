@@ -97,11 +97,22 @@ public final class CompanionBridgeService extends Service implements BridgeIpcDi
                 String method = data.getString("method");
                 if ("setNotificationRelay".equals(method)) {
                     if (!(data.get("value") instanceof Boolean)) throw new IllegalArgumentException("Missing forwarding value");
-                    String pkg = data.getString("packageName");
-                    boolean stored = new NotificationRelaySettings(this).update(pkg, data.getBoolean("value"));
+                    String mode = data.getString("mode");
+                    boolean stored;
+                    if ("onlyWhenScreenOff".equals(mode)) {
+                        stored = new NotificationRelaySettings(this).updateOnlyWhenScreenOff(data.getBoolean("value"));
+                    } else {
+                        String pkg = data.getString("packageName");
+                        stored = new NotificationRelaySettings(this).update(pkg, data.getBoolean("value"));
+                    }
                     if (stored) AppleWatchNotificationListenerService.settingsChanged();
                     reply(message.replyTo, RESPONSE, response(requestId, stored ? "STORED" : "REJECTED"));
                     publishState();
+                    return;
+                }
+                if ("retryPendingNotifications".equals(method)) {
+                    AppleWatchNotificationListenerService.retryPendingNow();
+                    reply(message.replyTo, RESPONSE, response(requestId, "QUEUED"));
                     return;
                 }
                 if (handleConnectionCommand(method, data, requestId, message.replyTo)) return;

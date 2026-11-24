@@ -145,29 +145,6 @@ public final class OperationalWatchService extends Service implements Operationa
             } else if ("dev.applewatchandroid.bridge.ACTION_SET_ACTIVE_FACE".equals(intent.getAction())) {
                 String face = intent.getStringExtra("faceId");
                 if (!enqueueCommand("SET_ACTIVE_FACE:" + (face == null ? "" : face))) log("Face command rejected.");
-            } else if ("dev.applewatchandroid.bridge.ACTION_REMOVE_NOTIFICATION".equals(intent.getAction())) {
-                String publisher = intent.getStringExtra("publisherId"), record = intent.getStringExtra("recordId"),
-                        section = intent.getStringExtra("sectionId");
-                if (publisher == null || publisher.isBlank() || record == null || record.isBlank()
-                        || section == null || section.isBlank()) return;
-                byte[] payload = new BulletinDistributorCodec.RemoveBulletinRequest(publisher, record, section).encode();
-                try {
-                    if (!enqueueCommand("REMOVE_BULLETIN:" + Base64.encodeToString(payload, Base64.NO_WRAP))) {
-                        log("Bulletin removal rejected; native removal unconfirmed.");
-                    }
-                } finally { wipe(payload); }
-            } else if ("dev.applewatchandroid.bridge.ACTION_SEND_NOTIFICATION".equals(intent.getAction())) {
-                byte[] payload = BridgeIpcDispatcher.getInstance().createBulletinPayload(
-                        text(intent, "title", "Alert"), text(intent, "message", ""),
-                        text(intent, "sectionId", "com.apple.MobileSMS"),
-                        text(intent, "sectionDisplayName", "Messages"), true,
-                        intent.getStringExtra("publisherId"), intent.getStringExtra("recordId"),
-                        intent.getStringExtra("replyToken"), intent.getStringExtra("replyActionId"));
-                try {
-                    if (!enqueueCommand("SEND_BULLETIN:" + Base64.encodeToString(payload, Base64.NO_WRAP))) {
-                        log("Bulletin rejected; delivery unconfirmed.");
-                    }
-                } finally { wipe(payload); }
             }
         }
     };
@@ -189,8 +166,6 @@ public final class OperationalWatchService extends Service implements Operationa
         IntentFilter filter = new IntentFilter();
         filter.addAction("dev.applewatchandroid.bridge.ACTION_PING_WATCH");
         filter.addAction("dev.applewatchandroid.bridge.ACTION_SET_ACTIVE_FACE");
-        filter.addAction("dev.applewatchandroid.bridge.ACTION_SEND_NOTIFICATION");
-        filter.addAction("dev.applewatchandroid.bridge.ACTION_REMOVE_NOTIFICATION");
         filter.addAction("dev.applewatchandroid.bridge.ACTION_STOP_BRIDGE");
         // Same-app notification listener works even with no Activity. Companion authorization
         // will use a separate structured IPC boundary, not unrestricted raw commands.

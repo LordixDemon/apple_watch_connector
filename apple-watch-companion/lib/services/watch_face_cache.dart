@@ -1,12 +1,23 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import '../models/watch_face.dart';
 import 'watch_face_codec.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Existing documents/watchfaces storage and archive format.
 class WatchFaceCache {
+  static String sanitizeFileStem(String id) {
+    final cleaned = id
+        .replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_')
+        .replaceAll(RegExp(r'\.{2,}'), '_')
+        .replaceFirst(RegExp(r'^\.+'), '');
+    if (cleaned.isEmpty || cleaned.replaceAll('_', '').isEmpty) {
+      return 'face';
+    }
+    return cleaned;
+  }
+
   Future<File?> saveFaceToCache(
     WatchFace face, {
     Uint8List? snapshotBytes,
@@ -17,7 +28,11 @@ class WatchFaceCache {
       if (!await facesDir.exists()) {
         await facesDir.create(recursive: true);
       }
-      final file = File('${facesDir.path}/${face.id}.watchface');
+      final stem = sanitizeFileStem(face.id);
+      final file = File('${facesDir.path}/$stem.watchface');
+      if (file.parent.path != facesDir.path) {
+        throw ArgumentError.value(face.id, 'face.id', 'Invalid watchface id');
+      }
       final encoded = WatchFaceCodec.encode(face, snapshotBytes: snapshotBytes);
       await file.writeAsBytes(encoded, flush: true);
       return file;

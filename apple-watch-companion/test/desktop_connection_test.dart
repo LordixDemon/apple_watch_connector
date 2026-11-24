@@ -608,7 +608,7 @@ void main() {
         );
         await tester.pump(const Duration(milliseconds: 200));
         expect(find.text('My Watch'), findsWidgets);
-        expect(find.text('Face Gallery'), findsWidgets);
+        expect(find.text('Face Gallery'), findsNothing);
         expect(find.text('Discover'), findsWidgets);
         expect(
           tester.widget<CupertinoTabBar>(find.byType(CupertinoTabBar)).items,

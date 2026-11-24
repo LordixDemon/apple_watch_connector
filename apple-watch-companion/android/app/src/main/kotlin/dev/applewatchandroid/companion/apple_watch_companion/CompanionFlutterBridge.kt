@@ -60,7 +60,7 @@ internal class CompanionFlutterBridge(private val activity: Activity, engine: Fl
         if (call.method !in setOf("pingWatch", "setActiveFace", "duplicateNativeFace", "removeNativeFace",
                 "reorderNativeFaces", "updateNativeFace", "addNativeFace", "exportNativeFace",
                 "beginNativeFaceImport", "appendNativeFaceImport", "finishNativeFaceImport", "cancelNativeFaceImport", "sendNotification",
-                "refreshWatchState", "refreshFaceCollection", "stopPhonePing", "setNotificationRelay", "setWatchSetting", "setNativePigmentVisibility", "setNativeMonogram", "syncWifi",
+                "refreshWatchState", "refreshFaceCollection", "stopPhonePing", "setNotificationRelay", "retryPendingNotifications", "setWatchSetting", "setNativePigmentVisibility", "setNativeMonogram", "syncWifi",
                 "querySoftwareUpdate", "checkSoftwareUpdate", "downloadSoftwareUpdate", "installSoftwareUpdate",
                 "connectWatch", "disconnectWatch", "beginPairing", "beginOpticalPairing", "replacePairOptically", "resumeSetup", "submitPin", "selectDiscoveredWatch", "activationResponse",
                 "confirmSetup", "auditStockBond", "importStockBond", "alignStockIdentity", "probeStockReconnect")) {
@@ -96,7 +96,7 @@ internal class CompanionFlutterBridge(private val activity: Activity, engine: Fl
         val args = Bundle().apply {
             putString("method", call.method)
             for (key in listOf("faceId", "sourceFaceId", "title", "message", "sectionId", "sectionDisplayName",
-                    "setting", "packageName", "pairId", "epoch", "build", "uploadId", "sha256", "baselineHash", "pin", "action", "discoveryToken", "revision", "text")) {
+                    "setting", "packageName", "mode", "pairId", "epoch", "build", "uploadId", "sha256", "baselineHash", "pin", "action", "discoveryToken", "revision", "text")) {
                 call.argument<String>(key)?.let { putString(key, it) }
             }
             call.argument<Boolean>("value")?.let { putBoolean("value", it) }

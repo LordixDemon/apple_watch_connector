@@ -81,35 +81,57 @@ void main() {
   );
 
   testWidgets(
-    'Unknown settings show no invented switch and queue receipt never marks applied',
+    'Unknown settings show no invented switch and queue receipt clears on newer observation',
     (tester) async {
-      final settings = NativeWatchSettings.fromBridge(report());
+      var settings = NativeWatchSettings.fromBridge(report());
       final calls = <String>[];
-      await tester.pumpWidget(
-        CupertinoApp(
-          home: CupertinoPageScaffold(
-            child: NativeWatchSettingsPanel(
-              settings: settings,
-              onChange: (key, value) async {
-                calls.add('${key.wireName}:$value');
-                return 'QUEUED';
-              },
-            ),
+      Widget panel() => CupertinoApp(
+        home: CupertinoPageScaffold(
+          child: NativeWatchSettingsPanel(
+            settings: settings,
+            onChange: (key, value) async {
+              calls.add('${key.wireName}:$value');
+              return 'QUEUED';
+            },
           ),
         ),
       );
+      await tester.pumpWidget(panel());
       expect(find.text("Not received"), findsNWidgets(2));
-      expect(find.byType(CupertinoSwitch), findsNothing);
-      await tester.tap(find.text("Right wrist"));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text("Enable"));
-      await tester.pumpAndSettle();
+      // Only the 1 observed setting renders a switch.
+      expect(find.byType(CupertinoSwitch), findsOneWidget);
+      await tester.tap(find.byType(CupertinoSwitch));
+      await tester.pump();
       expect(calls, ['RIGHT_WRIST:true']);
-      expect(find.text("Off"), findsOneWidget);
+      expect(
+        tester.widget<CupertinoSwitch>(find.byType(CupertinoSwitch)).value,
+        isFalse,
+      );
       expect(
         find.text("Command sent. Waiting for the watch result."),
         findsOneWidget,
       );
+      // Newer observation from the Watch updates the switch and clears the pending receipt.
+      settings = NativeWatchSettings.fromBridge({
+        ...report(),
+        'watchSetting_RIGHT_WRIST': true,
+        'watchSetting_RIGHT_WRIST_observedAt': 2000,
+      });
+      await tester.pumpWidget(panel());
+      expect(
+        tester.widget<CupertinoSwitch>(find.byType(CupertinoSwitch)).value,
+        isTrue,
+      );
+      expect(
+        find.text("Command sent. Waiting for the watch result."),
+        findsNothing,
+      );
+      // Unreceived setting still uses the explicit Enable/Disable sheet.
+      await tester.tap(find.text("Rotate screen 180°"));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text("Enable"));
+      await tester.pumpAndSettle();
+      expect(calls, ['RIGHT_WRIST:true', 'INVERT_SCREEN:true']);
     },
   );
 
@@ -127,9 +149,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.text("Right wrist"));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text("Enable"));
+      await tester.tap(find.byType(CupertinoSwitch));
       await tester.pump();
       await tester.pumpWidget(const CupertinoApp(home: SizedBox()));
       complete.complete('QUEUED');

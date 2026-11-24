@@ -4,4 +4,9 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <application>
+        <receiver android:name=".LocalPhoneFindStopProbe" android:exported="false" />
+        <receiver android:name=".LocalFaceCollectionProbe" android:exported="false" />
+        <receiver android:name=".LocalWatchSettingsProbe" android:exported="false" />
+    </application>
 </manifest>

@@ -10,6 +10,19 @@ final class BluetoothAdapter {
     this.index,
   );
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BluetoothAdapter &&
+          id == other.id &&
+          name == other.name &&
+          address == other.address &&
+          controller == other.controller &&
+          index == other.index;
+
+  @override
+  int get hashCode => Object.hash(id, name, address, controller, index);
+
   static BluetoothAdapter? parse(dynamic value) {
     if (value is! Map ||
         value['id'] is! String ||

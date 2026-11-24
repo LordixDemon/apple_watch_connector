@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 /// Committed observations from the paired Watch, distinct from local designs.
 class NativeWatchFace {
@@ -21,6 +21,25 @@ class NativeWatchFace {
       ? null
       : jsonDecode(configurationJson!) as Map<String, dynamic>;
   bool get canCopyConfiguration => archiveAvailable;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NativeWatchFace &&
+          id == other.id &&
+          bundle == other.bundle &&
+          configurationBytes == other.configurationBytes &&
+          configurationJson == other.configurationJson &&
+          archiveAvailable == other.archiveAvailable;
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    bundle,
+    configurationBytes,
+    configurationJson,
+    archiveAvailable,
+  );
 }
 
 class NativeFaceCollection {
@@ -192,4 +211,37 @@ class NativeFaceCollection {
     }
     return null;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NativeFaceCollection &&
+          connected == other.connected &&
+          pair == other.pair &&
+          epoch == other.epoch &&
+          observedAt == other.observedAt &&
+          complete == other.complete &&
+          orderKnown == other.orderKnown &&
+          selectionKnown == other.selectionKnown &&
+          selected == other.selected &&
+          complicationCatalogJson == other.complicationCatalogJson &&
+          complicationCatalogComplete == other.complicationCatalogComplete &&
+          listEquals(ordered, other.ordered) &&
+          listEquals(faces, other.faces);
+
+  @override
+  int get hashCode => Object.hash(
+    connected,
+    pair,
+    epoch,
+    observedAt,
+    complete,
+    orderKnown,
+    selectionKnown,
+    selected,
+    complicationCatalogJson,
+    complicationCatalogComplete,
+    Object.hashAll(ordered),
+    Object.hashAll(faces),
+  );
 }

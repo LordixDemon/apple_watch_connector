@@ -26,12 +26,22 @@ class _PhoneFindPanelState extends State<PhoneFindPanel> {
   bool _stopping = false;
   bool _opening = false;
   String? _error;
+
+  void _syncTimer() {
+    if (widget.state.active) {
+      _timer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted && widget.state.active) setState(() {});
+      });
+    } else {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted && widget.state.active) setState(() {});
-    });
+    _syncTimer();
   }
 
   @override
@@ -41,6 +51,7 @@ class _PhoneFindPanelState extends State<PhoneFindPanel> {
         oldWidget.state.available != widget.state.available) {
       _error = null;
     }
+    _syncTimer();
   }
 
   Future<void> _stop() async {
@@ -57,7 +68,7 @@ class _PhoneFindPanelState extends State<PhoneFindPanel> {
     if (!mounted) return;
     setState(() {
       _stopping = false;
-      if (!stopped) _error = Strings.current.stopNotConfirmed;
+      if (!stopped) _error = Strings.of(context).stopNotConfirmed;
     });
     // The actual hardware state comes only from APK observation, not this receipt.
   }
@@ -76,33 +87,36 @@ class _PhoneFindPanelState extends State<PhoneFindPanel> {
     if (!mounted) return;
     setState(() {
       _opening = false;
-      if (!opened) _error = Strings.current.couldNotOpenFlashlightPermission;
+      if (!opened) {
+        _error = Strings.of(context).couldNotOpenFlashlightPermission;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
     final state = widget.state;
     final stale = state.activeObservationIsStale(
       (widget.clock ?? DateTime.now)(),
     );
     final description = !state.available
-        ? Strings.current.phoneServiceUnavailable
+        ? s.phoneServiceUnavailable
         : stale
-        ? Strings.current.alertStatusIsStale
+        ? s.alertStatusIsStale
         : state.active
         ? (state.behavior == 2
-              ? Strings.current.flashlightIsOn
+              ? s.flashlightIsOn
               : state.behavior == 1
-              ? Strings.current.soundAndFlashlightAreOn
-              : Strings.current.soundAlertStarted)
+              ? s.soundAndFlashlightAreOn
+              : s.soundAlertStarted)
         : state.didPlay == false
-        ? Strings.current.lastAlertDidNotStart
+        ? s.lastAlertDidNotStart
         : state.behavior == 4
-        ? Strings.current.requestHadNoSoundOrFlashlight
+        ? s.requestHadNoSoundOrFlashlight
         : state.didPlay == true
-        ? Strings.current.alertStopped
-        : Strings.current.noAlertIsRunning;
+        ? s.alertStopped
+        : s.noAlertIsRunning;
     return Container(
       margin: CompanionSpacing.sectionMargin,
       padding: const EdgeInsets.all(CompanionSpacing.cardInset),
@@ -114,8 +128,8 @@ class _PhoneFindPanelState extends State<PhoneFindPanel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            Strings.current.findPhoneFromWatch,
-            style: TextStyle(
+            s.findPhoneFromWatch,
+            style: const TextStyle(
               color: IosColors.label,
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -131,29 +145,31 @@ class _PhoneFindPanelState extends State<PhoneFindPanel> {
           ),
           if (state.localProbe && state.observedAt != null)
             Text(
-              Strings.current.localApkTest,
-              style: TextStyle(color: IosColors.secondaryLabel, fontSize: 12),
+              s.localApkTest,
+              style: const TextStyle(
+                color: IosColors.secondaryLabel,
+                fontSize: 12,
+              ),
             ),
           if (state.active && state.available)
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: _stopping ? null : _stop,
-              child: Text(
-                _stopping
-                    ? Strings.current.stopping
-                    : Strings.current.stopAlert,
-              ),
+              child: Text(_stopping ? s.stopping : s.stopAlert),
             ),
           if (!state.flashPermission && state.available) ...[
             const SizedBox(height: 8),
             Text(
-              Strings.current.cameraPermissionIsRequiredToFindYourPhoneWith,
-              style: TextStyle(color: IosColors.secondaryLabel, fontSize: 13),
+              s.cameraPermissionIsRequiredToFindYourPhoneWith,
+              style: const TextStyle(
+                color: IosColors.secondaryLabel,
+                fontSize: 13,
+              ),
             ),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: _opening ? null : _permission,
-              child: Text(Strings.current.allowFlashlight),
+              child: Text(s.allowFlashlight),
             ),
           ],
           if (_error != null)

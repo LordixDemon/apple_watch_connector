@@ -65,4 +65,27 @@ final class NativeMonogramPreferences {
       observedAt: time,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NativeMonogramPreferences &&
+          connected == other.connected &&
+          received == other.received &&
+          pair == other.pair &&
+          epoch == other.epoch &&
+          text == other.text &&
+          sourceTimestamp == other.sourceTimestamp &&
+          observedAt == other.observedAt;
+
+  @override
+  int get hashCode => Object.hash(
+    connected,
+    received,
+    pair,
+    epoch,
+    text,
+    sourceTimestamp,
+    observedAt,
+  );
 }

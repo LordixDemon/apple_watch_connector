@@ -5,10 +5,11 @@
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
-        <receiver android:name=".LocalPhoneFindStopProbe" android:exported="false" />
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:usesCleartextTraffic="false">
         <service android:name=".OpticalDecoderService" android:exported="false" android:process=":optical" />
-        <receiver android:name=".LocalFaceCollectionProbe" android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -31,7 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <receiver android:name=".LocalWatchSettingsProbe" android:exported="false" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

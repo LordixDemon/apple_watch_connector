@@ -103,4 +103,31 @@ final class NativeMonogramMirror {
           updatedAt! <= now && sourceTimestamp! <= now / 1000 - 978307200 + 5);
   bool sameBaseline(NativeMonogramMirror other) =>
       pair == other.pair && epoch == other.epoch && revision == other.revision;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NativeMonogramMirror &&
+          pair == other.pair &&
+          epoch == other.epoch &&
+          revision == other.revision &&
+          known == other.known &&
+          text == other.text &&
+          origin == other.origin &&
+          requestId == other.requestId &&
+          sourceTimestamp == other.sourceTimestamp &&
+          updatedAt == other.updatedAt;
+
+  @override
+  int get hashCode => Object.hash(
+    pair,
+    epoch,
+    revision,
+    known,
+    text,
+    origin,
+    requestId,
+    sourceTimestamp,
+    updatedAt,
+  );
 }

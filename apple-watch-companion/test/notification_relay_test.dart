@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:apple_watch_companion/controllers/watch_observation_controller.dart';
 import 'package:apple_watch_companion/models/notification_relay_state.dart';
 import 'package:apple_watch_companion/services/watch_bridge_service.dart';
 import 'package:apple_watch_companion/widgets/notification_relay_panel.dart';
@@ -203,6 +204,111 @@ void main() {
         find.text('Could not save notification settings. Try again.'),
         findsOneWidget,
       );
+    },
+  );
+
+  test(
+    'disconnectLocally clears notifications ready state and operationStatusStream is isolated',
+    () async {
+      final events = StreamController<dynamic>.broadcast();
+      final bridge = WatchBridgeService(events: events.stream);
+      final obs = WatchObservationController(bridge: bridge);
+      final actions = <Map<String, dynamic>>[];
+      final ops = <Map<String, dynamic>>[];
+      final s1 = bridge.notificationActionStream.listen(actions.add);
+      final s2 = bridge.operationStatusStream.listen(ops.add);
+
+      events.add({'type': 'connection', 'data': snapshot()});
+      events.add({
+        'type': 'operation',
+        'data': {'requestId': 'req-1', 'status': 'APP_ACK_RECEIVED'},
+      });
+      await Future<void>.delayed(Duration.zero);
+      expect(obs.notifications.ready, isTrue);
+      expect(obs.notifications.connected, isTrue);
+      expect(actions, isEmpty);
+      expect(ops.single['status'], 'APP_ACK_RECEIVED');
+
+      obs.disconnectLocally();
+      expect(obs.notifications.connected, isFalse);
+      expect(obs.notifications.ready, isFalse);
+
+      await s1.cancel();
+      await s2.cancel();
+      obs.dispose();
+      bridge.dispose();
+      await events.close();
+    },
+  );
+
+  testWidgets(
+    'Test notification works when connected without listener access and updates live ACK dialog',
+    (tester) async {
+      final ops = StreamController<Map<String, dynamic>>.broadcast();
+      const reqId = '10000000-0000-0000-0000-000000000099';
+      final state = NotificationRelayState.fromBridge({
+        ...snapshot(access: false, connected: true),
+        'notificationOnlyWhenScreenOff': true,
+        'notificationApps': [
+          {
+            'packageName': 'org.telegram.messenger',
+            'name': 'Telegram',
+            'enabled': true,
+            'observed': true,
+          },
+          {
+            'packageName': 'com.whatsapp',
+            'name': 'WhatsApp',
+            'enabled': false,
+            'observed': false,
+          },
+        ],
+      });
+      expect(state.onlyWhenScreenOff, isTrue);
+      expect(state.connected, isTrue);
+      expect(state.apps[1].observed, isFalse);
+
+      await tester.pumpWidget(
+        CupertinoApp(
+          home: CupertinoPageScaffold(
+            child: ListView(
+              children: [
+                NotificationRelayPanel(
+                  state: state,
+                  requestAccess: () async => true,
+                  setPolicy: (_, {packageName}) async => 'STORED',
+                  setOnlyWhenScreenOff: (_) async => 'STORED',
+                  operationStream: ops.stream,
+                  sendTest: () async => (status: 'QUEUED', requestId: reqId),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Telegram'), findsOneWidget);
+      expect(find.text('WhatsApp'), findsOneWidget);
+      await tester.enterText(find.byType(CupertinoSearchTextField), 'tele');
+      await tester.pump();
+      expect(find.text('Telegram'), findsOneWidget);
+      expect(find.text('WhatsApp'), findsNothing);
+
+      await tester.ensureVisible(find.text('Send Test Notification'));
+      await tester.tap(find.text('Send Test Notification'));
+      await tester.pumpAndSettle();
+      expect(find.text('Notification Queued'), findsOneWidget);
+
+      ops.add({'requestId': reqId, 'status': 'APP_ACK_RECEIVED'});
+      await tester.pump();
+      await tester.pump();
+      expect(
+        find.text(
+          'The Apple Watch acknowledged receipt over IDS. Check the watch screen to confirm it appeared.',
+        ),
+        findsOneWidget,
+      );
+      await ops.close();
     },
   );
 }

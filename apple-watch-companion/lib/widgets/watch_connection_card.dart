@@ -7,9 +7,15 @@ import 'setup_progress_label.dart';
 
 class WatchConnectionCard extends StatelessWidget {
   final WatchConnectionState state;
-  const WatchConnectionCard({super.key, required this.state});
-  static String statusText(WatchConnectionState state) {
-    final s = Strings.current;
+  final bool showChevron;
+  const WatchConnectionCard({
+    super.key,
+    required this.state,
+    this.showChevron = false,
+  });
+
+  static String statusText(WatchConnectionState state, [AppLocalizations? l10n]) {
+    final s = l10n ?? Strings.current;
     if (!state.bridgeAvailable) return s.bridgeUnavailable;
     if (state.setupRunning && !state.operationalEligible) {
       return setupProgressLabel(state);
@@ -23,84 +29,95 @@ class WatchConnectionCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(CompanionSpacing.cardInset),
-    decoration: BoxDecoration(
-      color: IosColors.secondaryGroupedBackground,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 48,
-          height: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: IosColors.systemOrange.withValues(alpha: 0.1),
+  Widget build(BuildContext context) {
+    final s = Strings.of(context);
+    return Container(
+      padding: const EdgeInsets.all(CompanionSpacing.cardInset),
+      decoration: BoxDecoration(
+        color: IosColors.secondaryGroupedBackground,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: IosColors.systemOrange.withValues(alpha: 0.1),
+            ),
+            child: const Icon(
+              CupertinoIcons.time,
+              color: IosColors.systemOrange,
+              size: 30,
+            ),
           ),
-          child: const Icon(
-            CupertinoIcons.time,
-            color: IosColors.systemOrange,
-            size: 30,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                state.hasPair || state.discoveredProductType.isNotEmpty
-                    ? state.modelName
-                    : Strings.current.noPairedWatch,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: IosColors.label,
-                ),
-              ),
-              if (state.productType.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 5),
-                  child: Text(
-                    state.productType,
-                    style: const TextStyle(
-                      color: IosColors.secondaryLabel,
-                      fontSize: 13,
-                    ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  state.hasPair || state.discoveredProductType.isNotEmpty
+                      ? state.modelName
+                      : s.noPairedWatch,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: IosColors.label,
                   ),
                 ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  if (state.setupWorking || !state.setupRunning && state.busy)
-                    const CupertinoActivityIndicator(radius: 6)
-                  else
-                    Icon(
-                      CupertinoIcons.circle_fill,
-                      size: 8,
-                      color: state.connected
-                          ? IosColors.systemGreen
-                          : IosColors.systemGray,
-                    ),
-                  const SizedBox(width: 7),
-                  Expanded(
+                if (state.productType.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
                     child: Text(
-                      statusText(state),
-                      style: TextStyle(
+                      state.productType,
+                      style: const TextStyle(
+                        color: IosColors.secondaryLabel,
                         fontSize: 13,
-                        color: state.connected
-                            ? IosColors.systemGreen
-                            : IosColors.secondaryLabel,
                       ),
                     ),
                   ),
-                ],
-              ),
-            ],
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    if (state.setupWorking || !state.setupRunning && state.busy)
+                      const CupertinoActivityIndicator(radius: 6)
+                    else
+                      Icon(
+                        CupertinoIcons.circle_fill,
+                        size: 8,
+                        color: state.connected
+                            ? IosColors.systemGreen
+                            : IosColors.systemGray,
+                      ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        statusText(state, s),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: state.connected
+                              ? IosColors.systemGreen
+                              : IosColors.secondaryLabel,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+          if (showChevron) ...[
+            const SizedBox(width: 8),
+            const Icon(
+              CupertinoIcons.chevron_forward,
+              color: IosColors.systemGray2,
+              size: 16,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }

@@ -9,22 +9,28 @@ import '../../widgets/ios_list_tile.dart';
 class HealthActivityScreen extends StatelessWidget {
   const HealthActivityScreen({super.key});
 
+  static double _safeProgress(num value, num goal) {
+    if (goal <= 0 || !value.isFinite || !goal.isFinite) return 0.0;
+    final ratio = value / goal;
+    if (!ratio.isFinite) return 0.0;
+    return ratio.clamp(0.0, 1.0).toDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<WatchProvider>();
     final settings = provider.settings;
+    final s = Strings.of(context);
 
     if (!provider.hasHealthObservation) {
       return CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: Text(Strings.current.activityHealth),
-        ),
+        navigationBar: CupertinoNavigationBar(middle: Text(s.activityHealth)),
         child: SafeArea(
           child: Center(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Text(
-                Strings.current.noHealthDataReceivedFromTheWatchYet,
+                s.noHealthDataReceivedFromTheWatchYet,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -36,9 +42,9 @@ class HealthActivityScreen extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
-        backgroundColor: Color(0xCC121212),
-        middle: Text(Strings.current.activityHealth),
-        previousPageTitle: Strings.current.myWatch,
+        backgroundColor: const Color(0xCC121212),
+        middle: Text(s.activityHealth),
+        previousPageTitle: s.myWatch,
       ),
       child: SafeArea(
         child: ListView(
@@ -64,8 +70,8 @@ class HealthActivityScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          Strings.current.watchMeasurements,
-                          style: TextStyle(
+                          s.watchMeasurements,
+                          style: const TextStyle(
                             color: IosColors.secondaryLabel,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -84,8 +90,8 @@ class HealthActivityScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              Strings.current.live,
-                              style: TextStyle(
+                              s.live,
+                              style: const TextStyle(
                                 color: IosColors.systemGreen,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
@@ -111,15 +117,15 @@ class HealthActivityScreen extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       CupertinoIcons.heart_fill,
                                       color: IosColors.systemRed,
                                       size: 18,
                                     ),
-                                    SizedBox(width: 6),
+                                    const SizedBox(width: 6),
                                     Text(
-                                      Strings.current.heartRate,
-                                      style: TextStyle(
+                                      s.heartRate,
+                                      style: const TextStyle(
                                         color: IosColors.secondaryLabel,
                                         fontSize: 13,
                                       ),
@@ -136,8 +142,8 @@ class HealthActivityScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  Strings.current.bpm,
-                                  style: TextStyle(
+                                  s.bpm,
+                                  style: const TextStyle(
                                     color: IosColors.secondaryLabel,
                                     fontSize: 11,
                                   ),
@@ -160,15 +166,15 @@ class HealthActivityScreen extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       CupertinoIcons.flame_fill,
                                       color: IosColors.systemOrange,
                                       size: 18,
                                     ),
-                                    SizedBox(width: 6),
+                                    const SizedBox(width: 6),
                                     Text(
-                                      Strings.current.steps,
-                                      style: TextStyle(
+                                      s.steps,
+                                      style: const TextStyle(
                                         color: IosColors.secondaryLabel,
                                         fontSize: 13,
                                       ),
@@ -185,7 +191,7 @@ class HealthActivityScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  Strings.current.km(
+                                  s.km(
                                     ((provider.health.distanceMeters / 1000)
                                             .toStringAsFixed(1))
                                         .toString(),
@@ -204,35 +210,41 @@ class HealthActivityScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     // Activity Rings Progress Bars
                     _buildRingBar(
-                      Strings.current.move,
-                      Strings.current.kcal(
+                      s.move,
+                      s.kcal(
                         (provider.health.activeCalories.toInt()).toString(),
                         (provider.health.calorieGoal.toInt()).toString(),
                       ),
-                      provider.health.activeCalories /
-                          provider.health.calorieGoal,
+                      _safeProgress(
+                        provider.health.activeCalories,
+                        provider.health.calorieGoal,
+                      ),
                       IosColors.activityRed,
                     ),
                     const SizedBox(height: 10),
                     _buildRingBar(
-                      Strings.current.exercise,
-                      Strings.current.min(
+                      s.exercise,
+                      s.min(
                         (provider.health.exerciseMinutes).toString(),
                         (provider.health.exerciseGoalMinutes).toString(),
                       ),
-                      provider.health.exerciseMinutes /
-                          provider.health.exerciseGoalMinutes,
+                      _safeProgress(
+                        provider.health.exerciseMinutes,
+                        provider.health.exerciseGoalMinutes,
+                      ),
                       IosColors.activityGreen,
                     ),
                     const SizedBox(height: 10),
                     _buildRingBar(
-                      Strings.current.stand,
-                      Strings.current.hr(
+                      s.stand,
+                      s.hr(
                         (provider.health.standHours).toString(),
                         (provider.health.standGoalHours).toString(),
                       ),
-                      provider.health.standHours /
-                          provider.health.standGoalHours,
+                      _safeProgress(
+                        provider.health.standHours,
+                        provider.health.standGoalHours,
+                      ),
                       IosColors.activityBlue,
                     ),
                   ],
@@ -241,17 +253,16 @@ class HealthActivityScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             IosListSection(
-              header: Strings.current.activityRings,
+              header: s.activityRings,
               children: [
                 IosListTile(
                   icon: CupertinoIcons.flame_fill,
                   iconBackgroundColor: IosColors.activityRed,
-                  title: Strings.current.standReminders,
-                  subtitle:
-                      Strings.current.remindsYouToStandAndMove10MinutesBefore,
+                  title: s.standReminders,
+                  subtitle: s.remindsYouToStandAndMove10MinutesBefore,
                   trailing: CupertinoSwitch(
                     value: settings.standReminders,
-                    activeColor: IosColors.systemGreen,
+                    activeTrackColor: IosColors.systemGreen,
                     onChanged: (val) {
                       provider.updateSettings(
                         settings.copyWith(standReminders: val),
@@ -263,10 +274,10 @@ class HealthActivityScreen extends StatelessWidget {
                 IosListTile(
                   icon: CupertinoIcons.sparkles,
                   iconBackgroundColor: IosColors.activityGreen,
-                  title: Strings.current.dailyCoaching,
+                  title: s.dailyCoaching,
                   trailing: CupertinoSwitch(
                     value: settings.dailyCoaching,
-                    activeColor: IosColors.systemGreen,
+                    activeTrackColor: IosColors.systemGreen,
                     onChanged: (val) {
                       provider.updateSettings(
                         settings.copyWith(dailyCoaching: val),
@@ -278,10 +289,10 @@ class HealthActivityScreen extends StatelessWidget {
                 IosListTile(
                   icon: CupertinoIcons.rosette,
                   iconBackgroundColor: IosColors.systemYellow,
-                  title: Strings.current.goalCompletions,
+                  title: s.goalCompletions,
                   trailing: CupertinoSwitch(
                     value: settings.goalCompletions,
-                    activeColor: IosColors.systemGreen,
+                    activeTrackColor: IosColors.systemGreen,
                     onChanged: (val) {
                       provider.updateSettings(
                         settings.copyWith(goalCompletions: val),
@@ -293,33 +304,33 @@ class HealthActivityScreen extends StatelessWidget {
               ],
             ),
             IosListSection(
-              header: Strings.current.heartBreathing,
+              header: s.heartBreathing,
               children: [
                 IosListTile(
                   icon: CupertinoIcons.heart_fill,
                   iconBackgroundColor: IosColors.systemRed,
-                  title: Strings.current.highHeartRateNotifications,
-                  trailingText: Strings.current.bpm2(
+                  title: s.highHeartRateNotifications,
+                  trailingText: s.bpm2(
                     (settings.highHeartRateThreshold).toString(),
                   ),
-                  onTap: () {},
+                  showChevron: false,
                 ),
                 IosListTile(
                   icon: CupertinoIcons.heart,
                   iconBackgroundColor: IosColors.systemPink,
-                  title: Strings.current.lowHeartRateNotifications,
-                  trailingText: Strings.current.bpm3(
+                  title: s.lowHeartRateNotifications,
+                  trailingText: s.bpm3(
                     (settings.lowHeartRateThreshold).toString(),
                   ),
-                  onTap: () {},
+                  showChevron: false,
                 ),
                 IosListTile(
                   icon: CupertinoIcons.drop_fill,
                   iconBackgroundColor: IosColors.systemBlue,
-                  title: Strings.current.bloodOxygen,
+                  title: s.bloodOxygen,
                   trailing: CupertinoSwitch(
                     value: settings.bloodOxygenEnabled,
-                    activeColor: IosColors.systemGreen,
+                    activeTrackColor: IosColors.systemGreen,
                     onChanged: (val) {
                       provider.updateSettings(
                         settings.copyWith(bloodOxygenEnabled: val),
@@ -331,10 +342,10 @@ class HealthActivityScreen extends StatelessWidget {
                 IosListTile(
                   icon: CupertinoIcons.moon_fill,
                   iconBackgroundColor: IosColors.systemIndigo,
-                  title: Strings.current.sleepTracking,
+                  title: s.sleepTracking,
                   trailing: CupertinoSwitch(
                     value: settings.sleepTracking,
-                    activeColor: IosColors.systemGreen,
+                    activeTrackColor: IosColors.systemGreen,
                     onChanged: (val) {
                       provider.updateSettings(
                         settings.copyWith(sleepTracking: val),
@@ -357,7 +368,7 @@ class HealthActivityScreen extends StatelessWidget {
     double progress,
     Color color,
   ) {
-    final clamped = progress.clamp(0.0, 1.0);
+    final clamped = progress.isFinite ? progress.clamp(0.0, 1.0) : 0.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

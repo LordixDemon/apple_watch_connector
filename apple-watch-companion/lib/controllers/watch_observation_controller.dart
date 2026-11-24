@@ -65,6 +65,7 @@ class WatchObservationController extends ChangeNotifier {
 
   void disconnectLocally() {
     _device = _device.copyWith(isConnected: false);
+    _notifications = _notifications.disconnected();
     _softwareUpdate = const SoftwareUpdateState();
     _pigmentPreferences = const NativePigmentPreferences.unknown();
     _monogram = const NativeMonogramPreferences.unknown();
@@ -78,6 +79,18 @@ class WatchObservationController extends ChangeNotifier {
     // to each stream separately exposed partial states and notified five times.
     _subscriptions.add(
       _bridge.observationStream.listen((state) {
+        final changed =
+            _device != state.device ||
+            _faceCollection != state.faces ||
+            _nativeSettings != state.settings ||
+            _monogram != state.monogram ||
+            _monogramMirror != state.monogramMirror ||
+            _pigmentPreferences != state.pigments ||
+            _pigmentMirror != state.pigmentMirror ||
+            _phoneFind != state.phoneFind ||
+            _notifications != state.notifications ||
+            _softwareUpdate != state.softwareUpdate;
+        if (!changed) return;
         _device = state.device;
         _faceCollection = state.faces;
         _nativeSettings = state.settings;

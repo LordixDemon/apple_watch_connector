@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../l10n/strings.dart';
 
 enum NativeWatchSetting {
@@ -12,18 +13,44 @@ enum NativeWatchSetting {
     invertScreen => Strings.current.rotateScreen180,
     time24Hour => Strings.current.message24Hourtime,
   };
+  String localizedTitle(AppLocalizations s) => switch (this) {
+    rightWrist => s.rightWrist,
+    invertScreen => s.rotateScreen180,
+    time24Hour => s.message24Hourtime,
+  };
 }
 
 class NativeSettingObservation {
   final bool value;
   final DateTime observedAt;
   const NativeSettingObservation(this.value, this.observedAt);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NativeSettingObservation &&
+          value == other.value &&
+          observedAt == other.observedAt;
+
+  @override
+  int get hashCode => Object.hash(value, observedAt);
 }
 
 class NativeWatchSettings {
   final bool connected;
   final Map<NativeWatchSetting, NativeSettingObservation> values;
   const NativeWatchSettings({this.connected = false, this.values = const {}});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NativeWatchSettings &&
+          connected == other.connected &&
+          mapEquals(values, other.values);
+
+  @override
+  int get hashCode =>
+      Object.hash(connected, Object.hashAllUnordered(values.entries));
 
   factory NativeWatchSettings.fromBridge(Map<dynamic, dynamic> data) {
     final connected =

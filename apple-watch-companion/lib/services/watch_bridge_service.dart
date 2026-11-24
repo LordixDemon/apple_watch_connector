@@ -34,6 +34,8 @@ class WatchBridgeService with BridgeCommands {
       StreamController<HealthMetrics>.broadcast();
   final StreamController<Map<String, dynamic>> _notificationActionController =
       StreamController<Map<String, dynamic>>.broadcast();
+  final StreamController<Map<String, dynamic>> _operationStatusController =
+      StreamController<Map<String, dynamic>>.broadcast();
   final StreamController<PhoneFindState> _phoneFindController =
       StreamController<PhoneFindState>.broadcast();
   PhoneFindState _phoneFindState = const PhoneFindState();
@@ -90,6 +92,8 @@ class WatchBridgeService with BridgeCommands {
   Stream<HealthMetrics> get healthStream => _healthStreamController.stream;
   Stream<Map<String, dynamic>> get notificationActionStream =>
       _notificationActionController.stream;
+  Stream<Map<String, dynamic>> get operationStatusStream =>
+      _operationStatusController.stream;
   Stream<PhoneFindState> get phoneFindStateStream =>
       _phoneFindController.stream;
   Stream<Map<String, dynamic>> get callRelayStream =>
@@ -119,11 +123,12 @@ class WatchBridgeService with BridgeCommands {
               _healthStreamController.add(
                 HealthMetrics.fromMap(Map<String, dynamic>.from(data)),
               );
-            } else if ((type == 'notificationAction' || type == 'operation') &&
-                data is Map) {
+            } else if (type == 'notificationAction' && data is Map) {
               _notificationActionController.add(
                 Map<String, dynamic>.from(data),
               );
+            } else if (type == 'operation' && data is Map) {
+              _operationStatusController.add(Map<String, dynamic>.from(data));
             } else if (type == 'callAction' && data is Map) {
               _callRelayController.add(Map<String, dynamic>.from(data));
             }
@@ -198,6 +203,7 @@ class WatchBridgeService with BridgeCommands {
     _faceCollectionController.close();
     _healthStreamController.close();
     _notificationActionController.close();
+    _operationStatusController.close();
     _phoneFindController.close();
     _callRelayController.close();
   }

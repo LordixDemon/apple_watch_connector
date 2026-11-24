@@ -33,6 +33,8 @@ class _OpticalPairingLabScreenState extends State<OpticalPairingCameraScreen>
   bool _foreground = true, _leaving = false, _recording = false;
   bool _busy = true, _error = false;
   bool _noMatch = false;
+  bool _noCamera = false;
+  bool _permissionDenied = false;
   int _frames = 0;
 
   @override
@@ -63,11 +65,24 @@ class _OpticalPairingLabScreenState extends State<OpticalPairingCameraScreen>
         _busy = true;
         _error = false;
         _noMatch = false;
+        _noCamera = false;
+        _permissionDenied = false;
       });
     }
     final cameras = await availableCameras();
+    if (cameras.isEmpty) {
+      if (mounted && !_leaving) {
+        setState(() {
+          _noCamera = true;
+          _error = true;
+          _busy = false;
+        });
+      }
+      return;
+    }
     final description = cameras.firstWhere(
       (c) => c.lensDirection == CameraLensDirection.back,
+      orElse: () => cameras.first,
     );
     final controller = CameraController(
       description,
@@ -87,6 +102,14 @@ class _OpticalPairingLabScreenState extends State<OpticalPairingCameraScreen>
       if (mounted) {
         setState(() => _busy = false);
       }
+    } on CameraException catch (e) {
+      if (e.code == 'CameraAccessDenied' ||
+          e.code == 'CameraAccessDeniedWithoutPrompt' ||
+          e.code == 'CameraAccessRestricted') {
+        _permissionDenied = true;
+      }
+      await _close();
+      rethrow;
     } catch (_) {
       await _close();
       rethrow;
@@ -143,6 +166,8 @@ class _OpticalPairingLabScreenState extends State<OpticalPairingCameraScreen>
       _recording = true;
       _error = false;
       _noMatch = false;
+      _noCamera = false;
+      _permissionDenied = false;
     });
     await controller.startImageStream((image) {
       if (!_recording || _frameWrite != null || !_foreground || _leaving) {
@@ -162,7 +187,7 @@ class _OpticalPairingLabScreenState extends State<OpticalPairingCameraScreen>
         throw const FormatException('Unsupported camera format');
       }
       final u = image.planes[1], v = image.planes[2];
-      final frame = OpticalFrame.fromYuv420(
+      final frame = await OpticalFrame.fromYuv420Async(
         image.width,
         image.height,
         OpticalPlane(u.bytes, u.bytesPerRow, u.bytesPerPixel ?? 1),
@@ -248,7 +273,7 @@ class _OpticalPairingLabScreenState extends State<OpticalPairingCameraScreen>
 
   @override
   Widget build(BuildContext context) {
-    final s = Strings.current, camera = _camera;
+    final s = Strings.of(context), camera = _camera;
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
@@ -295,7 +320,11 @@ class _OpticalPairingLabScreenState extends State<OpticalPairingCameraScreen>
                 children: [
                   Text(
                     _error
-                        ? _noMatch
+                        ? _permissionDenied
+                              ? s.opticalCameraPermissionDenied
+                              : _noCamera
+                              ? s.opticalNoCamera
+                              : _noMatch
                               ? s.opticalNoMatch
                               : s.opticalCameraError
                         : widget.recognize

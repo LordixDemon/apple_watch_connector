@@ -149,6 +149,23 @@ void main() {
   );
 
   test(
+    'Startup never auto-fetches external remote catalog',
+    () async {
+      final api = _Faces();
+      final library = FaceLibraryController(
+        storage: storage,
+        api: api,
+        ownsApi: true,
+      );
+      api.cached.complete([]);
+      await library.initialized;
+      expect(api.fetches, 0);
+      library.dispose();
+      expect(api.closed, 1);
+    },
+  );
+
+  test(
     'Late remote completion after disposal cannot replace catalog',
     () async {
       final api = _Faces();
@@ -158,11 +175,12 @@ void main() {
         ownsApi: true,
       );
       api.cached.complete([]);
-      await Future<void>.delayed(Duration.zero);
+      await library.initialized;
+      final fetch = library.fetchRemoteCatalog();
       expect(api.fetches, 1);
       library.dispose();
       api.remote.complete([WatchFaceCatalog.wayfinderOrange]);
-      await library.initialized;
+      await fetch;
       expect(library.remote, isEmpty);
       expect(api.closed, 1);
     },

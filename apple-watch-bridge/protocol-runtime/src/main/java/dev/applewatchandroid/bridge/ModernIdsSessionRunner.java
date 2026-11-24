@@ -36,6 +36,7 @@ final class ModernIdsSessionRunner {
     BridgeCommandCodec.Request clockFaceDeltaRequest;
     boolean clockFaceDeltaReadRequested;
     final BulletinTransportSession bulletinTransport = new BulletinTransportSession();
+    final BulletinTransportSession bulletinSettingsTransport = new BulletinTransportSession();
     IdsDeviceInfoExchange idsDeviceInfoExchange;
     final NanoSystemSettingsDiagnostics nssDiagnostics = new NanoSystemSettingsDiagnostics();
     final FindMyLocalDeviceSession findMySession = new FindMyLocalDeviceSession();
@@ -162,6 +163,7 @@ final class ModernIdsSessionRunner {
         softwareUpdate = null;
         healthPeerIdentityPublished = false;
         bulletinTransport.reset();
+        bulletinSettingsTransport.reset();
         session.postCommit.earlyInitialEvents.forEach(IdsModernSessionCoordinator.SessionEvent::close);
         session.postCommit.earlyInitialEvents.clear();
         session.postCommit.pendingPostCommitSends.close();

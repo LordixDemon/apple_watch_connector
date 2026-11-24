@@ -99,4 +99,28 @@ public class NotificationMirrorQueueTest {
         assertThrows(Exception.class, () -> NotificationMirrorEnvelope.open(sealed, key, pair));
         assertThrows(IllegalArgumentException.class, () -> NotificationMirrorEnvelope.open(new byte[5], key, pair));
     }
+
+    @Test public void acknowledgedEntriesAreEvictedLruAtEntryAndByteCapacity() {
+        var q = new NotificationMirrorQueue();
+        for (int n = 0; n < NotificationMirrorQueue.MAX_ENTRIES; n++) {
+            post(q, "k" + n, 1);
+            if (n < 5) q.acknowledge(q.entries().get(q.entries().size() - 1).revision());
+        }
+        String oldestAckedPub = q.entries().get(0).identity().publisherId();
+        post(q, "extra", 1);
+        assertEquals(NotificationMirrorQueue.MAX_ENTRIES, q.entries().size());
+        assertNull(q.match(oldestAckedPub, null, "com.chat"));
+        assertTrue(q.hasActive("extra"));
+
+        var bytes = new NotificationMirrorQueue();
+        for (int n = 0; n < 15; n++) {
+            bytes.upsert("b" + n, "com.chat", fingerprint(n), i -> new byte[NotificationMirrorQueue.MAX_PAYLOAD]);
+            bytes.acknowledge(bytes.entries().get(bytes.entries().size() - 1).revision());
+        }
+        int before = bytes.entries().size();
+        assertTrue(before >= 14);
+        bytes.upsert("newest", "com.chat", fingerprint(99), i -> new byte[NotificationMirrorQueue.MAX_PAYLOAD]);
+        assertTrue(bytes.hasActive("newest"));
+        assertTrue(bytes.encode().length <= NotificationMirrorQueue.MAX_BYTES);
+    }
 }

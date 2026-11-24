@@ -61,6 +61,16 @@ public class BulletinNativeActionTest {
         assertThrows(IllegalArgumentException.class, () -> BulletinDistributorCodec.SupplementaryActionRequest.decode(hex("2a0568656c6c6f")));
     }
 
+    @Test public void nonReplySupplementaryActionWithoutInfoDecodesAsAction() {
+        byte[] core = new BulletinDistributorCodec.SupplementaryActionRequest(
+                "PUB-A.act.0.TOK-A", "PUB-A", "REC-A", "com.chat", null, false).encode();
+        var action = BulletinActionDecoder.decode(BulletinDistributorCodec.TYPE_SUPPLEMENTARY_ACTION, false, pack(core));
+        assertNotNull(action);
+        assertEquals(BulletinActionDecoder.Kind.ACTION, action.kind());
+        assertEquals("PUB-A.act.0.TOK-A", action.identifier());
+        assertNull(action.replyText());
+    }
+
     @Test public void malformedWireSizesTagsAndDuplicateFlagsFailClosed() {
         String[] invalid = {"00", "0802", "08010800", "0a0161", "120450", "21ff", "1201ff", "80", "0899999999999999999999", "1dff"};
         for (String value : invalid) assertThrows(value, IllegalArgumentException.class,

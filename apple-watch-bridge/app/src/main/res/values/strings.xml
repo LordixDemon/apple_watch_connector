@@ -199,4 +199,8 @@
     <string name="disconnecting" formatted="false">"Disconnecting…"</string>
     <string name="camera_permission_enables_the_phone_flashlight_when_finding_it" formatted="false">"Camera permission enables the phone flashlight when finding it from your watch. No photos or videos are taken."</string>
     <string name="allow_flashlight" formatted="false">"Allow Flashlight"</string>
+    <string name="notification_media_photo" formatted="false">"[Photo]"</string>
+    <string name="notification_media_video" formatted="false">"[Video]"</string>
+    <string name="notification_media_audio" formatted="false">"[Audio]"</string>
+    <string name="notification_media_attachment" formatted="false">"[Attachment]"</string>
 </resources>

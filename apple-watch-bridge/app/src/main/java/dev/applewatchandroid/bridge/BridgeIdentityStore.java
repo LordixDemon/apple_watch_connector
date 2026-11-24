@@ -263,6 +263,9 @@ final class BridgeIdentityStore {
                 throw new IllegalStateException(
                         "Pairing session encrypted readback mismatch");
             }
+            if (existing == null || !sameGeneration(incoming, existing)) {
+                NotificationMirrorStore.purgeOtherPairings(context, OperationalSessionPolicy.pairingId(incoming));
+            }
             return true;
         } catch (Exception error) {
             appendLog("PAIRING SESSION STORE ERROR: "

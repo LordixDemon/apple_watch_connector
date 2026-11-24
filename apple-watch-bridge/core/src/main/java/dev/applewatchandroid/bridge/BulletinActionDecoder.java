@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 /** Read-only native action decoding. A decoded action alone authorizes no Android effect. */
 final class BulletinActionDecoder {
-    enum Kind { DISMISS, REPLY, LIGHTS_OBSERVED }
+    enum Kind { DISMISS, REPLY, ACTION, LIGHTS_OBSERVED }
     record Action(Kind kind, String publisherId, String recordId, String sectionId,
                   String identifier, String replyText, Boolean played, String replyToken) { }
 
@@ -26,9 +26,16 @@ final class BulletinActionDecoder {
             if (type == BulletinDistributorCodec.TYPE_SUPPLEMENTARY_ACTION) {
                 BulletinDistributorCodec.SupplementaryActionRequest action = BulletinDistributorCodec.SupplementaryActionRequest.decode(split.messagePayload);
                 requireIdentity(action.publisherBulletinId, action.sectionId);
-                if (action.identifier == null || action.identifier.isBlank() || action.replyText == null) return null;
-                return new Action(Kind.REPLY, action.publisherBulletinId, action.recordId, action.sectionId,
-                        action.identifier, action.replyText, null, null);
+                if (action.identifier == null || action.identifier.isBlank()) return null;
+                if (action.replyText != null) {
+                    return new Action(Kind.REPLY, action.publisherBulletinId, action.recordId, action.sectionId,
+                            action.identifier, action.replyText, null, null);
+                }
+                if (!action.hasActionInfo) {
+                    return new Action(Kind.ACTION, action.publisherBulletinId, action.recordId, action.sectionId,
+                            action.identifier, null, null, null);
+                }
+                return null;
             }
             BulletinDistributorCodec.DidPlayLightsAndSirens action = BulletinDistributorCodec.DidPlayLightsAndSirens.decode(split.messagePayload);
             return new Action(Kind.LIGHTS_OBSERVED, action.publisherMatchId, null, action.sectionId, null, null, action.didPlay, action.replyToken);

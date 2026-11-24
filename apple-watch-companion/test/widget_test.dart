@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:apple_watch_companion/l10n/strings.dart';
 import 'package:apple_watch_companion/main.dart';
 import 'package:apple_watch_companion/models/watch_face.dart';
 import 'package:apple_watch_companion/providers/watch_provider.dart';
@@ -29,9 +30,10 @@ class _MockHttpClient extends http.BaseClient {
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    Strings.resetToDefault();
   });
 
-  testWidgets('English fallback on a Russian phone and tab navigation', (
+  testWidgets('Russian locale renders translated UI and tab navigation', (
     WidgetTester tester,
   ) async {
     await tester.runAsync(NativeGalleryCollections.load);
@@ -39,7 +41,88 @@ void main() {
       'ru',
       'UA',
     );
+    tester.binding.platformDispatcher.localesTestValue = const [
+      Locale('ru', 'UA'),
+    ];
     addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
+    addTearDown(tester.binding.platformDispatcher.clearLocalesTestValue);
+    addTearDown(Strings.resetToDefault);
+    final prefs = await SharedPreferences.getInstance();
+    final storage = SettingsStorage(prefs);
+    final bridge = WatchBridgeService(
+      events: Stream.multi(
+        (controller) => controller.add({
+          'type': 'connection',
+          'data': {
+            'features': {'nativeFaces': true, 'watchSettings': true},
+          },
+        }),
+      ),
+    );
+    final mockApi = WatchFaceApiService(client: _MockHttpClient());
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<WatchProvider>(
+            create: (_) => WatchProvider(
+              storage: storage,
+              bridge: bridge,
+              apiService: mockApi,
+            ),
+          ),
+          ChangeNotifierProvider<WatchConnectionProvider>(
+            create: (_) => WatchConnectionProvider(bridge: bridge),
+          ),
+        ],
+        child: const AppleWatchCompanionApp(),
+      ),
+    );
+
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.text("Мои часы"), findsWidgets);
+    expect(find.text('Нет сопряжённых часов'), findsOneWidget);
+    expect(
+      Localizations.localeOf(tester.element(find.text('Мои часы').first)),
+      const Locale('ru'),
+    );
+    await tester.tap(find.text('Все часы'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bridge недоступен'), findsOneWidget);
+    await tester.tap(find.byType(CupertinoNavigationBarBackButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CupertinoTabBar),
+        matching: find.text("Циферблаты"),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text("Циферблаты"), findsWidgets);
+
+    await tester.tap(find.text("Обзор"));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.text("WATCH COMPANION"), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    bridge.dispose();
+  });
+
+  testWidgets('English fallback on an unsupported locale and tab navigation', (
+    WidgetTester tester,
+  ) async {
+    await tester.runAsync(NativeGalleryCollections.load);
+    tester.binding.platformDispatcher.localeTestValue = const Locale(
+      'fr',
+      'FR',
+    );
+    tester.binding.platformDispatcher.localesTestValue = const [
+      Locale('fr', 'FR'),
+    ];
+    addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
+    addTearDown(tester.binding.platformDispatcher.clearLocalesTestValue);
+    addTearDown(Strings.resetToDefault);
     final prefs = await SharedPreferences.getInstance();
     final storage = SettingsStorage(prefs);
     final bridge = WatchBridgeService(

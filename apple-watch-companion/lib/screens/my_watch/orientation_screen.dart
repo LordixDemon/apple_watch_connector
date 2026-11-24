@@ -9,12 +9,13 @@ class OrientationScreen extends StatelessWidget {
   const OrientationScreen({super.key});
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
     final provider = context.watch<WatchProvider>();
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(Strings.current.orientationTime),
-        previousPageTitle: Strings.current.general,
+        middle: Text(s.orientationTime),
+        previousPageTitle: s.general,
       ),
       child: SafeArea(
         child: ListView(

@@ -31,4 +31,11 @@ public final class NotificationRelayPolicyTest {
         for (int i = 0; i <= NotificationRelayPolicy.MAX_APPS; i++) blocked.add("org.example.app" + i);
         assertThrows(IllegalArgumentException.class, () -> new NotificationRelayPolicy(true, blocked));
     }
+    @Test public void onlyWhenScreenOffSuppressesWhilePhoneInteractiveUnlocked() {
+        var policy = new NotificationRelayPolicy(true, Set.of(), true);
+        assertTrue(policy.onlyWhenScreenOff());
+        assertFalse(policy.allows("org.example.chat", true));
+        assertTrue(policy.allows("org.example.chat", false));
+        assertTrue(new NotificationRelayPolicy(true, Set.of(), false).allows("org.example.chat", true));
+    }
 }

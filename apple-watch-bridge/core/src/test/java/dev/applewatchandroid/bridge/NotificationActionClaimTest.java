@@ -76,4 +76,15 @@ public class NotificationActionClaimTest {
         assertTrue(q.claimReply(decoded.publisherId(), decoded.recordId(), decoded.sectionId(), decoded.identifier()));
         assertFalse(restart(q).claimReply(decoded.publisherId(), decoded.recordId(), decoded.sectionId(), decoded.identifier()));
     }
+
+    @Test public void supplementaryActionButtonClaimsAtMostOncePerRevision() {
+        var q = new NotificationMirrorQueue(); post(q, 1); var i = q.entries().get(0).identity();
+        String act0 = NotificationMirrorQueue.actionIdentifier(i, 0);
+        assertEquals(0, NotificationMirrorQueue.parseActionIndex(i, act0));
+        assertEquals(-1, NotificationMirrorQueue.parseActionIndex(i, "wrong.id"));
+        assertTrue(q.claimAction(i.publisherId(), i.recordId(), i.sectionId(), act0));
+        assertFalse(restart(q).claimAction(i.publisherId(), i.recordId(), i.sectionId(), act0));
+        post(q, 2); var next = q.entries().get(0).identity();
+        assertTrue(q.claimAction(next.publisherId(), next.recordId(), next.sectionId(), NotificationMirrorQueue.actionIdentifier(next, 1)));
+    }
 }

@@ -137,9 +137,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ok => 'OK';
 
   @override
-  String get digitalCrownTimeTravel => 'DIGITAL CROWN / TIME TRAVEL';
-
-  @override
   String get rightWrist => 'Right wrist';
 
   @override
@@ -155,76 +152,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workout => 'Workout';
 
   @override
-  String get trackActivityHeartRatePowerZonesAndGpsRoutes =>
-      'Track activity, heart rate, power zones, and GPS routes.';
-
-  @override
   String get activity => 'Activity';
-
-  @override
-  String get moveExerciseAndStandRings => 'Move, Exercise, and Stand rings.';
 
   @override
   String get heartRate => 'Heart Rate';
 
   @override
-  String get heartRateMeasurementsAndAlerts =>
-      'Heart rate measurements and alerts.';
-
-  @override
-  String get compassWaypoints => 'Compass & Waypoints';
-
-  @override
-  String get elevationInclineCoordinatesAndBacktrackRoutes =>
-      'Elevation, incline, coordinates, and Backtrack routes.';
-
-  @override
   String get music => 'Music';
-
-  @override
-  String get streamAudioAndControlPlayback =>
-      'Stream audio and control playback.';
 
   @override
   String get messages => 'Messages';
 
   @override
-  String get sendAndReceiveMessagesUseDictationAndQuickReplies =>
-      'Send and receive messages, use dictation and quick replies.';
-
-  @override
   String get phone => 'Phone';
-
-  @override
-  String get callsOverBluetoothOrCellular =>
-      'Calls over Bluetooth or cellular.';
 
   @override
   String get weather => 'Weather';
 
   @override
-  String get forecastsUvIndexPrecipitationAndWind =>
-      'Forecasts, UV index, precipitation, and wind.';
-
-  @override
   String get maps => 'Maps';
-
-  @override
-  String get turnByTurnDirectionsWithHapticFeedback =>
-      'Turn-by-turn directions with haptic feedback.';
-
-  @override
-  String get noise => 'Noise';
-
-  @override
-  String get monitorAmbientNoiseLevelsInDecibels =>
-      'Monitor ambient noise levels in decibels.';
-
-  @override
-  String get naturalTitanium => 'Natural Titanium';
-
-  @override
-  String get message49Mm => '49 mm';
 
   @override
   String get battery => 'Battery';
@@ -280,28 +226,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pointTheCameraAtYourAppleWatchScreen =>
-      'Point the camera at your Apple Watch screen';
-
-  @override
-  String get enterThe6DigitCodeShownOnYourWatch =>
-      'Enter the 6-digit code shown on your watch';
-
-  @override
-  String get waitingForBridgeConfirmation => 'Waiting for Bridge confirmation…';
-
-  @override
-  String get setupConfirmedByTheWatch => 'Setup confirmed by the watch';
-
-  @override
-  String get setupIsNotConfirmedYetAppleWatchBridgeIs =>
-      'Setup is not confirmed yet. Apple Watch Bridge is still setting up the watch.';
-
-  @override
-  String get noSetupConfirmationFromBridge =>
-      'No setup confirmation from Bridge';
-
-  @override
   String get discover => 'Discover';
 
   @override
@@ -325,20 +249,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Double Tap, Digital Crown, and Action Button';
 
   @override
-  String get healthWorkouts => 'Health & Workouts';
-
-  @override
-  String get setUpHeartRateZonesGpsRoutesAndActivity =>
-      'Set up heart rate zones, GPS routes, and Activity rings';
-
-  @override
-  String get compassBacktrack => 'Compass & Backtrack';
-
-  @override
-  String get navigateWithoutAnInternetConnection =>
-      'Navigate without an internet connection';
-
-  @override
   String get notificationMirroring => 'Notification Mirroring';
 
   @override
@@ -349,17 +259,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resources => 'RESOURCES';
 
   @override
-  String get appleWatchUserGuide => 'Apple Watch User Guide';
-
-  @override
   String get halSupportDiagnostics => 'HAL Support & Diagnostics';
 
   @override
-  String get appleWatchUltra2Controls => 'Apple Watch Ultra 2 Controls';
+  String get appleWatchUltra2Controls => 'Apple Watch Controls';
 
   @override
   String get useDoubleTapTheDigitalCrownAndTheOrange =>
-      'Use Double Tap, the Digital Crown, and the orange Action Button.';
+      'Use Double Tap, the Digital Crown, and the Action button (Ultra models).';
 
   @override
   String get essentialGestures => 'ESSENTIAL GESTURES';
@@ -399,52 +306,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reset => 'Reset';
 
   @override
-  String get colorPalette => 'COLOR PALETTE';
-
-  @override
   String get nightMode => 'Night Mode';
 
   @override
   String get bezelStyle => 'BEZEL STYLE';
 
   @override
-  String get elevationIncline => 'Elevation / Incline';
-
-  @override
   String get seconds => 'Seconds';
-
-  @override
-  String get noBezel => 'No Bezel';
-
-  @override
-  String get complicationsTapToChange => 'COMPLICATIONS (TAP TO CHANGE)';
-
-  @override
-  String get saveLayoutOnPhone => 'Save Layout on Phone';
 
   @override
   String get exportWatchfacePackage => 'Export .watchface Package';
 
   @override
-  String chooseAComplicationFor(String value0) {
-    return 'Choose a complication for $value0';
-  }
-
-  @override
   String get cancel => 'Cancel';
-
-  @override
-  String get watchfaceGeneratedSuccessfully =>
-      '.watchface generated successfully';
-
-  @override
-  String createdAnAppleWatchPackageBytes(String value0) {
-    return 'Created an Apple Watch package ($value0 bytes). ';
-  }
-
-  @override
-  String get includesFacePlistMetadataPlistAndSlotConfiguration =>
-      'Includes Face.plist, metadata.plist, and slot configuration.';
 
   @override
   String get topSubdial => 'Top Subdial';
@@ -472,34 +346,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get import => 'Import';
-
-  @override
-  String get onlineGallery => 'Online Gallery';
-
-  @override
-  String get downloadedFromTheAppleWatchFaceCatalogServer =>
-      'Downloaded from the Apple Watch Face catalog server.';
-
-  @override
-  String get importedWayfinder => 'Imported Wayfinder';
-
-  @override
-  String get importAppleWatchFace => 'Import Apple Watch Face';
-
-  @override
-  String get loadAWatchfacePackageZipWithFacePlist =>
-      'Load a .watchface package (ZIP with Face.plist)';
-
-  @override
-  String get watchFaceImported => 'Watch face imported!';
-
-  @override
-  String layoutSavedOnYourPhone(String value0) {
-    return 'Layout “$value0” saved on your phone.';
-  }
-
-  @override
-  String get importSampleWatchface => 'Import Sample .watchface';
 
   @override
   String get myWatch => 'My Watch';
@@ -550,36 +396,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get userApps => 'User Apps';
 
   @override
-  String get actionButton => 'Action Button';
-
-  @override
-  String get quickAccessToWorkoutsWaypointsTheStopwatchAndThe =>
-      'Quick access to workouts, waypoints, the stopwatch, and the safety siren.';
-
-  @override
   String get action => 'ACTION';
 
   @override
   String get stopwatch => 'Stopwatch';
 
   @override
-  String get compassWaypoint => 'Compass Waypoint';
-
-  @override
   String get backtrack => 'Backtrack';
 
   @override
-  String get diveDepth => 'Dive & Depth';
-
-  @override
   String get flashlight => 'Flashlight';
-
-  @override
-  String get safetySiren => 'SAFETY SIREN';
-
-  @override
-  String get holdTheActionButtonOnAppleWatchUltraTo =>
-      'Hold the Action Button on Apple Watch Ultra to play an 86-decibel alarm audible from up to 180 meters away.';
 
   @override
   String get holdForSiren => 'Hold for Siren';
@@ -588,12 +414,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String version(String value0, String value1) {
     return '$value0 • Version $value1';
   }
-
-  @override
-  String get showAppOnAppleWatch => 'Show App on Apple Watch';
-
-  @override
-  String get displayBrightness => 'Display & Brightness';
 
   @override
   String get brightness => 'BRIGHTNESS';
@@ -605,58 +425,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get boldText => 'Bold Text';
 
   @override
-  String get keepTheWatchFaceAndAppInformationVisibleWhen =>
-      'Keep the watch face and app information visible when your wrist is down.';
-
-  @override
-  String get alwaysOn => 'Always On';
-
-  @override
-  String get wristRaise => 'WRIST RAISE';
-
-  @override
   String get wakeOnWristRaise => 'Wake on Wrist Raise';
 
   @override
   String get wakeDuration => 'Wake Duration';
 
   @override
-  String get message70Seconds => '70 seconds';
-
-  @override
-  String get message15Seconds => '15 seconds';
-
-  @override
-  String get screenWakeDurationOnTap => 'Screen Wake Duration on Tap';
-
-  @override
-  String get emergencySos => 'Emergency SOS';
-
-  @override
   String get fallDetection => 'FALL DETECTION';
 
   @override
-  String get ifAppleWatchDetectsAHardFallAndYou =>
-      'If Apple Watch detects a hard fall and you remain immobile for about a minute, it gives a haptic alert, sounds an alarm, and contacts emergency services.';
-
-  @override
-  String get fallDetection2 => 'Fall Detection';
-
-  @override
   String get crashDetection => 'CRASH DETECTION';
-
-  @override
-  String get afterASevereCarCrashAppleWatchShowsThe =>
-      'After a severe car crash, Apple Watch shows the emergency call slider and automatically calls emergency services after 20 seconds.';
-
-  @override
-  String get crashDetection2 => 'Crash Detection';
-
-  @override
-  String get medicalInformation => 'MEDICAL INFORMATION';
-
-  @override
-  String get setUpMedicalId => 'Set Up Medical ID';
 
   @override
   String get softwareUpdate => 'Software Update';
@@ -680,23 +458,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get off => 'Off';
 
   @override
-  String get connectivity => 'CONNECTIVITY';
-
-  @override
   String get airplaneMode => 'Airplane Mode';
-
-  @override
-  String get resetUnpair => 'Reset & Unpair';
-
-  @override
-  String get unpairAppleWatch => 'Unpair Apple Watch';
-
-  @override
-  String get allDataWatchFacesAndSettingsWillBeErased =>
-      'All data, watch faces, and settings will be erased from the device.';
-
-  @override
-  String get unpair => 'Unpair';
 
   @override
   String get activityHealth => 'Activity & Health';
@@ -794,13 +556,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get disconnected => 'Disconnected';
 
   @override
-  String get soundsHaptics => 'Sounds & Haptics';
-
-  @override
   String get notifications => 'Notifications';
-
-  @override
-  String get passcode => 'Passcode';
 
   @override
   String get installedOnAppleWatch => 'INSTALLED ON APPLE WATCH';
@@ -812,116 +568,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hidden => 'Hidden';
 
   @override
-  String get manageConnectedWatches => 'Manage connected watches';
-
-  @override
-  String get addAppleWatch => 'Add Apple Watch';
-
-  @override
   String get notificationIndicator => 'Notification Indicator';
-
-  @override
-  String get showsARedDotAtTheTopOfThe =>
-      'Shows a red dot at the top of the watch face when you have unread notifications.';
 
   @override
   String get notificationPrivacy => 'Notification Privacy';
 
   @override
-  String get hideNotificationDetailsUntilYouTapTheScreen =>
-      'Hide notification details until you tap the screen.';
-
-  @override
-  String get notificationSummary => 'Notification Summary';
-
-  @override
   String get mirrorPhoneAlerts => 'MIRROR PHONE ALERTS';
-
-  @override
-  String get forwardAlertsFromTheseAppsToAppleWatchWith =>
-      'Forward alerts from these apps to Apple Watch with haptic feedback.';
-
-  @override
-  String get messagesSmsRcs => 'Messages (SMS & RCS)';
-
-  @override
-  String get phoneCalls => 'Phone & Calls';
 
   @override
   String get mail => 'Mail';
 
   @override
-  String get calendarReminders => 'Calendar & Reminders';
-
-  @override
-  String get bankingApps => 'Banking Apps';
-
-  @override
-  String get bulletinRelayTest => 'BULLETIN RELAY TEST';
-
-  @override
-  String get sendATestNotificationToAppleWatchOverThe =>
-      'Send a test notification to Apple Watch over the secure com.apple.private.alloy.bulletindistributor IDS channel.';
-
-  @override
   String get sendTestNotification => 'Send Test Notification';
-
-  @override
-  String get simulatedTelegramSmsWithTapticFeedback =>
-      'Simulated Telegram / SMS with Taptic feedback';
 
   @override
   String get testMessage => 'Test Message';
 
   @override
-  String get androidAppleWatchConnectionIsWorking =>
-      'Android ↔ Apple Watch connection is working!';
-
-  @override
-  String get notificationSent => 'Notification sent';
-
-  @override
-  String get bulletinrequestWasHandedToTheWatchProtocolStack =>
-      'BulletinRequest was handed to the watch protocol stack.';
-
-  @override
-  String get changePasscode => 'Change Passcode';
-
-  @override
-  String get simplePasscode4Digits => 'Simple Passcode (4 digits)';
-
-  @override
   String get unlockWithPhone => 'Unlock with Phone';
 
   @override
-  String get unlockingYourPhoneAutomaticallyUnlocksYourTrustedAppleWatch =>
-      'Unlocking your phone automatically unlocks your trusted Apple Watch when worn.';
-
-  @override
   String get wristDetection => 'WRIST DETECTION';
-
-  @override
-  String get lockAppleWatchWhenYouTakeItOffTo =>
-      'Lock Apple Watch when you take it off to protect your data and Apple Pay cards.';
-
-  @override
-  String get wristDetection2 => 'Wrist Detection';
-
-  @override
-  String get dataSecurity => 'DATA SECURITY';
-
-  @override
-  String get eraseAllAppleWatchDataAfter10FailedPasscode =>
-      'Erase all Apple Watch data after 10 failed passcode attempts.';
-
-  @override
-  String get eraseData10Attempts => 'Erase Data (10 attempts)';
-
-  @override
-  String get automaticUpdates => 'Automatic Updates';
-
-  @override
-  String get betaUpdates => 'Beta Updates';
 
   @override
   String get checkingForUpdates => 'Checking for updates…';
@@ -940,23 +608,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get silentMode => 'Silent Mode';
 
   @override
-  String get hapticFeedback => 'HAPTIC FEEDBACK';
-
-  @override
   String get hapticAlerts => 'Haptic Alerts';
 
   @override
-  String get defaultHaptic => 'Default';
-
-  @override
   String get prominent => 'Prominent';
-
-  @override
-  String get playAnAdditionalHapticBeforeANotification =>
-      'Play an additional haptic before a notification.';
-
-  @override
-  String get systemFeedback => 'SYSTEM FEEDBACK';
 
   @override
   String get crownHaptics => 'Crown Haptics';
@@ -966,10 +621,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coverToMute => 'Cover to Mute';
-
-  @override
-  String get coverTheDisplayWithYourPalmForAtLeast =>
-      'Cover the display with your palm for at least 3 seconds to mute an incoming call or alert.';
 
   @override
   String get watchStorage => 'WATCH STORAGE';
@@ -984,101 +635,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get watchContent => 'WATCH CONTENT';
 
   @override
-  String get pointTheCamera => 'Point the Camera';
-
-  @override
-  String get keepAppleWatchInTheViewfinder =>
-      'Keep Apple Watch in the viewfinder';
-
-  @override
-  String get placeTheAppleWatchScreenInTheCenterOf =>
-      'Place the Apple Watch screen in the center of the frame to recognize the pairing animation automatically.';
-
-  @override
-  String get pairAppleWatchManually => 'Pair Apple Watch Manually';
-
-  @override
-  String get pairManually => 'Pair Manually';
-
-  @override
-  String get enterThe6DigitCode => 'Enter the 6-digit Code';
-
-  @override
-  String get tapTheIIconOnYourAppleWatchTo =>
-      'Tap the “i” icon on your Apple Watch to see the pairing code.';
-
-  @override
-  String get syncComplete => 'Sync complete!';
-
-  @override
-  String get syncingAppleWatch => 'Syncing Apple Watch';
-
-  @override
-  String get setUpAppleWatch => 'Set Up Apple Watch';
-
-  @override
-  String get keepBluetoothOnAndYourWatchCloseToYour =>
-      'Keep Bluetooth on and your watch close to your phone.';
-
-  @override
-  String get connectAppleWatchToYourAndroidPhoneToSync =>
-      'Connect Apple Watch to your Android phone to sync notifications, calls, and workouts.';
-
-  @override
   String get pairAppleWatch => 'Pair Apple Watch';
 
   @override
-  String get continueAction => 'Continue';
-
-  @override
-  String get finishSetup => 'Finish Setup';
-
-  @override
-  String get whichWristDoYouWearYourWatchOn =>
-      'Which wrist do you wear your watch on?';
-
-  @override
-  String get appleWatchAdjustsWristRaiseAndGestureRecognitionFor =>
-      'Apple Watch adjusts wrist raise and gesture recognition for your selected wrist.';
-
-  @override
-  String get digitalCrownPosition => 'Digital Crown Position';
-
-  @override
-  String get chooseWhichSideTheDigitalCrownIsOn =>
-      'Choose which side the Digital Crown is on.';
-
-  @override
-  String get digitalCrownOnRight => 'Digital Crown on Right';
-
-  @override
-  String get digitalCrownOnLeft => 'Digital Crown on Left';
-
-  @override
   String get alwaysOnDisplay => 'Always-On Display';
-
-  @override
-  String get theAlwaysOnRetinaDisplayShowsTheTimeAnd =>
-      'The Always-On Retina display shows the time and important information without raising your wrist.';
-
-  @override
-  String get enableAlwaysOnDisplay => 'Enable Always-On Display';
-
-  @override
-  String get createAPasscode => 'Create a Passcode';
-
-  @override
-  String get aPasscodeProtectsYourDataApplePayCardsAnd =>
-      'A passcode protects your data, Apple Pay cards, and medical information.';
-
-  @override
-  String get addA4DigitPasscode => 'Add a 4-digit Passcode';
-
-  @override
-  String get titanium => 'Titanium';
-
-  @override
-  String get sunny => 'Sunny';
 
   @override
   String get exclusiveAppleWatchUltraFacesWithACustomizableBezel =>
@@ -1149,16 +709,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityDigital => 'Activity Digital';
 
   @override
-  String get selectionConfirmedByTheWatch =>
-      'Selection confirmed by the watch.';
-
-  @override
   String get collectionReceivedFromTheWatch =>
       'Collection received from the watch.';
-
-  @override
-  String get incompleteCollectionReceivedRefreshAgain =>
-      'Incomplete collection received. Refresh again.';
 
   @override
   String get connectionChangedRefreshAgain =>
@@ -1175,26 +727,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get newCollectionNotReceivedYetRefreshAgain =>
       'New collection not received yet. Refresh again.';
-
-  @override
-  String get waitingForTheNewWatchFace => 'Waiting for the new watch face…';
-
-  @override
-  String get waitingForTheSelectedWatchFace =>
-      'Waiting for the selected watch face…';
-
-  @override
-  String get commandNotSentRefreshTheWatchFaceCollection =>
-      'Command not sent. Refresh the watch face collection.';
-
-  @override
-  String get resultNotConfirmedRefreshTheWatchFaceCollection =>
-      'Result not confirmed. Refresh the watch face collection.';
-
-  @override
-  String lastSync(String value0) {
-    return 'Last sync: $value0.';
-  }
 
   @override
   String get myFaces => 'My Faces';
@@ -1405,9 +937,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get live => 'LIVE';
 
   @override
-  String get alwaysOn2 => 'ALWAYS ON';
-
-  @override
   String get bluetooth => 'Bluetooth';
 
   @override
@@ -1415,10 +944,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get digitalCrown => 'Digital Crown';
-
-  @override
-  String get appleWatchUltra2ActionButton =>
-      'Apple Watch Ultra 2 Action Button';
 
   @override
   String get appleWatch => 'Apple Watch';
@@ -1488,9 +1013,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get connectionPermissions => 'Allow Bluetooth access';
-
-  @override
-  String get pairingRunning => 'Setup in progress';
 
   @override
   String get resumeWatchSetup => 'Continue setup';
@@ -1715,9 +1237,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The backend currently stores one pairing. A saved pair is retained when disconnected.';
 
   @override
-  String get finishInitialSync => 'Finish initial synchronization';
-
-  @override
   String get chooseDiscoveredWatch =>
       'Choose a watch found nearby. Only supported setup advertisements are listed.';
 
@@ -1761,10 +1280,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The result is not confirmed. Refresh before making another change.';
 
   @override
-  String get nativeFaceImportHint =>
-      'Choose a native .watchface package, including bundled photos and resources (up to 16 MiB). Compatibility is confirmed by the connected watch.';
-
-  @override
   String get nativeFaceCustomization => 'Customization';
 
   @override
@@ -1793,14 +1308,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nativeFaceConfiguration => 'Native Configuration';
 
   @override
-  String get nativeFaceConfigurationHint =>
-      'These values come from the watch. Keep unknown fields intact. Available values and complication support depend on the face and watchOS.';
-
-  @override
   String get nativeFaceApply => 'Apply to Watch';
-
-  @override
-  String get nativeFaceEditValue => 'Edit Value';
 
   @override
   String get nativeFaceValueHint =>
@@ -1825,10 +1333,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This face may need photos or other resources. Export is unavailable until the complete native package can be read.';
 
   @override
-  String get nativeFaceLocalLayoutHint =>
-      'This gallery contains local preview layouts. Native watch faces are managed in My Watch → Manage Watch Faces.';
-
-  @override
   String get nativeFaceComplicationHint =>
       'Choose a compatible complication from the watch\'s catalog or an existing face. Saved settings and native intents are preserved.';
 
@@ -1849,16 +1353,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get nativeFaceConflict =>
       'This face changed or the watch reconnected. Open the face again before applying edits.';
-
-  @override
-  String get exportLocalFaceLayout => 'Export Local Layout';
-
-  @override
-  String get localFaceLayoutSaved => 'Local layout saved';
-
-  @override
-  String get localFaceLayoutSavedHint =>
-      'This .watchlayout file contains a Companion preview layout. It is not an installable native watch face.';
 
   @override
   String get nativeFaceTimeStyle => 'Time Style';
@@ -1996,10 +1490,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nativeFaceAddToWatch => 'Add to Watch';
-
-  @override
-  String get nativeFaceTemplateHint =>
-      'Choose colors and complications before adding this face to your watch.';
 
   @override
   String get nativeFaceDefaultPreview => 'Default preview';
@@ -2261,6 +1751,33 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not queue the test alert. Check your watch connection and try again.';
 
   @override
+  String get notificationOnlyWhenLocked => 'Only When Phone Is Locked';
+
+  @override
+  String get notificationOnlyWhenLockedDescription =>
+      'Suppress Watch notification alerts while your phone screen is unlocked and active.';
+
+  @override
+  String get notificationSearchApps => 'Search apps';
+
+  @override
+  String get notificationFilterAll => 'All';
+
+  @override
+  String get notificationFilterActive => 'Active';
+
+  @override
+  String get notificationRetryPending => 'Retry Pending Delivery';
+
+  @override
+  String get notificationTestAcknowledged =>
+      'The Apple Watch acknowledged receipt over IDS. Check the watch screen to confirm it appeared.';
+
+  @override
+  String get notificationTestDeliveryFailed =>
+      'The test alert did not reach the Apple Watch in time. Check the watch connection and try again.';
+
+  @override
   String get updateUnavailable =>
       'Software updates are unavailable on this connection.';
 
@@ -2358,4 +1875,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String updateRequiredSpace(String size) {
     return 'Required free space: $size';
   }
+
+  @override
+  String get opticalCameraPermissionDenied =>
+      'Camera permission is required to scan the Apple Watch.';
+
+  @override
+  String get opticalNoCamera => 'No camera is available on this device.';
+
+  @override
+  String get filterJournal => 'Filter journal';
+
+  @override
+  String get jumpToBottom => 'Bottom';
+
+  @override
+  String get copiedToClipboard => 'Copied';
+
+  @override
+  String get noMatchingJournalLines => 'No matching log lines';
+
+  @override
+  String get watchConnectionSubtitle =>
+      'Pair, reconnect, and check bridge link status';
 }

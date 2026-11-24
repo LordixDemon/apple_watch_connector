@@ -102,4 +102,47 @@ class WatchDevice {
       telemetry: telemetry ?? this.telemetry,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WatchDevice &&
+          id == other.id &&
+          name == other.name &&
+          model == other.model &&
+          modelIdentifier == other.modelIdentifier &&
+          caseMaterial == other.caseMaterial &&
+          caseSize == other.caseSize &&
+          watchOsVersion == other.watchOsVersion &&
+          serialNumber == other.serialNumber &&
+          bluetoothAddress == other.bluetoothAddress &&
+          wifiAddress == other.wifiAddress &&
+          seId == other.seId &&
+          batteryLevel == other.batteryLevel &&
+          isCharging == other.isCharging &&
+          isConnected == other.isConnected &&
+          isSyncing == other.isSyncing &&
+          activeFaceId == other.activeFaceId &&
+          telemetry == other.telemetry;
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    model,
+    modelIdentifier,
+    caseMaterial,
+    caseSize,
+    watchOsVersion,
+    serialNumber,
+    bluetoothAddress,
+    wifiAddress,
+    seId,
+    batteryLevel,
+    isCharging,
+    isConnected,
+    isSyncing,
+    activeFaceId,
+    telemetry,
+  );
 }

@@ -14,13 +14,15 @@ import javax.crypto.SecretKey;
 
 /** App-private, backup-excluded journal for one owner-confirmed pair. */
 final class NotificationMirrorStore {
+    private static final String FILE_PREFIX = "notification-mirror-";
+    private static final String ALIAS_PREFIX = "apple-watch-bridge.notification-mirror.v1.";
     private final UUID pairing;
     private final AtomicFile file;
     private final String alias;
     NotificationMirrorStore(Context context, String pairingId) {
         pairing = UUID.fromString(pairingId);
-        alias = "apple-watch-bridge.notification-mirror.v1." + pairing;
-        file = new AtomicFile(new File(context.getNoBackupFilesDir(), "notification-mirror-" + pairing + ".v1.aesgcm"));
+        alias = ALIAS_PREFIX + pairing;
+        file = new AtomicFile(new File(context.getNoBackupFilesDir(), FILE_PREFIX + pairing + ".v1.aesgcm"));
     }
     NotificationMirrorQueue load() throws Exception {
         byte[] sealed = null, plaintext = null;
@@ -34,12 +36,45 @@ final class NotificationMirrorStore {
         } finally { wipe(sealed); wipe(plaintext); }
     }
     void save(NotificationMirrorQueue queue) throws Exception {
-        byte[] plaintext = queue.encode(), sealed = null;
+        byte[] plaintext = queue.encode();
+        try { saveEncoded(plaintext); }
+        finally { wipe(plaintext); }
+    }
+    void saveEncoded(byte[] plaintext) throws Exception {
+        byte[] sealed = null;
         FileOutputStream output = null;
         try {
             sealed = NotificationMirrorEnvelope.seal(plaintext, key(true), pairing);
             output = file.startWrite(); output.write(sealed); file.finishWrite(output); output = null;
-        } finally { if (output != null) file.failWrite(output); wipe(plaintext); wipe(sealed); }
+        } finally { if (output != null) file.failWrite(output); wipe(sealed); }
+    }
+    static void purgeOtherPairings(Context context, String activePairingId) {
+        if (context == null || activePairingId == null || activePairingId.isBlank()) return;
+        UUID activeUuid;
+        try { activeUuid = UUID.fromString(activePairingId); }
+        catch (IllegalArgumentException ignored) { return; }
+        String keepBase = FILE_PREFIX + activeUuid + ".v1.aesgcm";
+        String keepAlias = ALIAS_PREFIX + activeUuid;
+        File dir = context.getNoBackupFilesDir();
+        if (dir != null) {
+            File[] files = dir.listFiles((ignored, name) -> name.startsWith(FILE_PREFIX) && !name.startsWith(keepBase));
+            if (files != null) {
+                for (File stale : files) {
+                    try { stale.delete(); } catch (SecurityException ignored) { }
+                }
+            }
+        }
+        try {
+            KeyStore keys = KeyStore.getInstance("AndroidKeyStore");
+            keys.load(null);
+            var aliases = keys.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                if (alias.startsWith(ALIAS_PREFIX) && !alias.equals(keepAlias)) {
+                    try { keys.deleteEntry(alias); } catch (Exception ignored) { }
+                }
+            }
+        } catch (Exception ignored) { }
     }
     private SecretKey key(boolean create) throws Exception {
         KeyStore keys = KeyStore.getInstance("AndroidKeyStore"); keys.load(null);

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'bluetooth_adapter.dart';
 import 'watch_features.dart';
 import 'watch_model_catalog.dart';
@@ -6,6 +7,19 @@ final class DiscoveredWatch {
   final String token, productType, watchOs;
   final int rssi;
   const DiscoveredWatch(this.token, this.productType, this.watchOs, this.rssi);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DiscoveredWatch &&
+          token == other.token &&
+          productType == other.productType &&
+          watchOs == other.watchOs &&
+          rssi == other.rssi;
+
+  @override
+  int get hashCode => Object.hash(token, productType, watchOs, rssi);
+
   static DiscoveredWatch? parse(dynamic value) {
     if (value is! Map ||
         value['token'] is! String ||
@@ -244,6 +258,43 @@ final class WatchConnectionState {
   String get modelName => nameForProduct(
     productType.isNotEmpty ? productType : discoveredProductType,
   );
+  bool sameUiState(WatchConnectionState other) =>
+      identical(this, other) ||
+      features == other.features &&
+          bridgeAvailable == other.bridgeAvailable &&
+          identityKnown == other.identityKnown &&
+          hasPair == other.hasPair &&
+          operationalEligible == other.operationalEligible &&
+          activationConfirmed == other.activationConfirmed &&
+          connected == other.connected &&
+          bluetoothPermission == other.bluetoothPermission &&
+          setupRunning == other.setupRunning &&
+          pinRequired == other.pinRequired &&
+          pairingAvailable == other.pairingAvailable &&
+          discoveryAvailable == other.discoveryAvailable &&
+          wifiAvailable == other.wifiAvailable &&
+          bluetoothLink == other.bluetoothLink &&
+          pairId == other.pairId &&
+          productType == other.productType &&
+          buildVersion == other.buildVersion &&
+          status == other.status &&
+          setupPhase == other.setupPhase &&
+          discoveredProductType == other.discoveredProductType &&
+          discoveredWatchOs == other.discoveredWatchOs &&
+          backendError == other.backendError &&
+          challengeId == other.challengeId &&
+          challengeTitle == other.challengeTitle &&
+          challengeMessage == other.challengeMessage &&
+          adapterSelectionAvailable == other.adapterSelectionAvailable &&
+          adapterSelectionBusy == other.adapterSelectionBusy &&
+          adapterInventoryRefreshing == other.adapterInventoryRefreshing &&
+          selectedAdapterId == other.selectedAdapterId &&
+          adapterSelectionStatus == other.adapterSelectionStatus &&
+          adapterSelectionError == other.adapterSelectionError &&
+          listEquals(challengeFields, other.challengeFields) &&
+          listEquals(discoveredWatches, other.discoveredWatches) &&
+          listEquals(bluetoothAdapters, other.bluetoothAdapters);
+
   static String nameForProduct(String product) =>
       WatchModelCatalog.nameForProduct(product);
 }

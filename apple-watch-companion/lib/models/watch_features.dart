@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Implemented service groups, declared by the backend independently of connection readiness.
 final class WatchFeatures {
   final bool known;
@@ -22,6 +24,16 @@ final class WatchFeatures {
   bool get health => supports('health');
   bool get appManagement => supports('appManagement');
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WatchFeatures &&
+          known == other.known &&
+          setEquals(_available, other._available);
+
+  @override
+  int get hashCode => Object.hash(known, Object.hashAllUnordered(_available));
+
   static String? featureForCommand(String method) => switch (method) {
     'setActiveFace' ||
     'duplicateNativeFace' ||
@@ -45,6 +57,7 @@ final class WatchFeatures {
     'stopPhonePing' || 'requestPhoneFlashPermission' => 'phoneFind',
     'sendNotification' ||
     'setNotificationRelay' ||
+    'retryPendingNotifications' ||
     'requestNotificationAccess' => 'notificationRelay',
     _ => null,
   };

@@ -16,6 +16,15 @@ class _SoftwareUpdateScreenState extends State<SoftwareUpdateScreen> {
   Timer? _poll;
   bool _sending = false;
   String? _receipt;
+  static const _activePhases = {
+    'CHECKING',
+    'DOWNLOADING_PREPARING',
+    'WAITING_PREPARATION',
+    'WAITING_INSTALLATION',
+    'INSTALLING',
+    'VERIFYING_RESTART',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -23,7 +32,11 @@ class _SoftwareUpdateScreenState extends State<SoftwareUpdateScreen> {
       if (mounted) _refresh();
     });
     _poll = Timer.periodic(const Duration(seconds: 15), (_) {
-      if (mounted && !_sending) _refresh();
+      if (!mounted || _sending) return;
+      final state = context.read<WatchProvider>().softwareUpdate;
+      if (!state.known || _activePhases.contains(state.phase)) {
+        _refresh();
+      }
     });
   }
 
@@ -44,13 +57,14 @@ class _SoftwareUpdateScreenState extends State<SoftwareUpdateScreen> {
 
   Future<void> _send(String method, SoftwareUpdateState baseline) async {
     if (_sending) return;
+    final s = Strings.of(context);
     if (method == 'installSoftwareUpdate') {
       final accepted = await showCupertinoDialog<bool>(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text(Strings.current.updateInstall),
+          title: Text(s.updateInstall),
           content: Text(
-            Strings.current.updateConfirm(
+            s.updateConfirm(
               baseline.targetVersion ?? '—',
               baseline.targetBuild ?? '—',
             ),
@@ -58,11 +72,11 @@ class _SoftwareUpdateScreenState extends State<SoftwareUpdateScreen> {
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(Strings.current.cancel),
+              child: Text(s.cancel),
             ),
             CupertinoDialogAction(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(Strings.current.updateInstall),
+              child: Text(s.updateInstall),
             ),
           ],
         ),
@@ -89,8 +103,7 @@ class _SoftwareUpdateScreenState extends State<SoftwareUpdateScreen> {
     });
   }
 
-  String _status(SoftwareUpdateState state) {
-    final s = Strings.current;
+  String _status(AppLocalizations s, SoftwareUpdateState state) {
     if (!state.available) return s.updateUnavailable;
     if (!state.connected) return s.updateConnect;
     if (!state.known) return s.updateUnknown;
@@ -117,16 +130,9 @@ class _SoftwareUpdateScreenState extends State<SoftwareUpdateScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<WatchProvider>().softwareUpdate;
-    final s = Strings.current;
+    final s = Strings.of(context);
     final now = DateTime.now().millisecondsSinceEpoch;
-    final active = const {
-      'CHECKING',
-      'DOWNLOADING_PREPARING',
-      'WAITING_PREPARATION',
-      'WAITING_INSTALLATION',
-      'INSTALLING',
-      'VERIFYING_RESTART',
-    }.contains(state.phase);
+    final active = _activePhases.contains(state.phase);
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
@@ -142,7 +148,7 @@ class _SoftwareUpdateScreenState extends State<SoftwareUpdateScreen> {
               const CupertinoActivityIndicator(radius: 16),
             const SizedBox(height: 16),
             Text(
-              _status(state),
+              _status(s, state),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: IosColors.label,

@@ -2,11 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'generated/app_localizations.dart';
 import 'generated/app_localizations_en.dart';
+export 'generated/app_localizations.dart';
 
 /// Shared UI/presentation strings; English is available before widget startup.
 abstract final class Strings {
   static AppLocalizations _current = AppLocalizationsEn();
   static AppLocalizations get current => _current;
+  static AppLocalizations of(BuildContext context) =>
+      Localizations.of<AppLocalizations>(context, AppLocalizations) ?? _current;
+  static void resetToDefault() {
+    _current = AppLocalizationsEn();
+  }
+
   static const delegate = _StringsDelegate();
   static List<Locale> get supportedLocales => AppLocalizations.supportedLocales;
 }

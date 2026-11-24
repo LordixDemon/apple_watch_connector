@@ -31,6 +31,7 @@ public final class BridgeIpcDispatcher {
         void onDismiss(String publisherBulletinId, String recordId, String sectionId);
         void onReply(String publisherBulletinId, String recordId, String sectionId, String identifier, String replyText);
         void onLightsObserved(String publisherBulletinId, String sectionId, String replyToken, Boolean played);
+        default void onSupplementaryAction(String publisherBulletinId, String recordId, String sectionId, String identifier) { }
     }
 
     /** Synchronous listeners must copy payloads retained beyond this call. */
@@ -162,6 +163,8 @@ public final class BridgeIpcDispatcher {
                     dispatchNotificationDismiss(action.publisherId(), action.recordId(), action.sectionId());
                 } else if (action != null && action.kind() == BulletinActionDecoder.Kind.REPLY) {
                     dispatchNotificationReply(action.publisherId(), action.recordId(), action.sectionId(), action.identifier(), action.replyText());
+                } else if (action != null && action.kind() == BulletinActionDecoder.Kind.ACTION) {
+                    dispatchNotificationSupplementaryAction(action.publisherId(), action.recordId(), action.sectionId(), action.identifier());
                 }
                 if (action != null && action.kind() == BulletinActionDecoder.Kind.LIGHTS_OBSERVED && action.played() != null) {
                     dispatchLightsObserved(action.publisherId(), action.sectionId(), action.replyToken(), action.played());
@@ -303,6 +306,14 @@ public final class BridgeIpcDispatcher {
         }
     }
 
+    public void dispatchNotificationSupplementaryAction(String publisherBulletinId, String recordId, String sectionId, String identifier) {
+        for (OnNotificationActionListener l : notificationListeners) {
+            try {
+                l.onSupplementaryAction(publisherBulletinId, recordId, sectionId, identifier);
+            } catch (Exception ignored) {}
+        }
+    }
+
     public void dispatchLightsObserved(String publisherBulletinId, String sectionId, String replyToken, Boolean played) {
         for (OnNotificationActionListener l : notificationListeners) {
             try {
@@ -393,24 +404,48 @@ public final class BridgeIpcDispatcher {
     }
     public synchronized byte[] createBulletinPayload(String title, String message, String sectionId,
             String sectionDisplayName, boolean sound, String publisherId, String recordId, String replyToken, String replyActionId) {
+        return createBulletinPayload(title, null, message, sectionId, sectionDisplayName, sound, sound,
+                BulletinDistributorCodec.UPDATE_TYPE_ADD, publisherId, recordId, replyToken, replyActionId, List.of());
+    }
+
+    public synchronized byte[] createBulletinPayload(
+            String title,
+            String subtitle,
+            String message,
+            String sectionId,
+            String sectionDisplayName,
+            boolean sound,
+            boolean turnsOnDisplay,
+            int updateType,
+            String publisherId,
+            String recordId,
+            String replyToken,
+            String replyActionId,
+            List<BulletinDistributorCodec.SupplementaryAction> actions) {
         BulletinDistributorCodec.Bulletin bulletin = new BulletinDistributorCodec.Bulletin(
                 UUID.randomUUID().toString(),
                 sectionId,
                 sectionDisplayName,
                 title,
-                null,
+                subtitle,
                 message,
                 publisherId != null ? publisherId : UUID.randomUUID().toString(),
                 recordId != null ? recordId : UUID.randomUUID().toString(),
                 replyToken != null ? replyToken : UUID.randomUUID().toString(),
                 sound,
                 2,
-                System.currentTimeMillis());
+                System.currentTimeMillis())
+                .withTurnsOnDisplay(turnsOnDisplay);
         if (replyActionId != null) bulletin.withTextInputAction(new BulletinDistributorCodec.TextInputAction(
                 replyActionId, notificationReplyLabel, notificationSendLabel));
+        if (actions != null) {
+            for (BulletinDistributorCodec.SupplementaryAction action : actions) {
+                bulletin.addSupplementaryAction(action);
+            }
+        }
 
         BulletinDistributorCodec.BulletinRequest request =
-                new BulletinDistributorCodec.BulletinRequest(bulletin, sound, System.currentTimeMillis(), 0);
+                new BulletinDistributorCodec.BulletinRequest(bulletin, sound, System.currentTimeMillis(), updateType);
 
         // HAL owns the native session UUID/state/sequence and appends its trailer at send time.
         return request.encode();

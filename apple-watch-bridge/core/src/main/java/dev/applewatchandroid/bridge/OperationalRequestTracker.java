@@ -7,6 +7,7 @@ import static dev.applewatchandroid.bridge.BridgeCommandCodec.Stage.*;
 
 /** Session-scoped IDs: deduplication, expiry, and exact IDS application correlation. */
 final class OperationalRequestTracker {
+    static final int TERMINAL_AT_APP_ACK = -2;
     private static final long TIMEOUT_MS = 60_000;
     private final int capacity;
     private final Consumer<BridgeCommandCodec.Status> output;
@@ -19,7 +20,11 @@ final class OperationalRequestTracker {
         String messageUuid, topic;
         int responseType = -1;
         Entry(BridgeCommandCodec.Request request, long now) { this.request = request; acceptedAt = now; }
-        boolean pending() { return stage == HAL_ACCEPTED || stage == IDS_QUEUED || stage == APP_ACK_RECEIVED; }
+        boolean pending() {
+            return stage == HAL_ACCEPTED
+                    || stage == IDS_QUEUED
+                    || (stage == APP_ACK_RECEIVED && responseType != TERMINAL_AT_APP_ACK);
+        }
     }
     OperationalRequestTracker(int capacity, Consumer<BridgeCommandCodec.Status> output) {
         if (capacity < 1 || output == null) throw new IllegalArgumentException();

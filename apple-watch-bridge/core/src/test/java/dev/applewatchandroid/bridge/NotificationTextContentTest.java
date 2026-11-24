@@ -10,10 +10,14 @@ public final class NotificationTextContentTest {
         assertEquals("one\ntwo", NotificationTextContent.select("Title", null, null, "Summary", "one\ntwo", null, null).body());
     }
     @Test public void latestConversationMessageIncludesSenderWithoutOldHistory() {
-        var content = NotificationTextContent.select(null, "Chat", null, "3 messages", null, "Alex", "Hello 📨");
+        var content = NotificationTextContent.select("SenderName", "Account", "Chat", null, "3 messages", null, "Alex", "Hello 📨");
         assertEquals("Chat", content.title());
+        assertEquals("Account", content.subtitle());
         assertEquals("Alex: Hello 📨", content.body());
         assertEquals("Hello", NotificationTextContent.select(null, null, null, null, null, "Alex", "Hello").body());
+        var direct = NotificationTextContent.select("Alex", "Alex", null, null, null, "Alex", "Ping");
+        assertNull(direct.subtitle());
+        assertEquals("Ping", direct.body());
     }
     @Test public void emptyContentAndFallbacksAreExplicit() {
         assertTrue(NotificationTextContent.select(null, null, null, null, null, null, null).empty());

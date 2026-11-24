@@ -1,6 +1,5 @@
 import '../../l10n/strings.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/watch_provider.dart';
 import '../../theme/ios_colors.dart';
@@ -17,22 +16,16 @@ import '../../providers/watch_connection_provider.dart';
 import '../connection/watch_connection_screen.dart';
 import '../../widgets/watch_telemetry_panel.dart';
 import '../../widgets/phone_find_panel.dart';
-import '../../widgets/watch_features_panel.dart';
 import 'general_settings_screen.dart';
-import 'display_brightness_screen.dart';
-import 'sounds_haptics_screen.dart';
 import 'notifications_screen.dart';
-import 'passcode_screen.dart';
-import 'action_button_screen.dart';
 import 'health_activity_screen.dart';
-import 'emergency_sos_screen.dart';
-import 'app_detail_screen.dart';
 
 class MyWatchTab extends StatelessWidget {
   const MyWatchTab({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
     final provider = context.watch<WatchProvider>();
     final watch = provider.device;
     void openFace(NativeWatchFace face, {bool fromLibrary = false}) {
@@ -61,21 +54,19 @@ class MyWatchTab extends StatelessWidget {
       child: CustomScrollView(
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: Text(Strings.current.myWatch),
+            largeTitle: Text(s.myWatch),
             backgroundColor: const Color(0xCC121212),
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
               child: Text(
-                Strings.current.allWatches,
-                style: TextStyle(
+                s.allWatches,
+                style: const TextStyle(
                   color: IosColors.systemOrange,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              onPressed: () {
-                _showAllWatchesSheet(context);
-              },
+              onPressed: () => _openConnection(context),
             ),
           ),
           SliverToBoxAdapter(
@@ -83,30 +74,19 @@ class MyWatchTab extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: CompanionSpacing.contentGap),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: GestureDetector(
-                    onTap: () => _showAllWatchesSheet(context),
-                    child: WatchConnectionCard(state: connection),
+                    onTap: () => _openConnection(context),
+                    child: WatchConnectionCard(
+                      state: connection,
+                      showChevron: true,
+                    ),
                   ),
                 ),
-                const SizedBox(height: CompanionSpacing.sectionGap / 2),
-                IosListSection(
-                  children: [
-                    IosListTile(
-                      title: Strings.current.watchConnection,
-                      trailingText: connection.hasPair
-                          ? Strings.current.savedWatch
-                          : Strings.current.pairAppleWatch,
-                      onTap: () => _showAllWatchesSheet(context),
-                    ),
-                  ],
-                ),
-                WatchFeaturesPanel(state: connection),
                 if (watch.isConnected && connection.features.telemetry)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
                     child: WatchTelemetryPanel(
                       telemetry: watch.telemetry,
                       connected: watch.isConnected,
@@ -137,44 +117,20 @@ class MyWatchTab extends StatelessWidget {
                           ),
                         ),
                   ),
-                // --- Main Settings Navigation List ---
-                if (connection.features.watchSettings)
+                if (connection.features.watchSettings ||
+                    connection.features.notifications ||
+                    connection.features.health)
                   IosListSection(
                     children: [
-                      IosListTile(
-                        icon: CupertinoIcons.gear_alt_fill,
-                        iconBackgroundColor: IosColors.systemGray,
-                        title: Strings.current.general,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            CupertinoPageRoute(
-                              builder: (_) => const GeneralSettingsScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                      if (connection.features.supports('displaySettings'))
+                      if (connection.features.watchSettings)
                         IosListTile(
-                          icon: CupertinoIcons.sun_max_fill,
-                          iconBackgroundColor: IosColors.systemBlue,
-                          title: Strings.current.displayBrightness,
+                          icon: CupertinoIcons.gear_alt_fill,
+                          iconBackgroundColor: IosColors.systemGray,
+                          title: s.general,
                           onTap: () {
                             Navigator.of(context).push(
                               CupertinoPageRoute(
-                                builder: (_) => const DisplayBrightnessScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      if (connection.features.supports('soundSettings'))
-                        IosListTile(
-                          icon: CupertinoIcons.speaker_2_fill,
-                          iconBackgroundColor: IosColors.systemPink,
-                          title: Strings.current.soundsHaptics,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              CupertinoPageRoute(
-                                builder: (_) => const SoundsHapticsScreen(),
+                                builder: (_) => const GeneralSettingsScreen(),
                               ),
                             );
                           },
@@ -183,7 +139,7 @@ class MyWatchTab extends StatelessWidget {
                         IosListTile(
                           icon: CupertinoIcons.bell_fill,
                           iconBackgroundColor: IosColors.systemRed,
-                          title: Strings.current.notifications,
+                          title: s.notifications,
                           onTap: () {
                             Navigator.of(context).push(
                               CupertinoPageRoute(
@@ -192,39 +148,11 @@ class MyWatchTab extends StatelessWidget {
                             );
                           },
                         ),
-                      if (connection.features.supports('passcode'))
-                        IosListTile(
-                          icon: CupertinoIcons.lock_shield_fill,
-                          iconBackgroundColor: IosColors.systemIndigo,
-                          title: Strings.current.passcode,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              CupertinoPageRoute(
-                                builder: (_) => const PasscodeScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      if (connection.features.supports('actionButton'))
-                        IosListTile(
-                          icon:
-                              CupertinoIcons.slider_horizontal_below_rectangle,
-                          iconBackgroundColor: IosColors.actionButtonOrange,
-                          title: Strings.current.actionButton,
-                          trailingText: provider.settings.actionButtonApp,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              CupertinoPageRoute(
-                                builder: (_) => const ActionButtonScreen(),
-                              ),
-                            );
-                          },
-                        ),
                       if (connection.features.health)
                         IosListTile(
                           icon: CupertinoIcons.heart_fill,
                           iconBackgroundColor: IosColors.activityRed,
-                          title: Strings.current.activityHealth,
+                          title: s.activityHealth,
                           onTap: () {
                             Navigator.of(context).push(
                               CupertinoPageRoute(
@@ -233,45 +161,8 @@ class MyWatchTab extends StatelessWidget {
                             );
                           },
                         ),
-                      if (connection.features.supports('emergencySos'))
-                        IosListTile(
-                          icon: CupertinoIcons.bandage_fill,
-                          iconBackgroundColor: IosColors.systemRed,
-                          title: Strings.current.emergencySos,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              CupertinoPageRoute(
-                                builder: (_) => const EmergencySosScreen(),
-                              ),
-                            );
-                          },
-                        ),
                     ],
                   ),
-
-                // --- Installed Apps Section ---
-                if (connection.features.appManagement)
-                  IosListSection(
-                    header: Strings.current.installedOnAppleWatch,
-                    children: provider.installedApps.map((app) {
-                      return IosListTile(
-                        icon: app.icon,
-                        iconBackgroundColor: app.iconBackgroundColor,
-                        title: app.name,
-                        trailingText: app.showOnWatch
-                            ? Strings.current.installed
-                            : Strings.current.hidden,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            CupertinoPageRoute(
-                              builder: (_) => AppDetailScreen(app: app),
-                            ),
-                          );
-                        },
-                      );
-                    }).toList(),
-                  ),
-
                 const SizedBox(height: CompanionSpacing.pageInset),
               ],
             ),
@@ -281,7 +172,7 @@ class MyWatchTab extends StatelessWidget {
     );
   }
 
-  void _showAllWatchesSheet(BuildContext context) {
+  void _openConnection(BuildContext context) {
     Navigator.of(
       context,
     ).push(CupertinoPageRoute(builder: (_) => const WatchConnectionScreen()));

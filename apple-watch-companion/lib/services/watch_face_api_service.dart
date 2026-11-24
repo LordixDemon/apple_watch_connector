@@ -1,4 +1,3 @@
-import '../l10n/strings.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -81,27 +80,6 @@ class WatchFaceApiService {
       _cache.saveFaceToCache(face, snapshotBytes: snapshotBytes);
 
   Future<List<WatchFace>> loadCachedFaces() => _cache.loadCachedFaces();
-
-  /// Live remote weather / astronomical data for complications.
-  Future<Map<String, dynamic>> fetchLiveComplicationTelemetry() async {
-    // Returns live or synchronized time-of-day solar and meteorological parameters
-    final now = DateTime.now();
-    final hour = now.hour + (now.minute / 60.0);
-    // Solar altitude model: peak at 13:00 (+60 deg), trough at 01:00 (-60 deg)
-    final sunElevation = 60.0 * -1.0 * (hour > 1 && hour < 23 ? -1.0 : 1.0);
-
-    return {
-      'temperature': '+21°',
-      'weatherCondition': Strings.current.sunny,
-      'uvIndex': 4,
-      'sunset': '20:45',
-      'sunrise': '05:30',
-      'sunElevation': sunElevation,
-      'elevationMeters': 182,
-      'inclineDegrees': 42,
-      'airQuality': 28,
-    };
-  }
 
   void dispose() {
     _client.close();

@@ -10,13 +10,14 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
     final provider = context.watch<WatchProvider>();
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
         backgroundColor: const Color(0xCC121212),
-        middle: Text(Strings.current.notifications),
-        previousPageTitle: Strings.current.myWatch,
+        middle: Text(s.notifications),
+        previousPageTitle: s.myWatch,
       ),
       child: SafeArea(
         child: ListView(
@@ -26,9 +27,15 @@ class NotificationsScreen extends StatelessWidget {
               state: provider.notifications,
               requestAccess: provider.requestNotificationAccess,
               setPolicy: provider.setNotificationRelay,
+              setOnlyWhenScreenOff: (enabled) => provider.setNotificationRelay(
+                enabled,
+                mode: 'onlyWhenScreenOff',
+              ),
+              retryPending: provider.retryPendingNotifications,
+              operationStream: provider.operationStatusStream,
               sendTest: () => provider.queueTestNotification(
-                Strings.current.testMessage,
-                Strings.current.notificationTestBody,
+                s.testMessage,
+                s.notificationTestBody,
               ),
             ),
           ],

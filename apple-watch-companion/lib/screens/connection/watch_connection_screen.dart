@@ -67,7 +67,7 @@ class WatchConnectionScreen extends StatelessWidget {
     BuildContext context,
     WatchConnectionProvider connection,
   ) async {
-    final s = Strings.current;
+    final s = Strings.of(context);
     final pairId = connection.state.pairId;
     final confirmed = await showCupertinoDialog<bool>(
       context: context,
@@ -97,7 +97,7 @@ class WatchConnectionScreen extends StatelessWidget {
     BuildContext context,
     WatchConnectionProvider connection,
   ) async {
-    final s = Strings.current;
+    final s = Strings.of(context);
     final pairId = connection.state.pairId;
     final resume = await showCupertinoDialog<bool>(
       context: context,
@@ -122,7 +122,7 @@ class WatchConnectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final connection = context.watch<WatchConnectionProvider>();
-    final state = connection.state, s = Strings.current;
+    final state = connection.state, s = Strings.of(context);
     final enabled = state.bridgeAvailable && !connection.sending;
     final receipt = connection.receipt;
     return CupertinoPageScaffold(

@@ -21,30 +21,41 @@ class NativeWatchSettingsPanel extends StatefulWidget {
 class _NativeWatchSettingsPanelState extends State<NativeWatchSettingsPanel> {
   bool _busy = false;
   String? _receipt;
-  Future<void> _choose(NativeWatchSetting setting) async {
-    final value = await showCupertinoModalPopup<bool>(
-      context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: Text(setting.title),
-        actions: [
-          for (final enabled in [true, false])
-            CupertinoActionSheetAction(
-              onPressed: () => Navigator.pop(context, enabled),
-              child: Text(
-                enabled ? Strings.current.enable : Strings.current.disable,
-              ),
-            ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () => Navigator.pop(context),
-          child: Text(Strings.current.cancel),
-        ),
-      ),
-    );
-    if (!mounted || value == null || !widget.settings.connected) return;
+  NativeWatchSetting? _pendingSetting;
+  DateTime? _pendingBaselineObservedAt;
+
+  @override
+  void didUpdateWidget(NativeWatchSettingsPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!widget.settings.connected) {
+      _receipt = null;
+      _pendingSetting = null;
+      _pendingBaselineObservedAt = null;
+      return;
+    }
+    final pending = _pendingSetting;
+    if (pending != null) {
+      final currentObs = widget.settings.values[pending];
+      final confirmed =
+          currentObs != null &&
+          (_pendingBaselineObservedAt == null ||
+              currentObs.observedAt.isAfter(_pendingBaselineObservedAt!));
+      if (confirmed) {
+        _receipt = null;
+        _pendingSetting = null;
+        _pendingBaselineObservedAt = null;
+      }
+    }
+  }
+
+  Future<void> _send(NativeWatchSetting setting, bool value) async {
+    if (!mounted || _busy || !widget.settings.connected) return;
+    final baseline = widget.settings.values[setting]?.observedAt;
     setState(() {
       _busy = true;
       _receipt = null;
+      _pendingSetting = setting;
+      _pendingBaselineObservedAt = baseline;
     });
     String status;
     try {
@@ -53,40 +64,85 @@ class _NativeWatchSettingsPanelState extends State<NativeWatchSettingsPanel> {
       status = 'UNAVAILABLE';
     }
     if (!mounted) return;
+    final s = Strings.of(context);
     setState(() {
       _busy = false;
-      _receipt = status == 'QUEUED'
-          ? Strings.current.commandSentWaitingForTheWatchResult
-          : Strings.current.commandNotSentCheckTheConnection;
+      if (status == 'QUEUED') {
+        _receipt = s.commandSentWaitingForTheWatchResult;
+      } else {
+        _pendingSetting = null;
+        _pendingBaselineObservedAt = null;
+        _receipt = s.commandNotSentCheckTheConnection;
+      }
     });
   }
 
+  Future<void> _choose(NativeWatchSetting setting) async {
+    final s = Strings.of(context);
+    final value = await showCupertinoModalPopup<bool>(
+      context: context,
+      builder: (context) => CupertinoActionSheet(
+        title: Text(setting.localizedTitle(s)),
+        actions: [
+          for (final enabled in [true, false])
+            CupertinoActionSheetAction(
+              onPressed: () => Navigator.pop(context, enabled),
+              child: Text(enabled ? s.enable : s.disable),
+            ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(context),
+          child: Text(s.cancel),
+        ),
+      ),
+    );
+    if (!mounted || value == null || !widget.settings.connected) return;
+    await _send(setting, value);
+  }
+
   @override
-  Widget build(BuildContext context) => IosListSection(
-    header: Strings.current.watchSettings,
-    footer:
-        _receipt ??
-        (widget.settings.connected
-            ? Strings.current.valuesComeFromWatchMessagesNotReceivedMeansThe
-            : Strings.current.connectYourWatchToChangeSettings),
-    children: [
-      for (final setting in NativeWatchSetting.values)
-        IosListTile(
-          title: setting.title,
-          trailingText: switch (widget.settings.values[setting]?.value) {
-            true => Strings.current.on,
-            false => Strings.current.off,
-            null => Strings.current.notReceived,
-          },
-          onTap: widget.settings.connected && !_busy
-              ? () => _choose(setting)
-              : null,
-        ),
-      if (_busy)
-        const Padding(
-          padding: EdgeInsets.all(12),
-          child: CupertinoActivityIndicator(color: IosColors.systemOrange),
-        ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final s = Strings.of(context);
+    return IosListSection(
+      header: s.watchSettings,
+      footer:
+          _receipt ??
+          (widget.settings.connected
+              ? s.valuesComeFromWatchMessagesNotReceivedMeansThe
+              : s.connectYourWatchToChangeSettings),
+      children: [
+        for (final setting in NativeWatchSetting.values)
+          Builder(
+            builder: (context) {
+              final obs = widget.settings.values[setting];
+              if (obs != null) {
+                return IosListTile(
+                  title: setting.localizedTitle(s),
+                  trailing: CupertinoSwitch(
+                    value: obs.value,
+                    activeTrackColor: IosColors.systemGreen,
+                    onChanged: widget.settings.connected && !_busy
+                        ? (next) => _send(setting, next)
+                        : null,
+                  ),
+                  showChevron: false,
+                );
+              }
+              return IosListTile(
+                title: setting.localizedTitle(s),
+                trailingText: s.notReceived,
+                onTap: widget.settings.connected && !_busy
+                    ? () => _choose(setting)
+                    : null,
+              );
+            },
+          ),
+        if (_busy)
+          const Padding(
+            padding: EdgeInsets.all(12),
+            child: CupertinoActivityIndicator(color: IosColors.systemOrange),
+          ),
+      ],
+    );
+  }
 }

@@ -133,4 +133,19 @@ final class NativePigmentMirror implements NativePigmentBaseline {
           ? other.automatic == null
           : other.automatic != null &&
                 automatic!.sameObservation(other.automatic!));
+
+  @override
+  bool operator ==(Object other) =>
+      other is NativePigmentMirror && sameBaseline(other);
+
+  @override
+  int get hashCode => Object.hash(
+    origin,
+    requestId,
+    automaticOrigin,
+    automaticRequestId,
+    pair,
+    epoch,
+    observedAt,
+  );
 }

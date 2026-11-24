@@ -10,12 +10,15 @@ final class WatchConnectionProvider extends ChangeNotifier {
   final WatchBridgeService _bridge;
   late final StreamSubscription<WatchConnectionState> _subscription;
   late WatchConnectionState _state;
+  late final ValueNotifier<String> _journal;
   bool _disposed = false, _sending = false;
   String? _receipt;
   int _progressRevision = 0;
+
   WatchConnectionProvider({required WatchBridgeService bridge})
     : _bridge = bridge {
     _state = bridge.connectionState;
+    _journal = ValueNotifier<String>(_state.journal);
     _subscription = bridge.connectionStream.listen((value) {
       if (value.pairId != _state.pairId ||
           value.status != _state.status ||
@@ -25,14 +28,19 @@ final class WatchConnectionProvider extends ChangeNotifier {
         _receipt = null;
         _progressRevision++;
       }
+      final uiChanged = !value.sameUiState(_state);
       _state = value;
-      if (!_disposed) notifyListeners();
+      _journal.value = value.journal;
+      if (uiChanged && !_disposed) notifyListeners();
     });
   }
+
   WatchConnectionState get state => _state;
+  ValueListenable<String> get journalListenable => _journal;
   CompanionPlatform get platform => _bridge.platform;
   bool get sending => _sending;
   String? get receipt => _receipt;
+
   Future<String> command(String method, [Map<String, dynamic>? args]) async {
     if (_disposed || _sending) return 'BUSY';
     _sending = true;
@@ -54,10 +62,11 @@ final class WatchConnectionProvider extends ChangeNotifier {
       receipt = 'UNAVAILABLE';
     } finally {
       _sending = false;
-      if (!_disposed) notifyListeners();
     }
-    if (revision == _progressRevision && !_disposed) {
-      _receipt = receipt;
+    if (!_disposed) {
+      if (revision == _progressRevision) {
+        _receipt = receipt;
+      }
       notifyListeners();
     }
     return receipt;
@@ -121,10 +130,12 @@ final class WatchConnectionProvider extends ChangeNotifier {
         'action': action,
         'credentials': credentials,
       });
+
   @override
   void dispose() {
     _disposed = true;
     unawaited(_subscription.cancel());
+    _journal.dispose();
     super.dispose();
   }
 }

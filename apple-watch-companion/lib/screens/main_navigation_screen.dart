@@ -1,11 +1,11 @@
 import '../l10n/strings.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 import '../theme/ios_colors.dart';
+import '../providers/watch_connection_provider.dart';
 import 'my_watch/my_watch_tab.dart';
 import 'face_gallery/face_gallery_tab.dart';
 import 'discover/discover_tab.dart';
-import 'package:provider/provider.dart';
-import '../providers/watch_connection_provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -15,16 +15,22 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  final CupertinoTabController _tabController = CupertinoTabController();
   int _currentIndex = 0;
   bool _facesAvailable = false;
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final faces = context
-        .watch<WatchConnectionProvider>()
-        .state
-        .features
-        .nativeFaces;
+    final s = Strings.of(context);
+    final faces = context.select<WatchConnectionProvider, bool>(
+      (c) => c.state.features.nativeFaces,
+    );
     if (faces != _facesAvailable) {
       if (_currentIndex > 0) {
         _currentIndex = _facesAvailable && _currentIndex == 1
@@ -34,15 +40,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             : 1;
       }
       _facesAvailable = faces;
+      final targetIndex = _currentIndex;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _tabController.index != targetIndex) {
+          _tabController.index = targetIndex;
+        }
+      });
     }
-    final tabs = <Widget>[
-      const MyWatchTab(),
-      if (faces) const FaceGalleryTab(),
-      const DiscoverTab(),
+    final tabEntries = <(String, Widget)>[
+      ('myWatch', const MyWatchTab()),
+      if (faces) ('faceGallery', const FaceGalleryTab()),
+      ('discover', const DiscoverTab()),
     ];
-    if (_currentIndex >= tabs.length) _currentIndex = 0;
+    if (_currentIndex >= tabEntries.length) _currentIndex = 0;
+
     return CupertinoTabScaffold(
-      key: ValueKey(faces),
+      controller: _tabController,
       backgroundColor: IosColors.systemBackground,
       tabBar: CupertinoTabBar(
         backgroundColor: const Color(0xEE121212),
@@ -50,25 +63,32 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         inactiveColor: IosColors.systemGray2,
         iconSize: 24,
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: (index) {
+          _tabController.index = index;
+          setState(() => _currentIndex = index);
+        },
         items: [
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.time_solid),
-            label: Strings.current.myWatch,
+            icon: const Icon(CupertinoIcons.time_solid),
+            label: s.myWatch,
           ),
           if (faces)
             BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.clock_fill),
-              label: Strings.current.faceGallery,
+              icon: const Icon(CupertinoIcons.clock_fill),
+              label: s.faceGallery,
             ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.compass_fill),
-            label: Strings.current.discover,
+            icon: const Icon(CupertinoIcons.compass_fill),
+            label: s.discover,
           ),
         ],
       ),
       tabBuilder: (context, index) {
-        return CupertinoTabView(builder: (context) => tabs[index]);
+        final (tabKey, tabWidget) = tabEntries[index];
+        return CupertinoTabView(
+          key: ValueKey(tabKey),
+          builder: (context) => tabWidget,
+        );
       },
     );
   }

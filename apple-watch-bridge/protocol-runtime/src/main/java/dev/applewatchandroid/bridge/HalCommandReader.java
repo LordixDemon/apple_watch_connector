@@ -354,6 +354,24 @@ final class HalCommandReader {
                         } finally { if (payload != null) Arrays.fill(payload, (byte) 0); }
                         continue;
                     }
+                    if (line.startsWith("REMOVE_BULLETIN:")) {
+                        byte[] payload = null;
+                        try {
+                            if (line.length() > 180_000) throw new IllegalArgumentException("Bulletin removal exceeds limit");
+                            payload = BridgeBase64.decode(
+                                    line.substring("REMOVE_BULLETIN:".length()).trim(),
+                                    BridgeBase64.NO_WRAP);
+                            BulletinDistributorCodec.RemoveBulletinRequest.decodeExact(payload);
+                            boolean queued = offerOutbound(outboundAppMessages, new OutboundAppMessage(
+                                    IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE,
+                                    BulletinDistributorCodec.TYPE_REMOVE_BULLETIN,
+                                    payload));
+                            log("COMMAND INPUT: REMOVE_BULLETIN queued=" + queued + " payloadLen=" + payload.length);
+                        } catch (Exception e) {
+                            log("COMMAND INPUT: invalid REMOVE_BULLETIN: " + e.getMessage());
+                        } finally { if (payload != null) Arrays.fill(payload, (byte) 0); }
+                        continue;
+                    }
                     if (line.startsWith("SEND_APP_DATA:")) {
                         byte[] payload = null;
                         try {

@@ -75,4 +75,31 @@ class WatchTelemetry {
     }
     return Strings.current.b((bytes).toString());
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WatchTelemetry &&
+          batteryLevel == other.batteryLevel &&
+          isCharging == other.isCharging &&
+          observedAt == other.observedAt &&
+          availableStorageBytes == other.availableStorageBytes &&
+          numberOfApps == other.numberOfApps &&
+          numberOfSongs == other.numberOfSongs &&
+          numberOfPhotos == other.numberOfPhotos &&
+          purgeableSpaceBytes == other.purgeableSpaceBytes &&
+          userDeletableSpaceBytes == other.userDeletableSpaceBytes;
+
+  @override
+  int get hashCode => Object.hash(
+    batteryLevel,
+    isCharging,
+    observedAt,
+    availableStorageBytes,
+    numberOfApps,
+    numberOfSongs,
+    numberOfPhotos,
+    purgeableSpaceBytes,
+    userDeletableSpaceBytes,
+  );
 }

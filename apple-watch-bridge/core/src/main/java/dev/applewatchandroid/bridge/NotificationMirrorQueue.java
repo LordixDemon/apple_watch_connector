@@ -7,6 +7,7 @@ import java.util.function.Function;
 /** Durable mirror state. Acknowledged means an IDS receipt, never visible/applied. */
 final class NotificationMirrorQueue {
     static final int MAX_ENTRIES = 256, MAX_PAYLOAD = 131_072, MAX_BYTES = 2_097_152;
+    static final int MAX_SUPPLEMENTARY_ACTIONS = 3;
     private static final int MAGIC = 0x41574e51;
     record Entry(NotificationIdentityIndex.Identity identity, UUID revision, byte[] fingerprint,
                  byte[] payload, boolean removal, boolean pending, boolean replyClaimed, boolean dismissClaimed) { }
@@ -41,10 +42,33 @@ final class NotificationMirrorQueue {
     static String replyIdentifier(NotificationIdentityIndex.Identity identity) {
         return bounded(identity.publisherId() + ".reply." + identity.replyToken(), 128);
     }
+    static String actionIdentifier(NotificationIdentityIndex.Identity identity, int index) {
+        if (index < 0 || index >= MAX_SUPPLEMENTARY_ACTIONS) {
+            throw new IllegalArgumentException("Action index out of range");
+        }
+        return bounded(identity.publisherId() + ".act." + index + "." + identity.replyToken(), 128);
+    }
+    static int parseActionIndex(NotificationIdentityIndex.Identity identity, String identifier) {
+        if (identity == null || identifier == null) return -1;
+        for (int index = 0; index < MAX_SUPPLEMENTARY_ACTIONS; index++) {
+            if (actionIdentifier(identity, index).equals(identifier)) return index;
+        }
+        return -1;
+    }
     /** Persist before invoking Android; after an uncertain crash never silently send twice. */
     boolean claimReply(String publisher, String record, String section, String identifier) {
         var identity = match(publisher, record, section);
         if (identity == null || !replyIdentifier(identity).equals(identifier)) return false;
+        Entry old = entries.get(publisher);
+        if (old.replyClaimed) return false;
+        entries.put(publisher, new Entry(identity, old.revision, old.fingerprint, old.payload,
+                false, old.pending, true, old.dismissClaimed));
+        return true;
+    }
+    /** Persist before invoking an Android notification action button at most once per revision. */
+    boolean claimAction(String publisher, String record, String section, String identifier) {
+        var identity = match(publisher, record, section);
+        if (identity == null || parseActionIndex(identity, identifier) < 0) return false;
         Entry old = entries.get(publisher);
         if (old.replyClaimed) return false;
         entries.put(publisher, new Entry(identity, old.revision, old.fingerprint, old.payload,
@@ -99,14 +123,51 @@ final class NotificationMirrorQueue {
         return false;
     }
     private void replace(Entry next, Entry old) {
-        if (old == null && entries.size() >= MAX_ENTRIES) { wipe(next.payload); wipe(next.fingerprint); throw new IllegalStateException("Notification journal full"); }
+        List<Map.Entry<String, Entry>> evicted = new ArrayList<>();
+        if (old == null && entries.size() >= MAX_ENTRIES) {
+            Map.Entry<String, Entry> victim = oldestEvictable(null);
+            if (victim == null) {
+                wipe(next.payload); wipe(next.fingerprint);
+                throw new IllegalStateException("Notification journal full");
+            }
+            entries.remove(victim.getKey());
+            evicted.add(victim);
+        }
         entries.put(next.identity.publisherId(), next);
-        try { byte[] encoded = encode(); wipe(encoded); }
-        catch (RuntimeException tooLarge) {
-            if (old == null) entries.remove(next.identity.publisherId()); else entries.put(old.identity.publisherId(), old);
-            wipe(next.payload); wipe(next.fingerprint); throw tooLarge;
+        while (true) {
+            try {
+                byte[] encoded = encode();
+                wipe(encoded);
+                break;
+            } catch (RuntimeException tooLarge) {
+                Map.Entry<String, Entry> victim = oldestEvictable(next.identity.publisherId());
+                if (victim != null) {
+                    entries.remove(victim.getKey());
+                    evicted.add(victim);
+                    continue;
+                }
+                if (old == null) entries.remove(next.identity.publisherId());
+                else entries.put(old.identity.publisherId(), old);
+                for (Map.Entry<String, Entry> restored : evicted) {
+                    entries.put(restored.getKey(), restored.getValue());
+                }
+                wipe(next.payload); wipe(next.fingerprint);
+                throw tooLarge;
+            }
         }
         if (old != null) { wipe(old.payload); wipe(old.fingerprint); }
+        for (Map.Entry<String, Entry> dropped : evicted) {
+            wipe(dropped.getValue().payload);
+            wipe(dropped.getValue().fingerprint);
+        }
+    }
+    private Map.Entry<String, Entry> oldestEvictable(String excludePublisherId) {
+        for (Map.Entry<String, Entry> candidate : entries.entrySet()) {
+            if (excludePublisherId != null && excludePublisherId.equals(candidate.getKey())) continue;
+            Entry e = candidate.getValue();
+            if (!e.pending && !e.removal) return candidate;
+        }
+        return null;
     }
     byte[] encode() {
         try {

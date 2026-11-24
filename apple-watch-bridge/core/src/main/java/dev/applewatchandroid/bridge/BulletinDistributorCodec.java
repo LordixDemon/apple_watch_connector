@@ -6,7 +6,9 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,8 +34,11 @@ public final class BulletinDistributorCodec {
     public static final int TYPE_SUPPLEMENTARY_ACTION = 7;
     public static final int TYPE_DISMISS_ACTION = 8;
     public static final int TYPE_ACK_INITIAL_SEQUENCE = 12;
+    public static final int TYPE_SET_SECTION_INFO = 13;
     public static final int TYPE_DID_PLAY_LIGHTS_AND_SIRENS = 9;
     public static final int TYPE_SET_SECTION_SUBTYPE_ICON = 14;
+    public static final int UPDATE_TYPE_ADD = 0;
+    public static final int UPDATE_TYPE_MODIFY = 1;
 
     private static final int WIRE_VARINT = 0;
     private static final int WIRE_FIXED64 = 1;
@@ -93,6 +98,28 @@ public final class BulletinDistributorCodec {
         }
     }
 
+    /** BLTPBAction/Appearance native supplementary button action, encoded as Bulletin field 9. */
+    public record SupplementaryAction(String identifier, String title, boolean destructive) {
+        public byte[] encode() {
+            if (identifier == null || identifier.isBlank() || identifier.length() > 128
+                    || title == null || title.isBlank() || title.length() > 256) {
+                throw new IllegalArgumentException("Invalid supplementary action");
+            }
+            ByteArrayOutputStream appearance = new ByteArrayOutputStream();
+            writeStringField(appearance, 1, title);
+            if (destructive) {
+                writeTag(appearance, 3, WIRE_VARINT);
+                writeVarint(appearance, 1);
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            writeStringField(out, 1, identifier);
+            writeBytesField(out, 2, appearance.toByteArray());
+            writeTag(out, 3, WIRE_VARINT); writeVarint(out, 1); // background activation
+            writeTag(out, 5, WIRE_VARINT); writeVarint(out, 0); // default behavior
+            return out.toByteArray();
+        }
+    }
+
     /** BLTPBAction/Appearance native text-input action, encoded as Bulletin field9. */
     public record TextInputAction(String identifier, String title, String sendTitle) {
         public TextInputAction(String identifier, String title) {
@@ -132,9 +159,53 @@ public final class BulletinDistributorCodec {
         public final int soundAlertType;
         public final long timestampMs;
         private TextInputAction textInputAction;
+        private final List<SupplementaryAction> supplementaryActions = new ArrayList<>();
+        private int feed = 59;
+        private int sectionSubtype = 2;
+        private boolean turnsOnDisplay;
 
         public Bulletin withTextInputAction(TextInputAction action) {
             this.textInputAction = action;
+            return this;
+        }
+
+        public TextInputAction textInputAction() {
+            return textInputAction;
+        }
+
+        public Bulletin addSupplementaryAction(SupplementaryAction action) {
+            if (action != null) this.supplementaryActions.add(action);
+            return this;
+        }
+
+        public List<SupplementaryAction> supplementaryActions() {
+            return List.copyOf(supplementaryActions);
+        }
+
+        public boolean turnsOnDisplay() {
+            return turnsOnDisplay;
+        }
+
+        public Bulletin withTurnsOnDisplay(boolean turnsOnDisplay) {
+            this.turnsOnDisplay = turnsOnDisplay;
+            return this;
+        }
+
+        public int feed() {
+            return feed;
+        }
+
+        public Bulletin withFeed(int feed) {
+            this.feed = feed;
+            return this;
+        }
+
+        public int sectionSubtype() {
+            return sectionSubtype;
+        }
+
+        public Bulletin withSectionSubtype(int sectionSubtype) {
+            this.sectionSubtype = sectionSubtype;
             return this;
         }
 
@@ -163,6 +234,7 @@ public final class BulletinDistributorCodec {
             this.includesSound = includesSound;
             this.soundAlertType = soundAlertType;
             this.timestampMs = timestampMs > 0 ? timestampMs : System.currentTimeMillis();
+            this.turnsOnDisplay = includesSound;
         }
 
         public byte[] encode() {
@@ -174,21 +246,24 @@ public final class BulletinDistributorCodec {
             if (subtitle != null) writeStringField(out, 5, subtitle);
             if (messageTitle != null) writeStringField(out, 6, messageTitle);
 
-            // Field 7: Date
+            // Field 7: Date (seconds since 1970 verified in BLTRemoteCompanionServer)
             writeTag(out, 7, WIRE_FIXED64);
             writeFixed64(out, Double.doubleToRawLongBits(timestampMs / 1000.0));
             if (textInputAction != null) writeBytesField(out, 9, textInputAction.encode());
+            for (SupplementaryAction action : supplementaryActions) {
+                writeBytesField(out, 9, action.encode());
+            }
 
             // Field 0x0a (10): Feed (59 default)
             writeTag(out, 10, WIRE_VARINT);
-            writeVarint(out, 59);
+            writeVarint(out, feed);
 
             if (recordId != null) writeStringField(out, 12, recordId);
             if (publisherBulletinId != null) writeStringField(out, 13, publisherBulletinId);
 
             // Field 0x0f (15): SectionSubtype (2)
             writeTag(out, 15, WIRE_VARINT);
-            writeVarint(out, 2);
+            writeVarint(out, sectionSubtype);
 
             // Field 0x13 (19): IncludesSound
             writeTag(out, 19, WIRE_VARINT);
@@ -200,7 +275,7 @@ public final class BulletinDistributorCodec {
 
             // Field 0x1e (30): turnsOnDisplay
             writeTag(out, 30, WIRE_VARINT);
-            writeVarint(out, 1);
+            writeVarint(out, turnsOnDisplay ? 1 : 0);
 
             if (replyToken != null) writeStringField(out, 43, replyToken);
 
@@ -221,6 +296,11 @@ public final class BulletinDistributorCodec {
             boolean sound = true;
             int alertType = 2;
             long ts = System.currentTimeMillis();
+            int decodedFeed = 59;
+            int decodedSubtype = 2;
+            Boolean decodedTurnsOnDisplay = null;
+            TextInputAction decodedReply = null;
+            List<SupplementaryAction> decodedActions = new ArrayList<>();
 
             while (reader.hasRemaining()) {
                 int tag = reader.readTag();
@@ -240,15 +320,79 @@ public final class BulletinDistributorCodec {
                             reader.skipField(tag);
                         }
                     }
+                    case 9 -> {
+                        byte[] rawAction = reader.readBytes();
+                        try {
+                            Object parsed = decodeActionSubmessage(rawAction);
+                            if (parsed instanceof TextInputAction reply) decodedReply = reply;
+                            else if (parsed instanceof SupplementaryAction action) decodedActions.add(action);
+                        } finally { Arrays.fill(rawAction, (byte) 0); }
+                    }
+                    case 10 -> decodedFeed = (int) reader.readVarint();
                     case 12 -> recId = reader.readString();
                     case 13 -> pubId = reader.readString();
+                    case 15 -> decodedSubtype = (int) reader.readVarint();
                     case 19 -> sound = reader.readVarint() != 0;
                     case 24 -> alertType = (int) reader.readVarint();
+                    case 30 -> decodedTurnsOnDisplay = reader.readVarint() != 0;
                     case 43 -> repToken = reader.readString();
                     default -> reader.skipField(tag);
                 }
             }
-            return new Bulletin(bId, sId, sDisplayName, t, sub, msg, pubId, recId, repToken, sound, alertType, ts);
+            Bulletin bulletin = new Bulletin(bId, sId, sDisplayName, t, sub, msg, pubId, recId, repToken, sound, alertType, ts)
+                    .withFeed(decodedFeed)
+                    .withSectionSubtype(decodedSubtype);
+            if (decodedTurnsOnDisplay != null) bulletin.withTurnsOnDisplay(decodedTurnsOnDisplay);
+            if (decodedReply != null) bulletin.withTextInputAction(decodedReply);
+            for (SupplementaryAction action : decodedActions) bulletin.addSupplementaryAction(action);
+            return bulletin;
+        }
+
+        private static Object decodeActionSubmessage(byte[] data) {
+            Reader r = new Reader(data);
+            String id = null;
+            String title = null;
+            boolean destructive = false;
+            int behavior = 0;
+            String sendTitle = "Send";
+            while (r.hasRemaining()) {
+                int tag = r.readTag();
+                switch (tag >>> 3) {
+                    case 1 -> id = r.readString();
+                    case 2 -> {
+                        byte[] appBytes = r.readBytes();
+                        try {
+                            Reader ar = new Reader(appBytes);
+                            while (ar.hasRemaining()) {
+                                int atag = ar.readTag();
+                                switch (atag >>> 3) {
+                                    case 1 -> title = ar.readString();
+                                    case 3 -> destructive = ar.readVarint() != 0;
+                                    default -> ar.skipField(atag);
+                                }
+                            }
+                        } finally { Arrays.fill(appBytes, (byte) 0); }
+                    }
+                    case 5 -> behavior = (int) r.readVarint();
+                    case 6 -> {
+                        byte[] params = r.readBytes();
+                        try {
+                            Object decoded = AppleBinaryPropertyList.decode(params);
+                            if (decoded instanceof Map<?, ?> map
+                                    && map.get("UNNotificationActionTextInputButtonTitle") instanceof String s
+                                    && !s.isBlank()) {
+                                sendTitle = s;
+                            }
+                        } catch (RuntimeException ignored) { }
+                        finally { Arrays.fill(params, (byte) 0); }
+                    }
+                    default -> r.skipField(tag);
+                }
+            }
+            if (id == null || id.isBlank() || title == null) return null;
+            if (behavior == 1) return new TextInputAction(id, title, sendTitle);
+            if (title.isBlank()) return null;
+            return new SupplementaryAction(id, title, destructive);
         }
     }
 
@@ -415,6 +559,7 @@ public final class BulletinDistributorCodec {
         public final String recordId;
         public final String sectionId;
         public final String replyText;
+        public final boolean hasActionInfo;
 
         public SupplementaryActionRequest(
                 String identifier,
@@ -422,11 +567,22 @@ public final class BulletinDistributorCodec {
                 String recordId,
                 String sectionId,
                 String replyText) {
+            this(identifier, publisherBulletinId, recordId, sectionId, replyText, replyText != null);
+        }
+
+        public SupplementaryActionRequest(
+                String identifier,
+                String publisherBulletinId,
+                String recordId,
+                String sectionId,
+                String replyText,
+                boolean hasActionInfo) {
             this.identifier = identifier;
             this.publisherBulletinId = publisherBulletinId;
             this.recordId = recordId;
             this.sectionId = sectionId;
             this.replyText = replyText;
+            this.hasActionInfo = hasActionInfo;
         }
 
         public byte[] encode() {
@@ -453,6 +609,7 @@ public final class BulletinDistributorCodec {
             String recId = null;
             String sId = null;
             String text = null;
+            boolean actionInfoSeen = false;
 
             while (reader.hasRemaining()) {
                 int tag = reader.readTag();
@@ -463,6 +620,7 @@ public final class BulletinDistributorCodec {
                     case 3 -> recId = reader.readString();
                     case 4 -> sId = reader.readString();
                     case 5 -> {
+                        actionInfoSeen = true;
                         byte[] raw = reader.readBytes();
                         try { text = extractReplyText(raw); }
                         finally { Arrays.fill(raw, (byte) 0); }
@@ -470,7 +628,7 @@ public final class BulletinDistributorCodec {
                     default -> reader.skipField(tag);
                 }
             }
-            return new SupplementaryActionRequest(id, pubId, recId, sId, text);
+            return new SupplementaryActionRequest(id, pubId, recId, sId, text, actionInfoSeen);
         }
 
         private static String extractReplyText(byte[] raw) {
@@ -659,12 +817,167 @@ public final class BulletinDistributorCodec {
         byte[] messageBytes = Arrays.copyOfRange(rawPayload, 0, trailerStart);
         byte[] trailerBytes = Arrays.copyOfRange(rawPayload, trailerStart, total - 2);
 
-        Trailer trailer = null;
         try {
-            trailer = Trailer.decode(trailerBytes);
-        } catch (Exception ignored) {}
+            Trailer trailer = Trailer.decode(trailerBytes);
+            return new MessageAndTrailer(messageBytes, trailer);
+        } catch (Exception ignored) {
+            Arrays.fill(messageBytes, (byte) 0);
+            return new MessageAndTrailer(rawPayload, null);
+        } finally {
+            Arrays.fill(trailerBytes, (byte) 0);
+        }
+    }
 
-        return new MessageAndTrailer(messageBytes, trailer);
+    /** BLTPBSectionIconVariant (com.apple.private.alloy.bulletindistributor.settings). */
+    public record SectionIconVariant(int format, byte[] imageData, boolean precomposed) {
+        static final int MAX_IMAGE_BYTES = 16 * 1024;
+        public byte[] encode() {
+            if (imageData == null || imageData.length < 1 || imageData.length > MAX_IMAGE_BYTES || format < 0) {
+                throw new IllegalArgumentException("Invalid section icon variant");
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            writeTag(out, 1, WIRE_VARINT);
+            writeVarint(out, format);
+            writeBytesField(out, 2, imageData);
+            writeTag(out, 3, WIRE_VARINT);
+            writeVarint(out, precomposed ? 1 : 0);
+            return out.toByteArray();
+        }
+        public static SectionIconVariant decode(byte[] data) {
+            Reader reader = new Reader(data);
+            int format = -1;
+            byte[] imageData = null;
+            boolean precomposed = true;
+            while (reader.hasRemaining()) {
+                int tag = reader.readTag();
+                switch (tag >>> 3) {
+                    case 1 -> {
+                        long v = reader.readVarint();
+                        if (v < 0 || v > Integer.MAX_VALUE) throw new IllegalArgumentException("Invalid icon format");
+                        format = (int) v;
+                    }
+                    case 2 -> imageData = reader.readBytes();
+                    case 3 -> precomposed = reader.readVarint() != 0;
+                    default -> reader.skipField(tag);
+                }
+            }
+            if (format < 0 || imageData == null || imageData.length < 1 || imageData.length > MAX_IMAGE_BYTES) {
+                throw new IllegalArgumentException("Invalid section icon variant");
+            }
+            return new SectionIconVariant(format, imageData, precomposed);
+        }
+    }
+
+    /** BLTPBSectionIcon wrapping one or more BLTPBSectionIconVariant entries. */
+    public record SectionIcon(List<SectionIconVariant> variants) {
+        public byte[] encode() {
+            if (variants == null || variants.isEmpty() || variants.size() > 4) {
+                throw new IllegalArgumentException("Invalid section icon variants");
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            for (SectionIconVariant variant : variants) {
+                if (variant == null) throw new IllegalArgumentException("Null section icon variant");
+                writeBytesField(out, 1, variant.encode());
+            }
+            return out.toByteArray();
+        }
+        public static SectionIcon decode(byte[] data) {
+            Reader reader = new Reader(data);
+            List<SectionIconVariant> variants = new ArrayList<>();
+            while (reader.hasRemaining()) {
+                int tag = reader.readTag();
+                if ((tag >>> 3) == 1) {
+                    if (variants.size() >= 4) throw new IllegalArgumentException("Too many section icon variants");
+                    variants.add(SectionIconVariant.decode(reader.readBytes()));
+                } else {
+                    reader.skipField(tag);
+                }
+            }
+            if (variants.isEmpty()) throw new IllegalArgumentException("Missing section icon variants");
+            return new SectionIcon(List.copyOf(variants));
+        }
+    }
+
+    /** BLTPBSectionInfo synced over com.apple.private.alloy.bulletindistributor.settings. */
+    public record SectionInfo(String sectionId, String displayName, boolean allowsNotifications, SectionIcon icon) {
+        public byte[] encode() {
+            if (sectionId == null || sectionId.isBlank() || sectionId.length() > 256
+                    || displayName == null || displayName.isBlank() || displayName.length() > 256) {
+                throw new IllegalArgumentException("Invalid section info");
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            writeStringField(out, 1, sectionId);
+            writeTag(out, 3, WIRE_VARINT); writeVarint(out, 0); // sectionType: app
+            writeTag(out, 4, WIRE_VARINT); writeVarint(out, 0); // sectionCategory: default
+            writeTag(out, 5, WIRE_VARINT); writeVarint(out, 0); // suppressFromSettings
+            writeTag(out, 6, WIRE_VARINT); writeVarint(out, 1); // showsInNotificationCenter
+            writeTag(out, 7, WIRE_VARINT); writeVarint(out, 1); // showsInLockScreen
+            writeTag(out, 8, WIRE_VARINT); writeVarint(out, allowsNotifications ? 1 : 0); // showsOnExternalDevices
+            writeTag(out, 9, WIRE_VARINT); writeVarint(out, 5); // notificationCenterLimit
+            writeTag(out, 10, WIRE_VARINT); writeVarint(out, 7); // pushSettings (badge|sound|alert)
+            writeTag(out, 11, WIRE_VARINT); writeVarint(out, 1); // alertType: banner
+            writeTag(out, 12, WIRE_VARINT); writeVarint(out, 1); // showsMessagePreview
+            writeTag(out, 13, WIRE_VARINT); writeVarint(out, allowsNotifications ? 1 : 0); // allowsNotifications
+            writeStringField(out, 15, displayName);
+            writeTag(out, 19, WIRE_VARINT); writeVarint(out, 2); // version
+            if (icon != null) writeBytesField(out, 22, icon.encode());
+            writeTag(out, 24, WIRE_VARINT); writeVarint(out, allowsNotifications ? 1 : 0); // phoneAllowsNotifications
+            writeTag(out, 26, WIRE_VARINT); writeVarint(out, 0); // groupingSetting: automatic
+            int auth = allowsNotifications ? 2 : 1; // BBAuthorizationStatusAuthorized=2, Denied=1
+            writeTag(out, 28, WIRE_VARINT); writeVarint(out, auth);
+            writeTag(out, 29, WIRE_VARINT); writeVarint(out, auth);
+            writeTag(out, 30, WIRE_VARINT); writeVarint(out, 2); // lockScreenSetting
+            writeTag(out, 31, WIRE_VARINT); writeVarint(out, 2); // notificationCenterSetting
+            return out.toByteArray();
+        }
+        public static SectionInfo decode(byte[] data) {
+            Reader reader = new Reader(data);
+            String sId = null;
+            String dName = null;
+            Boolean allows = null;
+            SectionIcon icon = null;
+            while (reader.hasRemaining()) {
+                int tag = reader.readTag();
+                switch (tag >>> 3) {
+                    case 1 -> sId = reader.readString();
+                    case 13 -> allows = reader.readVarint() != 0;
+                    case 15 -> dName = reader.readString();
+                    case 22 -> icon = SectionIcon.decode(reader.readBytes());
+                    default -> reader.skipField(tag);
+                }
+            }
+            return new SectionInfo(sId, dName, allows == null || allows, icon);
+        }
+    }
+
+    /** BLTPBSetSectionInfoRequest (protobuf type 13 on bulletindistributor.settings). */
+    public record SetSectionInfoRequest(SectionInfo sectionInfo) {
+        static final int MAX_BYTES = 24 * 1024;
+        public byte[] encode() {
+            if (sectionInfo == null) throw new IllegalArgumentException("Missing sectionInfo");
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            writeBytesField(out, 1, sectionInfo.encode());
+            byte[] encoded = out.toByteArray();
+            if (encoded.length > MAX_BYTES) throw new IllegalArgumentException("SectionInfo exceeds limit");
+            return encoded;
+        }
+        public static SetSectionInfoRequest decodeExact(byte[] data) {
+            if (data == null || data.length < 1 || data.length > MAX_BYTES) {
+                throw new IllegalArgumentException("Invalid SetSectionInfoRequest size");
+            }
+            Reader reader = new Reader(data);
+            SectionInfo info = null;
+            while (reader.hasRemaining()) {
+                int tag = reader.readTag();
+                if ((tag >>> 3) == 1) info = SectionInfo.decode(reader.readBytes());
+                else reader.skipField(tag);
+            }
+            if (info == null || info.sectionId() == null || info.sectionId().isBlank() || info.sectionId().length() > 256
+                    || info.displayName() == null || info.displayName().isBlank() || info.displayName().length() > 256) {
+                throw new IllegalArgumentException("Missing section identity");
+            }
+            return new SetSectionInfoRequest(info);
+        }
     }
 
     /**

@@ -12,15 +12,16 @@ class StorageScreen extends StatelessWidget {
   const StorageScreen({super.key});
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
     final provider = context.watch<WatchProvider>();
     final watch = provider.device;
     final data = watch.telemetry;
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
-        backgroundColor: Color(0xCC121212),
-        middle: Text(Strings.current.storage),
-        previousPageTitle: Strings.current.general,
+        backgroundColor: const Color(0xCC121212),
+        middle: Text(s.storage),
+        previousPageTitle: s.general,
       ),
       child: SafeArea(
         child: ListView(
@@ -34,24 +35,24 @@ class StorageScreen extends StatelessWidget {
               ),
             ),
             IosListSection(
-              header: Strings.current.watchStorage,
+              header: s.watchStorage,
               children: [
                 IosListTile(
-                  title: Strings.current.available,
+                  title: s.available,
                   trailingText: WatchTelemetry.formatBytes(
                     data.availableStorageBytes,
                   ),
                   showChevron: false,
                 ),
                 IosListTile(
-                  title: Strings.current.reclaimable,
+                  title: s.reclaimable,
                   trailingText: WatchTelemetry.formatBytes(
                     data.purgeableSpaceBytes,
                   ),
                   showChevron: false,
                 ),
                 IosListTile(
-                  title: Strings.current.purgeableData,
+                  title: s.purgeableData,
                   trailingText: WatchTelemetry.formatBytes(
                     data.userDeletableSpaceBytes,
                   ),
@@ -60,20 +61,20 @@ class StorageScreen extends StatelessWidget {
               ],
             ),
             IosListSection(
-              header: Strings.current.watchContent,
+              header: s.watchContent,
               children: [
                 IosListTile(
-                  title: Strings.current.userApps,
+                  title: s.userApps,
                   trailingText: data.numberOfApps?.toString() ?? '—',
                   showChevron: false,
                 ),
                 IosListTile(
-                  title: Strings.current.songs,
+                  title: s.songs,
                   trailingText: data.numberOfSongs?.toString() ?? '—',
                   showChevron: false,
                 ),
                 IosListTile(
-                  title: Strings.current.photos,
+                  title: s.photos,
                   trailingText: data.numberOfPhotos?.toString() ?? '—',
                   showChevron: false,
                 ),

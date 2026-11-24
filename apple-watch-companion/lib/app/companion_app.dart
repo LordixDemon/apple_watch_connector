@@ -10,7 +10,7 @@ class AppleWatchCompanionApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      onGenerateTitle: (_) => Strings.current.watch,
+      onGenerateTitle: (context) => Strings.of(context).watch,
       localizationsDelegates: const [
         Strings.delegate,
         GlobalCupertinoLocalizations.delegate,

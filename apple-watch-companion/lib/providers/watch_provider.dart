@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import '../models/watch_device.dart';
 import '../models/watch_face.dart';
 import '../models/watch_settings.dart';
-import '../models/watch_app_item.dart';
 import '../controllers/face_library_controller.dart';
 import '../controllers/native_face_controller.dart';
 import '../controllers/native_face_autosave_controller.dart';
@@ -44,7 +43,6 @@ class WatchProvider extends ChangeNotifier {
   final WatchObservationController _observations;
   WatchDevice get _device => _observations.device;
   WatchSettings _settings;
-  List<WatchAppItem> _installedApps = [];
   bool _isLoading = false;
 
   WatchProvider({
@@ -74,7 +72,7 @@ class WatchProvider extends ChangeNotifier {
       send: bridge.setNativePigmentVisibility,
     );
     pigmentFavorites = NativePigmentFavorites.synchronized(_pigmentSync);
-    _pigmentOperations = bridge.notificationActionStream.listen(
+    _pigmentOperations = bridge.operationStatusStream.listen(
       _pigmentSync.operation,
     );
     _observePigments();
@@ -84,12 +82,11 @@ class WatchProvider extends ChangeNotifier {
       persist: storage.saveMonogramIntents,
       send: bridge.setNativeMonogram,
     )..addListener(_changed);
-    _monogramOperations = bridge.notificationActionStream.listen(
+    _monogramOperations = bridge.operationStatusStream.listen(
       monogramSync.operation,
     );
     _observeMonogram();
     _observations.addListener(_observeMonogram);
-    _initApps();
     _observations.addListener(_changed);
   }
 
@@ -140,13 +137,24 @@ class WatchProvider extends ChangeNotifier {
   WatchDevice get device => _device;
   PhoneFindState get phoneFind => _observations.phoneFind;
   NotificationRelayState get notifications => _observations.notifications;
+  Stream<Map<String, dynamic>> get operationStatusStream =>
+      _bridge.operationStatusStream;
   SoftwareUpdateState get softwareUpdate => _observations.softwareUpdate;
   Future<String> updateSoftware(String method, SoftwareUpdateState baseline) =>
       _bridge.updateSoftware(method, baseline);
   Future<bool> requestNotificationAccess() =>
       _bridge.requestNotificationAccess();
-  Future<String> setNotificationRelay(bool enabled, {String? packageName}) =>
-      _bridge.setNotificationRelay(enabled, packageName: packageName);
+  Future<String> setNotificationRelay(
+    bool enabled, {
+    String? packageName,
+    String? mode,
+  }) => _bridge.setNotificationRelay(
+    enabled,
+    packageName: packageName,
+    mode: mode,
+  );
+  Future<String> retryPendingNotifications() =>
+      _bridge.retryPendingNotifications();
   Future<({String status, String? requestId})> queueTestNotification(
     String title,
     String body,
@@ -172,13 +180,8 @@ class WatchProvider extends ChangeNotifier {
   bool get hasHealthObservation => _observations.hasHealthObservation;
   List<WatchFace> get localFaceDesigns => _faces.designs;
   List<WatchFace> get remoteFaces => _faces.remote;
-  List<WatchAppItem> get installedApps => List.unmodifiable(_installedApps);
   bool get isLoading => _isLoading;
   Future<String> refreshDeviceInfo() => _bridge.refreshDeviceInfo();
-
-  void _initApps() {
-    _installedApps = WatchAppItem.defaultApps();
-  }
 
   Future<void> updateSettings(WatchSettings newSettings) async {
     _settings = newSettings;
@@ -191,26 +194,6 @@ class WatchProvider extends ChangeNotifier {
       'haptics': newSettings.hapticAlerts,
       'silent': newSettings.silentMode,
     });
-  }
-
-  Future<void> toggleApp(String appId, bool showOnWatch) async {
-    _installedApps = _installedApps.map((app) {
-      if (app.id == appId) {
-        return WatchAppItem(
-          id: app.id,
-          name: app.name,
-          version: app.version,
-          developer: app.developer,
-          icon: app.icon,
-          iconBackgroundColor: app.iconBackgroundColor,
-          isInstalledOnWatch: app.isInstalledOnWatch,
-          showOnWatch: showOnWatch,
-          description: app.description,
-        );
-      }
-      return app;
-    }).toList();
-    _changed();
   }
 
   Future<void> pingWatch() async {

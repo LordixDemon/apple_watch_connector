@@ -1,16 +1,31 @@
 package dev.applewatchandroid.bridge;
 
 /** Bounded content selection shared by Android notification styles. No logging. */
-record NotificationTextContent(String title, String body) {
+record NotificationTextContent(String title, String body, String subtitle) {
+    NotificationTextContent(String title, String body) {
+        this(title, body, null);
+    }
+
     static NotificationTextContent select(String title, String conversation, String bigText,
             String text, String lines, String sender, String message) {
-        String heading = first(title, conversation, sender);
+        return select(title, null, conversation, bigText, text, lines, sender, message);
+    }
+
+    static NotificationTextContent select(String title, String subtitle, String conversation, String bigText,
+            String text, String lines, String sender, String message) {
+        String heading = conversation != null && !conversation.isBlank()
+                ? conversation : first(title, sender);
         String body = first(bigText, lines, text);
         if (message != null && !message.isBlank()) {
-            body = conversation != null && !conversation.isBlank() && sender != null && !sender.isBlank()
-                    ? sender + ": " + message : message;
+            boolean includeSender = conversation != null && !conversation.isBlank()
+                    && sender != null && !sender.isBlank()
+                    && !sender.trim().equalsIgnoreCase(heading.trim());
+            body = includeSender ? sender + ": " + message : message;
         }
-        return new NotificationTextContent(limitUtf8(heading, 4096), limitUtf8(body, 16384));
+        String boundedTitle = limitUtf8(heading, 4096);
+        String boundedSub = limitUtf8(subtitle, 1024);
+        if (boundedSub.isEmpty() || boundedSub.equalsIgnoreCase(boundedTitle)) boundedSub = null;
+        return new NotificationTextContent(boundedTitle, limitUtf8(body, 16384), boundedSub);
     }
 
     boolean empty() { return title.isEmpty() && body.isEmpty(); }

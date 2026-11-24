@@ -1,8 +1,15 @@
 import '../../l10n/strings.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import '../../models/watch_features.dart';
+import '../../providers/watch_connection_provider.dart';
 import '../../theme/ios_colors.dart';
 import '../../widgets/ios_list_section.dart';
 import '../../widgets/ios_list_tile.dart';
+import '../connection/watch_connection_screen.dart';
+import '../connection/watch_diagnostics_screen.dart';
+import '../my_watch/notifications_screen.dart';
+import '../my_watch/software_update_screen.dart';
 import 'gesture_guide_screen.dart';
 
 class DiscoverTab extends StatelessWidget {
@@ -10,13 +17,17 @@ class DiscoverTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
+    final features = context.select<WatchConnectionProvider, WatchFeatures>(
+      (c) => c.state.features,
+    );
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       child: CustomScrollView(
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: Text(Strings.current.discover),
-            backgroundColor: Color(0xCC121212),
+            largeTitle: Text(s.discover),
+            backgroundColor: const Color(0xCC121212),
           ),
           SliverToBoxAdapter(
             child: Column(
@@ -36,7 +47,7 @@ class DiscoverTab extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: IosColors.ultraOrange.withOpacity(0.4),
+                        color: IosColors.ultraOrange.withValues(alpha: 0.4),
                       ),
                     ),
                     child: Column(
@@ -44,16 +55,16 @@ class DiscoverTab extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(
+                            const Icon(
                               CupertinoIcons.sparkles,
                               color: IosColors.ultraOrange,
                               size: 20,
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Flexible(
                               child: Text(
-                                Strings.current.newInWatchos11,
-                                style: TextStyle(
+                                s.newInWatchos11,
+                                style: const TextStyle(
                                   color: IosColors.ultraOrange,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -65,8 +76,8 @@ class DiscoverTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          Strings.current.appleWatchUltra2OnAndroid,
-                          style: TextStyle(
+                          s.appleWatchUltra2OnAndroid,
+                          style: const TextStyle(
                             color: IosColors.label,
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
@@ -75,10 +86,8 @@ class DiscoverTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          Strings
-                              .current
-                              .syncNotificationsCallsWorkoutsAndWatchFacesWithYour,
-                          style: TextStyle(
+                          s.syncNotificationsCallsWorkoutsAndWatchFacesWithYour,
+                          style: const TextStyle(
                             color: IosColors.secondaryLabel,
                             fontSize: 14,
                             height: 1.4,
@@ -90,14 +99,13 @@ class DiscoverTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 IosListSection(
-                  header: Strings.current.guidesTips,
+                  header: s.guidesTips,
                   children: [
                     IosListTile(
                       icon: CupertinoIcons.hand_point_right_fill,
                       iconBackgroundColor: IosColors.systemBlue,
-                      title: Strings.current.gesturesControls,
-                      subtitle:
-                          Strings.current.doubleTapDigitalCrownAndActionButton,
+                      title: s.gesturesControls,
+                      subtitle: s.doubleTapDigitalCrownAndActionButton,
                       onTap: () {
                         Navigator.of(context).push(
                           CupertinoPageRoute(
@@ -107,45 +115,61 @@ class DiscoverTab extends StatelessWidget {
                       },
                     ),
                     IosListTile(
-                      icon: CupertinoIcons.heart_fill,
-                      iconBackgroundColor: IosColors.systemRed,
-                      title: Strings.current.healthWorkouts,
-                      subtitle: Strings
-                          .current
-                          .setUpHeartRateZonesGpsRoutesAndActivity,
-                      onTap: () {},
-                    ),
-                    IosListTile(
-                      icon: CupertinoIcons.compass_fill,
+                      icon: CupertinoIcons.link,
                       iconBackgroundColor: IosColors.systemOrange,
-                      title: Strings.current.compassBacktrack,
-                      subtitle:
-                          Strings.current.navigateWithoutAnInternetConnection,
-                      onTap: () {},
+                      title: s.watchConnection,
+                      subtitle: s.watchConnectionSubtitle,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => const WatchConnectionScreen(),
+                          ),
+                        );
+                      },
                     ),
-                    IosListTile(
-                      icon: CupertinoIcons.bell_fill,
-                      iconBackgroundColor: IosColors.systemPurple,
-                      title: Strings.current.notificationMirroring,
-                      subtitle: Strings.current.setUpSmsCallsAndMessagingApps,
-                      onTap: () {},
-                    ),
+                    if (features.notifications)
+                      IosListTile(
+                        icon: CupertinoIcons.bell_fill,
+                        iconBackgroundColor: IosColors.systemPurple,
+                        title: s.notificationMirroring,
+                        subtitle: s.setUpSmsCallsAndMessagingApps,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              builder: (_) => const NotificationsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    if (features.softwareUpdates)
+                      IosListTile(
+                        icon: CupertinoIcons.arrow_down_circle_fill,
+                        iconBackgroundColor: IosColors.systemTeal,
+                        title: s.softwareUpdate,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              builder: (_) => const SoftwareUpdateScreen(),
+                            ),
+                          );
+                        },
+                      ),
                   ],
                 ),
                 IosListSection(
-                  header: Strings.current.resources,
+                  header: s.resources,
                   children: [
-                    IosListTile(
-                      icon: CupertinoIcons.book_fill,
-                      iconBackgroundColor: IosColors.systemTeal,
-                      title: Strings.current.appleWatchUserGuide,
-                      onTap: () {},
-                    ),
                     IosListTile(
                       icon: CupertinoIcons.question_circle_fill,
                       iconBackgroundColor: IosColors.systemGreen,
-                      title: Strings.current.halSupportDiagnostics,
-                      onTap: () {},
+                      title: s.halSupportDiagnostics,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => const WatchDiagnosticsScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

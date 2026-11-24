@@ -12,7 +12,7 @@ class WatchFeaturesPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = Strings.current;
+    final s = Strings.of(context);
     final features = state.features;
     return IosListSection(
       header: s.backendFeatures,

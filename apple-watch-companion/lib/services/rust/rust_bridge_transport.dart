@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import '../bridge_transport.dart';
 import '../../l10n/strings.dart';
 import 'rust_core_api.dart';
@@ -11,11 +10,11 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
   late final StreamController<dynamic> _events;
   Timer? _poll;
   bool _closed = false;
+  bool _hasPublished = false;
   bool _initialConnectionChecked = false;
   int _epoch = -1;
   final Map<String, String> _discoveredIds = {};
   Map<String, dynamic> _connection = const {};
-  String? _lastPublication;
   final Duration? pollInterval;
 
   RustBridgeTransport(
@@ -24,7 +23,7 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
   }) {
     _events = StreamController<dynamic>.broadcast(
       onListen: () {
-        _lastPublication = null;
+        _hasPublished = false;
         refresh();
         final interval = pollInterval;
         if (interval != null) {
@@ -53,7 +52,6 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
       final epoch = snapshot['epoch'] as int? ?? 0;
       if (epoch != _epoch) {
         _epoch = epoch;
-        _discoveredIds.clear();
       }
       final watches = <Map<String, dynamic>>[];
       Map? selected;
@@ -221,11 +219,33 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
     }
   }
 
+  static bool _deepEquals(Object? a, Object? b) {
+    if (identical(a, b)) return true;
+    if (a is Map && b is Map) {
+      if (a.length != b.length) return false;
+      for (final entry in a.entries) {
+        if (!b.containsKey(entry.key) ||
+            !_deepEquals(entry.value, b[entry.key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (a is List && b is List) {
+      if (a.length != b.length) return false;
+      for (var i = 0; i < a.length; i++) {
+        if (!_deepEquals(a[i], b[i])) return false;
+      }
+      return true;
+    }
+    return a == b;
+  }
+
   void _publish(Map<String, dynamic> connection) {
+    final unchanged = _hasPublished && _deepEquals(_connection, connection);
     _connection = connection;
-    final fingerprint = jsonEncode(connection);
-    if (fingerprint == _lastPublication || _closed) return;
-    _lastPublication = fingerprint;
+    if (unchanged || _closed) return;
+    _hasPublished = true;
     _events.add({'type': 'connection', 'data': connection});
   }
 
@@ -324,7 +344,7 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
       final result = _api.command(request);
       scheduleMicrotask(refresh);
       return result;
-    } catch (_) {
+    } catch (error) {
       _discoveredIds.clear();
       _publish({
         'bridgeAvailable': false,
@@ -333,7 +353,7 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
         'pairingAvailable': false,
         'wifiAvailable': false,
         'backendError': 'Rust core command failed',
-        'bridgeJournal': 'Rust core command failed',
+        'bridgeJournal': 'Rust core command failed: $error',
       });
       return {'status': 'UNAVAILABLE'};
     }

@@ -26,19 +26,35 @@ class _WatchTelemetryPanelState extends State<WatchTelemetryPanel> {
   String? _result;
   bool _sending = false;
   DateTime get _now => widget.clock?.call() ?? DateTime.now();
+
+  void _syncTimer() {
+    final needsTicker =
+        widget.connected &&
+        (_pendingSince != null || widget.telemetry.isFreshAt(_now));
+    if (needsTicker) {
+      _timer ??= Timer.periodic(const Duration(seconds: 15), (_) {
+        if (!mounted) return;
+        setState(() {
+          if (_pendingSince != null &&
+              _now.millisecondsSinceEpoch - _pendingSince! >= 60000) {
+            _pendingSince = null;
+            _result = Strings.of(
+              context,
+            ).theWatchHasNotRepliedYetRefreshAgain;
+          }
+        });
+        _syncTimer();
+      });
+    } else {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 15), (_) {
-      if (!mounted) return;
-      setState(() {
-        if (_pendingSince != null &&
-            _now.millisecondsSinceEpoch - _pendingSince! >= 60000) {
-          _pendingSince = null;
-          _result = Strings.current.theWatchHasNotRepliedYetRefreshAgain;
-        }
-      });
-    });
+    _syncTimer();
   }
 
   @override
@@ -52,8 +68,9 @@ class _WatchTelemetryPanelState extends State<WatchTelemetryPanel> {
         (widget.telemetry.observedAt ?? 0) >
             (oldWidget.telemetry.observedAt ?? 0)) {
       _pendingSince = null;
-      _result = Strings.current.dataUpdated;
+      _result = Strings.of(context).dataUpdated;
     }
+    _syncTimer();
   }
 
   Future<void> _refresh() async {
@@ -63,6 +80,7 @@ class _WatchTelemetryPanelState extends State<WatchTelemetryPanel> {
       _pendingSince = _now.millisecondsSinceEpoch;
       _result = null;
     });
+    _syncTimer();
     String status;
     try {
       status = await widget.refresh();
@@ -74,9 +92,10 @@ class _WatchTelemetryPanelState extends State<WatchTelemetryPanel> {
       _sending = false;
       if (status != 'QUEUED') {
         _pendingSince = null;
-        _result = Strings.current.couldNotSendRequest;
+        _result = Strings.of(context).couldNotSendRequest;
       }
     });
+    _syncTimer();
   }
 
   @override
@@ -87,6 +106,7 @@ class _WatchTelemetryPanelState extends State<WatchTelemetryPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
     final telemetry = widget.telemetry;
     final fresh = telemetry.isFreshAt(_now);
     final stamp = telemetry.observedAt;
@@ -95,30 +115,26 @@ class _WatchTelemetryPanelState extends State<WatchTelemetryPanel> {
         : DateTime.fromMillisecondsSinceEpoch(stamp).toLocal();
     String two(int number) => number.toString().padLeft(2, '0');
     final updated = local == null
-        ? Strings.current.noWatchDataYet
-        : Strings.current.telemetryStatusTime(
-            (fresh ? Strings.current.updated : Strings.current.dataIsStale)
-                .toString(),
+        ? s.noWatchDataYet
+        : s.telemetryStatusTime(
+            (fresh ? s.updated : s.dataIsStale).toString(),
             (two(local.hour)).toString(),
             (two(local.minute)).toString(),
             (two(local.second)).toString(),
           );
     final charging = telemetry.isCharging == null
-        ? Strings.current.chargingUnknown
+        ? s.chargingUnknown
         : telemetry.isCharging!
-        ? Strings.current.charging
-        : Strings.current.notCharging;
+        ? s.charging
+        : s.notCharging;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           telemetry.batteryLevel == null
-              ? Strings.current.battery2
-              : Strings.current.batteryReading(
-                  (fresh
-                          ? Strings.current.battery3
-                          : Strings.current.lastBattery)
-                      .toString(),
+              ? s.battery2
+              : s.batteryReading(
+                  (fresh ? s.battery3 : s.lastBattery).toString(),
                   (telemetry.batteryLevel).toString(),
                   (charging).toString(),
                 ),
@@ -129,7 +145,7 @@ class _WatchTelemetryPanelState extends State<WatchTelemetryPanel> {
         ),
         const SizedBox(height: 4),
         Text(
-          widget.connected ? updated : Strings.current.noConnectionToWatch,
+          widget.connected ? updated : s.noConnectionToWatch,
           style: const TextStyle(color: IosColors.secondaryLabel, fontSize: 12),
         ),
         if (_result != null)
@@ -147,9 +163,7 @@ class _WatchTelemetryPanelState extends State<WatchTelemetryPanel> {
               ? _refresh
               : null,
           child: Text(
-            _pendingSince != null
-                ? Strings.current.waitingForWatchReply
-                : Strings.current.refreshData,
+            _pendingSince != null ? s.waitingForWatchReply : s.refreshData,
             style: const TextStyle(fontSize: 14),
           ),
         ),

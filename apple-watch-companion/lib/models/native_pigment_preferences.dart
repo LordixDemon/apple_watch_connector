@@ -124,4 +124,18 @@ final class NativePigmentPreferences implements NativePigmentBaseline {
     }
     return true;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is NativePigmentPreferences && sameObservation(other);
+
+  @override
+  int get hashCode => Object.hash(
+    connected,
+    pair,
+    epoch,
+    sourceTimestamp,
+    observedAt,
+    names == null ? null : Object.hashAll(names!),
+  );
 }

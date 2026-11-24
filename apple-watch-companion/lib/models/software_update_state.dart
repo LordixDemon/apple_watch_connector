@@ -169,4 +169,51 @@ final class SoftwareUpdateState {
       !installAttempted &&
       targetBuild != null &&
       targetBuild != installedBuild;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SoftwareUpdateState &&
+          available == other.available &&
+          connected == other.connected &&
+          known == other.known &&
+          scanCompleted == other.scanCompleted &&
+          installAttempted == other.installAttempted &&
+          stalled == other.stalled &&
+          termsAccepted == other.termsAccepted &&
+          pair == other.pair &&
+          epoch == other.epoch &&
+          installedVersion == other.installedVersion &&
+          installedBuild == other.installedBuild &&
+          targetVersion == other.targetVersion &&
+          targetBuild == other.targetBuild &&
+          phase == other.phase &&
+          observedAt == other.observedAt &&
+          downloadBytes == other.downloadBytes &&
+          requiredSpaceBytes == other.requiredSpaceBytes &&
+          errorCode == other.errorCode &&
+          progress == other.progress;
+
+  @override
+  int get hashCode => Object.hash(
+    available,
+    connected,
+    known,
+    scanCompleted,
+    installAttempted,
+    stalled,
+    termsAccepted,
+    pair,
+    epoch,
+    installedVersion,
+    installedBuild,
+    targetVersion,
+    targetBuild,
+    phase,
+    observedAt,
+    downloadBytes,
+    requiredSpaceBytes,
+    errorCode,
+    progress,
+  );
 }

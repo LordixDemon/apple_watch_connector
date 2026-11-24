@@ -184,13 +184,12 @@ final class ModernIdsAppServiceBridge {
                     outgoingPayload = preparedPing;
                 }
                 if (!msg.dataFrame && IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE.equals(msg.topic)) {
-                    BulletinDistributorCodec.MessageAndTrailer split = BulletinDistributorCodec.splitTrailer(msg.payload);
-                    try {
-                        preparedBulletin = runner.bulletinTransport.wrap(split.trailer != null ? split.messagePayload : msg.payload);
-                        outgoingPayload = preparedBulletin;
-                    } finally {
-                        if (split.messagePayload != msg.payload) HalTransportSession.wipe(split.messagePayload);
-                    }
+                    preparedBulletin = runner.bulletinTransport.wrap(msg.payload);
+                    outgoingPayload = preparedBulletin;
+                }
+                if (!msg.dataFrame && IdsApplicationRoute.BULLETIN_SETTINGS_SERVICE.equals(msg.topic)) {
+                    preparedBulletin = runner.bulletinSettingsTransport.wrap(msg.payload);
+                    outgoingPayload = preparedBulletin;
                 }
                 log(String.format(
                         Locale.US,
@@ -247,7 +246,10 @@ final class ModernIdsAppServiceBridge {
                                     ? SysdiagnoseArchiveInventory.LIST_RESULT
                                     : msg.request.command().equals("PING_WATCH")
                                     ? FindMyLocalDeviceCodec.TYPE_PLAY_SOUND
-                                    : faceRequest ? ClockFaceSyncHeaderCodec.FULL_REQUEST : -1);
+                                    : faceRequest ? ClockFaceSyncHeaderCodec.FULL_REQUEST
+                                    : (IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE.equals(msg.topic)
+                                            || IdsApplicationRoute.BULLETIN_SETTINGS_SERVICE.equals(msg.topic))
+                                    ? OperationalRequestTracker.TERMINAL_AT_APP_ACK : -1);
                 }
                 runner.outputProcessor.processModernIdsOutput(
                         out,
@@ -526,24 +528,28 @@ final class ModernIdsAppServiceBridge {
             }
             finally { HalTransportSession.wipe(payload); }
         }
-        if (IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE.equals(event.topic)) {
+        if (IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE.equals(event.topic)
+                || IdsApplicationRoute.BULLETIN_SETTINGS_SERVICE.equals(event.topic)) {
+            boolean settingsTopic = IdsApplicationRoute.BULLETIN_SETTINGS_SERVICE.equals(event.topic);
+            BulletinTransportSession transport = settingsTopic
+                    ? runner.bulletinSettingsTransport : runner.bulletinTransport;
             byte[] payload = event.payload();
             byte[] acknowledgement = null;
             try {
-                BulletinTransportSession.Received received = runner.bulletinTransport.receive(event.protobufType, event.response, payload);
+                BulletinTransportSession.Received received = transport.receive(event.protobufType, event.response, payload);
                 if (!received.fresh()) {
-                    log("BULLETIN RX DUPLICATE: action not forwarded; identifiers/content logged=false.");
+                    log((settingsTopic ? "BULLETIN SETTINGS" : "BULLETIN") + " RX DUPLICATE: action not forwarded; identifiers/content logged=false.");
                     return;
                 }
                 acknowledgement = received.acknowledgement();
                 if (acknowledgement != null) {
                     if (!offerOutbound(session.outboundAppMessages, new OutboundAppMessage(
-                            IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE, 12, acknowledgement))) {
+                            event.topic, BulletinDistributorCodec.TYPE_ACK_INITIAL_SEQUENCE, acknowledgement))) {
                         log("BULLETIN SESSION ACK rejected: outbound queue full.");
                     }
                 }
-                log("BULLETIN SESSION RX: type=" + event.protobufType + " localState=" + received.localState()
-                        + "; handshake state is not notification delivery.");
+                log((settingsTopic ? "BULLETIN SETTINGS" : "BULLETIN") + " SESSION RX: type=" + event.protobufType
+                        + " localState=" + received.localState() + "; handshake state is not notification delivery.");
             } catch (IllegalArgumentException malformed) {
                 log("BULLETIN RX rejected: invalid native session envelope; content logged=false.");
                 return;
@@ -592,12 +598,8 @@ final class ModernIdsAppServiceBridge {
         } else if (IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE.equals(event.topic)) {
             if (event.protobufType == BulletinDistributorCodec.TYPE_DISMISS_ACTION) {
                 log("WATCH ACTION: Notification dismissed on Apple Watch");
-                System.out.println("EVENT:NOTIFICATION_DISMISS");
-                System.out.flush();
             } else if (event.protobufType == BulletinDistributorCodec.TYPE_SUPPLEMENTARY_ACTION) {
-                log("WATCH ACTION: Notification reply from Apple Watch");
-                System.out.println("EVENT:NOTIFICATION_REPLY");
-                System.out.flush();
+                log("WATCH ACTION: Notification supplementary action from Apple Watch");
             }
         } else if (IdsApplicationRoute.HEALTH_SYNC_SERVICE.equals(event.topic)) {
             log("WATCH TELEMETRY: Health sync packet received from Apple Watch");

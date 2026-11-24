@@ -17,16 +17,19 @@ class GeneralSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
     final provider = context.watch<WatchProvider>();
-    final settings = provider.settings;
-    final features = context.watch<WatchConnectionProvider>().state.features;
+    final softwareUpdatesAvailable = context
+        .select<WatchConnectionProvider, bool>(
+          (c) => c.state.features.softwareUpdates,
+        );
 
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
-        backgroundColor: Color(0xCC121212),
-        middle: Text(Strings.current.general),
-        previousPageTitle: Strings.current.myWatch,
+        backgroundColor: const Color(0xCC121212),
+        middle: Text(s.general),
+        previousPageTitle: s.myWatch,
       ),
       child: SafeArea(
         child: ListView(
@@ -35,7 +38,7 @@ class GeneralSettingsScreen extends StatelessWidget {
             IosListSection(
               children: [
                 IosListTile(
-                  title: Strings.current.about,
+                  title: s.about,
                   onTap: () {
                     Navigator.of(context).push(
                       CupertinoPageRoute(
@@ -44,9 +47,9 @@ class GeneralSettingsScreen extends StatelessWidget {
                     );
                   },
                 ),
-                if (features.softwareUpdates)
+                if (softwareUpdatesAvailable)
                   IosListTile(
-                    title: Strings.current.softwareUpdate,
+                    title: s.softwareUpdate,
                     onTap: () {
                       Navigator.of(context).push(
                         CupertinoPageRoute(
@@ -56,7 +59,7 @@ class GeneralSettingsScreen extends StatelessWidget {
                     },
                   ),
                 IosListTile(
-                  title: Strings.current.storage,
+                  title: s.storage,
                   onTap: () {
                     Navigator.of(context).push(
                       CupertinoPageRoute(builder: (_) => const StorageScreen()),
@@ -68,14 +71,14 @@ class GeneralSettingsScreen extends StatelessWidget {
             IosListSection(
               children: [
                 IosListTile(
-                  title: Strings.current.orientationTime,
+                  title: s.orientationTime,
                   trailingText: switch (provider
                       .nativeSettings
                       .values[NativeWatchSetting.rightWrist]
                       ?.value) {
-                    true => Strings.current.rightWrist,
-                    false => Strings.current.leftWrist,
-                    null => Strings.current.notReceived,
+                    true => s.rightWrist,
+                    false => s.leftWrist,
+                    null => s.notReceived,
                   },
                   onTap: () {
                     Navigator.of(context).push(
@@ -85,104 +88,8 @@ class GeneralSettingsScreen extends StatelessWidget {
                     );
                   },
                 ),
-                if (features.supports('backgroundAppRefresh'))
-                  IosListTile(
-                    title: Strings.current.backgroundAppRefresh,
-                    trailingText: settings.backgroundAppRefresh
-                        ? Strings.current.on
-                        : Strings.current.off,
-                    onTap: () {
-                      provider.updateSettings(
-                        settings.copyWith(
-                          backgroundAppRefresh: !settings.backgroundAppRefresh,
-                        ),
-                      );
-                    },
-                  ),
               ],
             ),
-            if (features.supports('connectivitySettings'))
-              IosListSection(
-                header: Strings.current.connectivity,
-                children: [
-                  IosListTile(
-                    title: Strings.current.airplaneMode,
-                    trailing: CupertinoSwitch(
-                      value: settings.airplaneMode,
-                      activeTrackColor: IosColors.systemGreen,
-                      onChanged: (val) {
-                        provider.updateSettings(
-                          settings.copyWith(airplaneMode: val),
-                        );
-                      },
-                    ),
-                    showChevron: false,
-                  ),
-                  IosListTile(
-                    title: Strings.current.bluetooth,
-                    trailing: CupertinoSwitch(
-                      value: settings.bluetoothEnabled,
-                      activeTrackColor: IosColors.systemGreen,
-                      onChanged: (val) {
-                        provider.updateSettings(
-                          settings.copyWith(bluetoothEnabled: val),
-                        );
-                      },
-                    ),
-                    showChevron: false,
-                  ),
-                  IosListTile(
-                    title: Strings.current.wiFi,
-                    trailing: CupertinoSwitch(
-                      value: settings.wifiEnabled,
-                      activeTrackColor: IosColors.systemGreen,
-                      onChanged: (val) {
-                        provider.updateSettings(
-                          settings.copyWith(wifiEnabled: val),
-                        );
-                      },
-                    ),
-                    showChevron: false,
-                  ),
-                ],
-              ),
-            if (features.supports('unpair'))
-              IosListSection(
-                children: [
-                  IosListTile(
-                    title: Strings.current.resetUnpair,
-                    isDestructive: true,
-                    onTap: () {
-                      showCupertinoModalPopup(
-                        context: context,
-                        builder: (ctx) => CupertinoActionSheet(
-                          title: Text(Strings.current.unpairAppleWatch),
-                          message: Text(
-                            Strings
-                                .current
-                                .allDataWatchFacesAndSettingsWillBeErased,
-                          ),
-                          actions: [
-                            CupertinoActionSheetAction(
-                              isDestructiveAction: true,
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                provider.unpairWatch();
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(Strings.current.unpair),
-                            ),
-                          ],
-                          cancelButton: CupertinoActionSheetAction(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: Text(Strings.current.cancel),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
           ],
         ),
       ),

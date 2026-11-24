@@ -15,15 +15,15 @@ internal object BridgeStateProjection {
         put("discoveryAvailable", false)
         put("wifiAvailable", true)
         for (key in listOf("notificationAccessGranted", "notificationListenerConnected",
-                "notificationRelayEnabled", "notificationRelayReady")) {
+                "notificationRelayEnabled", "notificationRelayReady", "notificationOnlyWhenScreenOff")) {
             if (data.containsKey(key)) put(key, data.getBoolean(key))
         }
         if (data.containsKey("notificationPendingCount")) put("notificationPendingCount", data.getInt("notificationPendingCount"))
         val notificationApps = data.getParcelableArrayList<Bundle>("notificationApps")
-        if (notificationApps != null && notificationApps.size <= 512) {
+        if (notificationApps != null && notificationApps.size <= 1024) {
             put("notificationApps", notificationApps.map { row -> mapOf(
                 "packageName" to row.getString("packageName"), "name" to row.getString("name"),
-                "enabled" to row.getBoolean("enabled")) })
+                "enabled" to row.getBoolean("enabled"), "observed" to row.getBoolean("observed", true)) })
         }
         data.getString("deviceName")?.let { put("deviceName", it) }
         for (key in listOf("pairId", "pairState", "productType", "buildVersion", "connectionStatus",

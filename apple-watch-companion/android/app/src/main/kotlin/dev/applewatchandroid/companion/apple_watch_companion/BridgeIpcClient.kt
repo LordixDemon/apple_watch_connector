@@ -28,8 +28,28 @@ internal class BridgeIpcClient(private val context: Context,
     private var bridge: Messenger? = null
     private var bound = false
     private val pending = mutableMapOf<String, BridgeResult>()
-    var observedState: Map<String, Any> = mapOf("connected" to false)
+    private val pendingTimeouts = mutableMapOf<String, Runnable>()
+    private var lastBridgeLog = ""
+    private var lastPhoneFindLog = ""
+    var observedState: Map<String, Any> = mapOf("connected" to false, "bridgeAvailable" to false)
         private set
+
+    private fun clearPendingTimeouts() {
+        pendingTimeouts.values.forEach { main.removeCallbacks(it) }
+        pendingTimeouts.clear()
+    }
+
+    private fun finishPending(id: String): BridgeResult? {
+        pendingTimeouts.remove(id)?.let { main.removeCallbacks(it) }
+        return pending.remove(id)
+    }
+
+    private fun safeUnbind() {
+        if (!bound) return
+        bound = false
+        try { context.unbindService(connection) } catch (_: IllegalArgumentException) { }
+    }
+
     private val replies = Messenger(object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(message: Message) {
             if (closed) return
@@ -38,28 +58,34 @@ internal class BridgeIpcClient(private val context: Context,
             if (message.what == 102) {
                 observedState = BridgeStateProjection.from(data)
                 emitState()
-                android.util.Log.i("WatchCompanion", "BRIDGE STATE connected=" + observedState["connected"]
-                    + " batteryObserved=" + ((observedState["batteryLevel"] as? Int ?: -1) in 0..100)
-                    + " aboutObserved=" + observedState.containsKey("aboutObservedAt")
-                    + " batteryLevel=" + observedState["batteryLevel"]
-                    + " charging=" + observedState["isCharging"]
-                    + " observedAt=" + observedState["aboutObservedAt"]
-                    + " availableBytes=" + observedState["availableStorageBytes"]
-                    + " apps=" + observedState["numberOfApps"]
-                    + " songs=" + observedState["numberOfSongs"]
-                    + " photos=" + observedState["numberOfPhotos"])
+                if (BuildConfig.DEBUG) {
+                    val summary = "BRIDGE STATE connected=" + observedState["connected"] +
+                        " batteryObserved=" + ((observedState["batteryLevel"] as? Int ?: -1) in 0..100) +
+                        " aboutObserved=" + observedState.containsKey("aboutObservedAt") +
+                        " batteryLevel=" + observedState["batteryLevel"] +
+                        " charging=" + observedState["isCharging"] +
+                        " observedAt=" + observedState["aboutObservedAt"] +
+                        " availableBytes=" + observedState["availableStorageBytes"] +
+                        " apps=" + observedState["numberOfApps"] +
+                        " songs=" + observedState["numberOfSongs"] +
+                        " photos=" + observedState["numberOfPhotos"]
+                    if (summary != lastBridgeLog) {
+                        lastBridgeLog = summary
+                        android.util.Log.i("WatchCompanion", summary)
+                    }
+                }
                 // Bridge issues one About read per IDS epoch; subscribing cannot duplicate it.
             } else if (message.what == 103) {
                 val id = data.getString("requestId") ?: return
                 val status = data.getString("status") ?: return
-                android.util.Log.i("WatchCompanion", "OPERATION id=$id stage=$status")
+                if (BuildConfig.DEBUG) android.util.Log.i("WatchCompanion", "OPERATION id=$id stage=$status")
                 onEvent(mapOf("type" to "operation", "data" to mapOf(
                     "requestId" to id, "status" to status, "epoch" to data.getString("epoch"))))
             } else if (message.what == 101) {
                 val id = data.getString("requestId") ?: return
                 val status = data.getString("status") ?: return
                 if (status == "OBSERVED") { observedState = BridgeStateProjection.from(data); emitState(); return }
-                pending.remove(id)?.success(buildMap<String, Any?> {
+                finishPending(id)?.success(buildMap<String, Any?> {
                     put("requestId", id); put("status", status); put("faceId", data.getString("faceId"))
                     put("archive", data.getByteArray("archive")); put("uploadId", data.getString("uploadId"))
                     put("sha256", data.getString("sha256"))
@@ -83,11 +109,14 @@ internal class BridgeIpcClient(private val context: Context,
             send(1, Bundle(), null)
         }
         override fun onServiceDisconnected(name: ComponentName) { disconnected("Bridge disconnected") }
-        override fun onNullBinding(name: ComponentName) { disconnected("Bridge unavailable") }
+        override fun onNullBinding(name: ComponentName) {
+            safeUnbind()
+            disconnected("Bridge unavailable")
+        }
         override fun onBindingDied(name: ComponentName) {
             if (closed) return
             disconnected("Bridge updated")
-            if (bound) { context.unbindService(this); bound = false }
+            safeUnbind()
             bindBridge()
         }
     }
@@ -97,12 +126,14 @@ internal class BridgeIpcClient(private val context: Context,
         try {
             bound = context.bindService(Intent().setComponent(ComponentName(bridgePackage,
                 "$bridgePackage.CompanionBridgeService")), connection, Context.BIND_AUTO_CREATE)
+            if (!bound) disconnected("Bridge unavailable")
         } catch (_: SecurityException) { disconnected("Companion IPC permission denied") }
     }
 
     private fun disconnected(reason: String) {
-        android.util.Log.i("WatchCompanion", reason)
+        if (BuildConfig.DEBUG) android.util.Log.i("WatchCompanion", reason)
         bridge = null
+        clearPendingTimeouts()
         observedState = mapOf("connected" to false, "bridgeAvailable" to false)
         pending.values.toList().forEach { it.error("UNAVAILABLE", reason, null) }
         pending.clear()
@@ -110,11 +141,17 @@ internal class BridgeIpcClient(private val context: Context,
     }
 
     fun emitState() {
-        android.util.Log.i("WatchCompanion", "PHONE FIND STATE available=${observedState["phoneFindAvailable"]}" +
-            " known=${observedState["phoneFindKnown"]} active=${observedState["phoneFindActive"]}" +
-            " localProbe=${observedState["phoneFindLocalProbe"]} behavior=${observedState["phoneFindBehavior"]}" +
-            " didPlay=${observedState["phoneFindDidPlay"]} observedAt=${observedState["phoneFindObservedAt"]}" +
-            " flashPermission=${observedState["phoneFlashPermission"]}")
+        if (BuildConfig.DEBUG) {
+            val phoneSummary = "PHONE FIND STATE available=${observedState["phoneFindAvailable"]}" +
+                " known=${observedState["phoneFindKnown"]} active=${observedState["phoneFindActive"]}" +
+                " localProbe=${observedState["phoneFindLocalProbe"]} behavior=${observedState["phoneFindBehavior"]}" +
+                " didPlay=${observedState["phoneFindDidPlay"]} observedAt=${observedState["phoneFindObservedAt"]}" +
+                " flashPermission=${observedState["phoneFlashPermission"]}"
+            if (phoneSummary != lastPhoneFindLog) {
+                lastPhoneFindLog = phoneSummary
+                android.util.Log.i("WatchCompanion", phoneSummary)
+            }
+        }
         onEvent(mapOf("type" to "connection", "data" to observedState))
     }
 
@@ -129,18 +166,27 @@ internal class BridgeIpcClient(private val context: Context,
         if (result != null) pending[id] = result
         try { target.send(message) }
         catch (_: RemoteException) { disconnected("Bridge IPC failed"); return }
-        if (result != null) main.postDelayed({
-            pending.remove(id)?.error("TIMEOUT", "No Bridge receipt; Watch result is unknown", id)
-        }, 5000)
+        if (result != null) {
+            val timeout = Runnable {
+                pendingTimeouts.remove(id)
+                pending.remove(id)?.error("TIMEOUT", "No Bridge receipt; Watch result is unknown", id)
+            }
+            pendingTimeouts[id] = timeout
+            main.postDelayed(timeout, 5000)
+        }
     }
 
     fun start() = bindBridge()
-    fun resume() { if (!closed && bridge != null) send(2, Bundle(), null) }
+    fun resume() {
+        if (closed) return
+        if (bridge != null) send(2, Bundle(), null)
+        else if (!bound) bindBridge()
+    }
     fun close() {
         if (closed) return
         closed = true
         disconnected("Companion closed")
-        if (bound) { context.unbindService(connection); bound = false }
+        safeUnbind()
         main.removeCallbacksAndMessages(null)
     }
 }

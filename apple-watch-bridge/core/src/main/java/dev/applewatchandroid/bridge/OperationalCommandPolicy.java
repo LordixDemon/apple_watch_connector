@@ -41,6 +41,9 @@ final class OperationalCommandPolicy {
         if (line.startsWith("REMOVE_BULLETIN:")) {
             return line.substring("REMOVE_BULLETIN:".length()).matches("[A-Za-z0-9+/]+={0,2}");
         }
+        if (line.startsWith("SEND_SECTION_INFO:")) {
+            return line.substring("SEND_SECTION_INFO:".length()).matches("[A-Za-z0-9+/]+={0,2}");
+        }
         return false;
     }
     static long reconnectDelayMs(int failures) {

@@ -183,4 +183,28 @@ public final class OperationalRequestTrackerTest {
         tracker.expire(1000); tracker.disconnect();
         assertEquals(BridgeCommandCodec.Stage.APP_RESPONSE_RECEIVED, last());
     }
+
+    @Test public void oneWayRequestCompletesAtAppAckWithoutSpuriousUnknownExpiry() {
+        var epoch = tracker.newEpoch();
+        var oneWay = new BridgeCommandCodec.Request(UUID.randomUUID(), epoch, 1000, "SEND_BULLETIN:YWJj");
+        assertTrue(tracker.accept(oneWay, 0, () -> true));
+        tracker.idsQueued(oneWay, IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE, "msg-1", OperationalRequestTracker.TERMINAL_AT_APP_ACK);
+        tracker.appAck(IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE, "msg-1", 10);
+        assertEquals(BridgeCommandCodec.Stage.APP_ACK_RECEIVED, last());
+        int countAfterAck = receipts.size();
+        // Expiry, failure, and disconnect must NOT downgrade a one-way request to UNKNOWN.
+        tracker.expire(2000);
+        tracker.failed(oneWay);
+        tracker.disconnect();
+        assertEquals(countAfterAck, receipts.size());
+        // Capacity eviction can reclaim expired one-way requests that completed at APP_ACK_RECEIVED.
+        var freshEpoch = tracker.newEpoch();
+        var a = new BridgeCommandCodec.Request(UUID.randomUUID(), freshEpoch, 1000, "SEND_BULLETIN:YWJj");
+        var b = new BridgeCommandCodec.Request(UUID.randomUUID(), freshEpoch, 1000, "SEND_BULLETIN:ZGVm");
+        assertTrue(tracker.accept(a, 0, () -> true));
+        assertTrue(tracker.accept(b, 0, () -> true));
+        tracker.idsQueued(a, IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE, "m-a", OperationalRequestTracker.TERMINAL_AT_APP_ACK);
+        tracker.appAck(IdsApplicationRoute.BULLETIN_DISTRIBUTOR_SERVICE, "m-a", 5);
+        assertTrue(tracker.accept(new BridgeCommandCodec.Request(UUID.randomUUID(), freshEpoch, 2000, "SEND_BULLETIN:Z2hp"), 1000, () -> true));
+    }
 }

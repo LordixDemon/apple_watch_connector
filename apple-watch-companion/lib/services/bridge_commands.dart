@@ -477,12 +477,27 @@ mixin BridgeCommands {
   Future<String> setNotificationRelay(
     bool enabled, {
     String? packageName,
+    String? mode,
   }) async {
     try {
       final receipt = await invokeBridgeMethod('setNotificationRelay', {
         'value': enabled,
         'packageName': ?packageName,
+        'mode': ?mode,
       });
+      return receipt is Map && receipt['status'] is String
+          ? receipt['status'] as String
+          : 'UNAVAILABLE';
+    } on MissingPluginException {
+      return 'UNAVAILABLE';
+    } on PlatformException {
+      return 'UNAVAILABLE';
+    }
+  }
+
+  Future<String> retryPendingNotifications() async {
+    try {
+      final receipt = await invokeBridgeMethod('retryPendingNotifications');
       return receipt is Map && receipt['status'] is String
           ? receipt['status'] as String
           : 'UNAVAILABLE';

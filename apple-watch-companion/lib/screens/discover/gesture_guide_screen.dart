@@ -9,12 +9,13 @@ class GestureGuideScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = Strings.of(context);
     return CupertinoPageScaffold(
       backgroundColor: IosColors.systemBackground,
       navigationBar: CupertinoNavigationBar(
-        backgroundColor: Color(0xCC121212),
-        middle: Text(Strings.current.gesturesControls),
-        previousPageTitle: Strings.current.discover,
+        backgroundColor: const Color(0xCC121212),
+        middle: Text(s.gesturesControls),
+        previousPageTitle: s.discover,
       ),
       child: SafeArea(
         child: ListView(
@@ -34,25 +35,25 @@ class GestureGuideScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Icon(
+                    const Icon(
                       CupertinoIcons.hand_raised_fill,
                       color: IosColors.systemOrange,
                       size: 48,
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
-                      Strings.current.appleWatchUltra2Controls,
-                      style: TextStyle(
+                      s.appleWatchUltra2Controls,
+                      style: const TextStyle(
                         color: IosColors.label,
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
-                      Strings.current.useDoubleTapTheDigitalCrownAndTheOrange,
+                      s.useDoubleTapTheDigitalCrownAndTheOrange,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: IosColors.secondaryLabel,
                         fontSize: 14,
                       ),
@@ -63,38 +64,34 @@ class GestureGuideScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             IosListSection(
-              header: Strings.current.essentialGestures,
+              header: s.essentialGestures,
               children: [
                 IosListTile(
                   icon: CupertinoIcons.hand_point_right_fill,
                   iconBackgroundColor: IosColors.systemBlue,
-                  title: Strings.current.doubleTap,
-                  subtitle:
-                      Strings.current.tapYourIndexFingerAndThumbTogetherTwiceTo,
+                  title: s.doubleTap,
+                  subtitle: s.tapYourIndexFingerAndThumbTogetherTwiceTo,
                   showChevron: false,
                 ),
                 IosListTile(
                   icon: CupertinoIcons.circle,
                   iconBackgroundColor: IosColors.systemOrange,
-                  title: Strings.current.digitalCrown,
-                  subtitle:
-                      Strings.current.turnToScrollThroughListsAndZoomOrPress,
+                  title: s.digitalCrown,
+                  subtitle: s.turnToScrollThroughListsAndZoomOrPress,
                   showChevron: false,
                 ),
                 IosListTile(
                   icon: CupertinoIcons.slider_horizontal_below_rectangle,
                   iconBackgroundColor: IosColors.actionButtonOrange,
-                  title: Strings.current.orangeActionButton,
-                  subtitle: Strings.current.startAWorkoutMarkAWaypointOrHoldTo,
+                  title: s.orangeActionButton,
+                  subtitle: s.startAWorkoutMarkAWaypointOrHoldTo,
                   showChevron: false,
                 ),
                 IosListTile(
                   icon: CupertinoIcons.drop_fill,
                   iconBackgroundColor: IosColors.systemTeal,
-                  title: Strings.current.waterLock,
-                  subtitle: Strings
-                      .current
-                      .preventsAccidentalTouchesInWaterUseTheDigitalCrown,
+                  title: s.waterLock,
+                  subtitle: s.preventsAccidentalTouchesInWaterUseTheDigitalCrown,
                   showChevron: false,
                 ),
               ],

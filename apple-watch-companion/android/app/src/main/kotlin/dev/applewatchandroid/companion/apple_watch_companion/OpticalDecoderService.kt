@@ -58,6 +58,10 @@ class OpticalDecoderService : Service() {
                     if (active) OpticalNativeReader.destroy()
                     active = false
                     output.putBoolean("ok", false)
+                } catch (_: LinkageError) {
+                    if (active) OpticalNativeReader.destroy()
+                    active = false
+                    output.putBoolean("ok", false)
                 }
                 try { message.replyTo?.send(Message.obtain(null, 101).apply { data = output }) }
                 catch (_: RemoteException) { if (active) OpticalNativeReader.destroy(); active = false }

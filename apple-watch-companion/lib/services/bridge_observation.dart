@@ -41,6 +41,18 @@ final class BridgeObservation {
   factory BridgeObservation.decode(Map data, {NativeFaceCollection? faces}) {
     faces ??= NativeFaceCollection.fromBridge(data);
     final connected = data['connected'] == true;
+    final softwareUpdate = SoftwareUpdateState.fromBridge(data);
+    final buildVersion = data['buildVersion'] as String?;
+    final installedVersion = softwareUpdate.installedVersion;
+    final installedBuild = softwareUpdate.installedBuild;
+    final watchOsVersion =
+        installedVersion != null && installedVersion.isNotEmpty
+        ? (installedBuild != null && installedBuild.isNotEmpty
+              ? '$installedVersion ($installedBuild)'
+              : installedVersion)
+        : (buildVersion != null && buildVersion.isNotEmpty
+              ? buildVersion
+              : '—');
     return BridgeObservation(
       WatchDevice.unknown().copyWith(
         id: data['pairId'] as String? ?? '',
@@ -55,6 +67,7 @@ final class BridgeObservation {
         caseSize: WatchModelCatalog.caseSizeForProduct(
           data['productType'] as String? ?? '',
         ),
+        watchOsVersion: watchOsVersion,
         batteryLevel: connected ? data['batteryLevel'] as int? ?? -1 : -1,
         isCharging: connected && data['isCharging'] == true,
         telemetry: WatchTelemetry.fromBridge(data),
@@ -68,7 +81,7 @@ final class BridgeObservation {
       NativeMonogramPreferences.fromBridge(data),
       NativeMonogramMirror.fromBridge(data),
       NotificationRelayState.fromBridge(data),
-      SoftwareUpdateState.fromBridge(data),
+      softwareUpdate,
     );
   }
 }

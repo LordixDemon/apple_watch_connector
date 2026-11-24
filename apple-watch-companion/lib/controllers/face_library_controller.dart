@@ -70,7 +70,6 @@ class FaceLibraryController extends ChangeNotifier {
         }
         _changed();
       }
-      await fetchRemoteCatalog();
     } catch (_) {}
   }
 

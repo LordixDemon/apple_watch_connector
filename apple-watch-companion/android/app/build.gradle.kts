@@ -60,16 +60,24 @@ apply(from = rootProject.file("../../apple-watch-bridge/gradle/android-signing.g
 // capture. The asset and JNI loader currently support arm64 Android only.
 val opticalRepository = rootProject.projectDir.resolve("../..").canonicalFile
 val opticalAsset = layout.buildDirectory.file("generated/opticalAssets/optical/visual-pairing-23G71.bin")
-val prepareOpticalAsset = tasks.register<Exec>("prepareOpticalAsset") {
-    inputs.file(opticalRepository.resolve("firmware/ios-26.6-23G71/extracted/VisualPairing"))
-    inputs.files(opticalRepository.resolve("research-tools/prepare_optical_android_asset.py"),
-        opticalRepository.resolve("research-tools/visual_pairing_reader_oracle.py"))
-    outputs.file(opticalAsset)
-    commandLine(opticalRepository.resolve("research-tools/venv-dis/bin/python"),
-        opticalRepository.resolve("research-tools/prepare_optical_android_asset.py"),
-        opticalRepository.resolve("firmware/ios-26.6-23G71/extracted/VisualPairing"), opticalAsset.get().asFile)
+val opticalFirmwareSource = opticalRepository.resolve("firmware/ios-26.6-23G71/extracted/VisualPairing")
+val opticalScript = opticalRepository.resolve("research-tools/prepare_optical_android_asset.py")
+val opticalOracle = opticalRepository.resolve("research-tools/visual_pairing_reader_oracle.py")
+val opticalPython = opticalRepository.resolve("research-tools/venv-dis/bin/python")
+val hasOpticalInputs = listOf(opticalFirmwareSource, opticalScript, opticalOracle, opticalPython).all { it.exists() }
+val requireOpticalAsset = providers.gradleProperty("requireOpticalAsset").orNull == "true"
+
+if (hasOpticalInputs || requireOpticalAsset) {
+    val prepareOpticalAsset = tasks.register<Exec>("prepareOpticalAsset") {
+        inputs.file(opticalFirmwareSource)
+        inputs.files(opticalScript, opticalOracle)
+        outputs.file(opticalAsset)
+        commandLine(opticalPython, opticalScript, opticalFirmwareSource, opticalAsset.get().asFile)
+    }
+    tasks.named("preBuild") { dependsOn(prepareOpticalAsset) }
+} else {
+    logger.lifecycle("Skipping prepareOpticalAsset: local optical inputs not present")
 }
-tasks.named("preBuild") { dependsOn(prepareOpticalAsset) }
 
 flutter {
     source = "../.."

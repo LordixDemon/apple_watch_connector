@@ -1,12 +1,38 @@
+import 'package:flutter/foundation.dart';
+
 final class NotificationApp {
   final String packageName, name;
   final bool enabled;
-  const NotificationApp(this.packageName, this.name, this.enabled);
+  final bool observed;
+  const NotificationApp(
+    this.packageName,
+    this.name,
+    this.enabled, {
+    this.observed = true,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationApp &&
+          packageName == other.packageName &&
+          name == other.name &&
+          enabled == other.enabled &&
+          observed == other.observed;
+
+  @override
+  int get hashCode => Object.hash(packageName, name, enabled, observed);
 }
 
 /// Phone-side permission and policy observations, separate from Watch delivery.
 final class NotificationRelayState {
-  final bool available, accessGranted, listenerConnected, enabled, ready;
+  final bool available,
+      accessGranted,
+      listenerConnected,
+      enabled,
+      onlyWhenScreenOff,
+      connected,
+      ready;
   final int pending;
   final List<NotificationApp> apps;
   const NotificationRelayState({
@@ -14,10 +40,24 @@ final class NotificationRelayState {
     this.accessGranted = false,
     this.listenerConnected = false,
     this.enabled = false,
+    this.onlyWhenScreenOff = false,
+    this.connected = false,
     this.ready = false,
     this.pending = 0,
     this.apps = const [],
   });
+
+  NotificationRelayState disconnected() => NotificationRelayState(
+    available: available,
+    accessGranted: accessGranted,
+    listenerConnected: listenerConnected,
+    enabled: enabled,
+    onlyWhenScreenOff: onlyWhenScreenOff,
+    connected: false,
+    ready: false,
+    pending: pending,
+    apps: apps,
+  );
 
   factory NotificationRelayState.fromBridge(Map data) {
     if (data['bridgeAvailable'] != true ||
@@ -32,10 +72,12 @@ final class NotificationRelayState {
     final access = data['notificationAccessGranted'] == true;
     final listener = data['notificationListenerConnected'] == true;
     final enabled = data['notificationRelayEnabled'] == true;
+    final onlyWhenScreenOff = data['notificationOnlyWhenScreenOff'] == true;
+    final connected = data['connected'] == true;
     final rows = data['notificationApps'];
     final apps = <NotificationApp>[];
     final seen = <String>{};
-    if (rows is List && rows.length <= 512) {
+    if (rows is List && rows.length <= 1024) {
       for (final row in rows) {
         if (row is! Map ||
             row['packageName'] is! String ||
@@ -54,6 +96,7 @@ final class NotificationRelayState {
             pkg,
             name.isEmpty ? pkg : name,
             row['enabled'] as bool,
+            observed: row['observed'] != false,
           ),
         );
       }
@@ -63,11 +106,13 @@ final class NotificationRelayState {
       accessGranted: access,
       listenerConnected: listener,
       enabled: enabled,
+      onlyWhenScreenOff: onlyWhenScreenOff,
+      connected: connected,
       ready:
           enabled &&
           access &&
           listener &&
-          data['connected'] == true &&
+          connected &&
           data['notificationRelayReady'] == true,
       pending:
           data['notificationPendingCount'] is int &&
@@ -78,4 +123,31 @@ final class NotificationRelayState {
       apps: List.unmodifiable(apps),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationRelayState &&
+          available == other.available &&
+          accessGranted == other.accessGranted &&
+          listenerConnected == other.listenerConnected &&
+          enabled == other.enabled &&
+          onlyWhenScreenOff == other.onlyWhenScreenOff &&
+          connected == other.connected &&
+          ready == other.ready &&
+          pending == other.pending &&
+          listEquals(apps, other.apps);
+
+  @override
+  int get hashCode => Object.hash(
+    available,
+    accessGranted,
+    listenerConnected,
+    enabled,
+    onlyWhenScreenOff,
+    connected,
+    ready,
+    pending,
+    Object.hashAll(apps),
+  );
 }

@@ -39,7 +39,7 @@ class NativeFaceController extends ChangeNotifier {
   final Map<String, String> _earlyFailures = {};
   NativeFaceController(this._bridge) : _collection = _bridge.faceCollection {
     _subscription = _bridge.faceCollectionStream.listen(_observe);
-    _operations = _bridge.notificationActionStream.listen(_operation);
+    _operations = _bridge.operationStatusStream.listen(_operation);
   }
   NativeFaceCollection get collection => _collection;
   NativeFaceResult get result => _result;
