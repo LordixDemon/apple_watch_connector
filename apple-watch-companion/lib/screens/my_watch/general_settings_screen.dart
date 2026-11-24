@@ -44,7 +44,7 @@ class GeneralSettingsScreen extends StatelessWidget {
                     );
                   },
                 ),
-                if (features.supports('softwareUpdate'))
+                if (features.softwareUpdates)
                   IosListTile(
                     title: Strings.current.softwareUpdate,
                     onTap: () {

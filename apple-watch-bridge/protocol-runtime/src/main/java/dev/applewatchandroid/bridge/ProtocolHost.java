@@ -1,30 +1,20 @@
 package dev.applewatchandroid.bridge;
 
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Shared protocol coordinator; no platform controller or OS services. */
 class ProtocolHost {
     static final AtomicBoolean COMPANION_DISCOVERY = new AtomicBoolean();
+    /** Opt-in toggle for experimental legacy watchOS 1-9 pairing (Strategies 1-3). Off by default. */
+    static final AtomicBoolean EXPERIMENTAL_LEGACY_PAIRING = new AtomicBoolean(false);
     static final BlockingQueue<String> COMPANION_WATCH_SELECTIONS = new LinkedBlockingQueue<>(1);
     /**
      * SEED_STALE_FLOW commands queued by the command reader and drained on
@@ -80,6 +70,8 @@ class ProtocolHost {
     static final long PAIRING_IKE_ACK_TIMEOUT_MS = 5_000;
     static final long SMP_RESPONSE_TIMEOUT_MS = 10_000;
     static final long SMP_ENCRYPTION_TIMEOUT_MS = 10_000;
+    static final long LEGACY_GATT_TIMEOUT_MS = 10_000;
+    static final long LEGACY_POST_SMP_DIAGNOSTIC_WINDOW_MS = 5_000;
     static final long MODERN_REGISTRATION_TIMEOUT_MS =
             40_000;
     static final long IDS_BOOTSTRAP_TIMEOUT_MS =
@@ -178,6 +170,10 @@ class ProtocolHost {
                 topic = SysdiagnoseArchiveInventory.TOPIC;
                 type = SysdiagnoseCollection.START;
                 payload = request.id().toString().getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+            } else if (SoftwareUpdateSession.allows(command)) {
+                topic = SoftwareUpdateCodec.TOPIC;
+                type = 0;
+                payload = command.getBytes(java.nio.charset.StandardCharsets.US_ASCII);
             } else if (command.equals("REQUEST_FACE_COLLECTION")) {
                 topic = IdsApplicationRoute.CLOCKFACE_SYNC_SERVICE;
                 type = ClockFaceSyncHeaderCodec.FULL_REQUEST;
@@ -219,6 +215,7 @@ class ProtocolHost {
                 payload = BridgeBase64.decode(command.substring("SEND_BULLETIN:".length()), BridgeBase64.NO_WRAP);
             }
             message = new OutboundAppMessage(topic, type, payload, command.equals("REQUEST_FACE_COLLECTION")
+                    || SoftwareUpdateSession.allows(command)
                     || command.equals(WifiNetworkSyncCodec.COMMAND) || ClockFaceDeltaCommand.matches(command), request);
             OutboundAppMessage outgoing = message;
             boolean accepted = OPERATIONAL_REQUESTS.accept(request, BridgeClock.elapsedRealtime(),
@@ -354,6 +351,26 @@ class ProtocolHost {
 
     static void requestRetryActivation() {
         PENDING_RETRY_ACTIVATION.set(true);
+    }
+
+    /** Resets all process-wide session flags and queues between sessions or tests. */
+    static void resetSessionControls() {
+        COMPANION_DISCOVERY.set(false);
+        EXPERIMENTAL_LEGACY_PAIRING.set(false);
+        COMPANION_WATCH_SELECTIONS.clear();
+        PENDING_STALE_FLOW_SEEDS.clear();
+        OPERATIONAL_REQUESTS.disconnect();
+        FIND_MY_PHONE_RESULTS.clear();
+        PENDING_FORCE_ACTIVATION_CONFIRMED.set(false);
+        PENDING_PUBLISH_PAIRED_SYNC.set(false);
+        PENDING_CLOSE_IKE_SESSION.set(false);
+        PENDING_IDS_KEY_PROBE.set(false);
+        PENDING_IDS_CONTROL_OPEN.set(false);
+        PENDING_NATIVE_SNAPSHOT_DISCOVERY.set(null);
+        PENDING_SYNC_PROGRESS.clear();
+        PENDING_REDRIVE_ACTIVATION.set(false);
+        PENDING_FORCE_SETUP_OBSERVED.set(false);
+        PENDING_RETRY_ACTIVATION.set(false);
     }
 
     /**

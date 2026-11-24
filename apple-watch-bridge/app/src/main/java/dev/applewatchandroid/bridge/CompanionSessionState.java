@@ -16,17 +16,21 @@ final class CompanionSessionState {
     private static Bundle setup = new Bundle();
     private static String connection = "DISCONNECTED";
     private static String journal = "";
+    private static String softwareUpdateJson;
     private static boolean scheduled;
 
     static void add(Runnable listener) { LISTENERS.add(listener); }
     static void remove(Runnable listener) { LISTENERS.remove(listener); }
+    static void notificationRelayChanged() { changed(); }
     static synchronized Bundle snapshot() {
         Bundle result = new Bundle(identity);
         result.putAll(setup);
         result.putString("connectionStatus", connection);
         result.putString("bridgeJournal", journal);
+        if (softwareUpdateJson != null) result.putString("softwareUpdateJson", softwareUpdateJson);
         return result;
     }
+    static synchronized void softwareUpdate(String observation) { softwareUpdateJson = observation; changed(); }
     static synchronized void connection(String status) { connection = status; changed(); }
     static synchronized void setup(Bundle state) { setup = new Bundle(state); changed(); }
     static synchronized void journal(CharSequence value) {

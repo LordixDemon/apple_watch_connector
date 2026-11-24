@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public final class PairingPrivateNotifyIkeTest {
@@ -178,6 +179,163 @@ public final class PairingPrivateNotifyIkeTest {
                     IllegalArgumentException.class,
                     () -> tamperedAccumulator.accept(tampered));
         } finally {
+            destroy(localNotifies);
+            destroy(watchNotifies);
+            batch.destroy();
+            addresses.destroy();
+            networkKeys.destroy();
+            oob.destroy();
+        }
+    }
+
+    @Test
+    public void matchesByteIdenticalWatchRetryWhenPeerRequestPrecedesLocalAck() {
+        SecureRandom random = new SecureRandom();
+        IkeV2SessionCrypto.IkeSaKeys keys = testKeys();
+        BleSecureConnectionsCrypto.LocalOobMaterial oob =
+                BleSecureConnectionsCrypto.generateLocalOob(random);
+        AppleNetworkRelayPairingMaterial networkKeys =
+                AppleNetworkRelayPairingMaterial.generate(random);
+        AppleNetworkRelayInnerAddresses addresses =
+                AppleNetworkRelayInnerAddresses.generate(random);
+        ApplePairingNotifyPayloads.LocalBatch batch =
+                ApplePairingNotifyPayloads.createLocalBatch(
+                        oob,
+                        networkKeys,
+                        addresses,
+                        "Android",
+                        "test-build",
+                        null);
+        List<ApplePairingNotifyPayloads.PrivateNotify> localNotifies = batch.notifies();
+        List<ApplePairingNotifyPayloads.PrivateNotify> watchNotifies =
+                new ArrayList<>(localNotifies.subList(0, 9));
+        IkeV2SessionCrypto.PairingPrivateNotifyResponseAccumulator accumulator =
+                new IkeV2SessionCrypto.PairingPrivateNotifyResponseAccumulator(keys);
+        IkeV2SessionCrypto.PairingPrivateNotifyResponse response = null;
+        try {
+            byte[] watchRequestPacket =
+                    IkeV2SessionCrypto.createPairingPrivateNotifyWatchRequestForTest(
+                            random, keys, watchNotifies).get(0);
+            byte[] emptyAck =
+                    IkeV2SessionCrypto.createPairingPrivateNotifyEmptyResponseForTest(
+                            random, keys).get(0);
+            // Peer request arrives before local empty ACK (reordered completion).
+            assertNull(accumulator.accept(watchRequestPacket));
+            response = accumulator.accept(emptyAck);
+            assertTrue(accumulator.requestAcknowledged());
+
+            try (IkeV2SessionCrypto.WatchRequestRetryMatcher matcher =
+                         response.createRetryMatcher()) {
+                assertEquals(
+                        IkeV2SessionCrypto.WatchRequestRetryStatus.COMPLETE_RETRY,
+                        matcher.accept(watchRequestPacket.clone()));
+                // Reject empty ACK, fresh encryption of identical batch, and tampered bytes.
+                assertEquals(
+                        IkeV2SessionCrypto.WatchRequestRetryStatus.REJECTED,
+                        matcher.accept(emptyAck));
+                byte[] freshEncrypted =
+                        IkeV2SessionCrypto.createPairingPrivateNotifyWatchRequestForTest(
+                                random, keys, watchNotifies).get(0);
+                assertEquals(
+                        IkeV2SessionCrypto.WatchRequestRetryStatus.REJECTED,
+                        matcher.accept(freshEncrypted));
+                byte[] flipped = watchRequestPacket.clone();
+                flipped[flipped.length - 1] ^= 0x01;
+                assertEquals(
+                        IkeV2SessionCrypto.WatchRequestRetryStatus.REJECTED,
+                        matcher.accept(flipped));
+                assertEquals(
+                        IkeV2SessionCrypto.WatchRequestRetryStatus.REJECTED,
+                        matcher.accept(null));
+                matcher.close();
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> matcher.accept(watchRequestPacket));
+            }
+            response.destroy();
+            IkeV2SessionCrypto.PairingPrivateNotifyResponse destroyedResponse = response;
+            assertThrows(IllegalStateException.class, destroyedResponse::createRetryMatcher);
+        } finally {
+            accumulator.destroy();
+            if (response != null) {
+                response.destroy();
+            }
+            destroy(localNotifies);
+            destroy(watchNotifies);
+            batch.destroy();
+            addresses.destroy();
+            networkKeys.destroy();
+            oob.destroy();
+        }
+    }
+
+    @Test
+    public void matchesFragmentedWatchRequestRetryInExactOrder() {
+        SecureRandom random = new SecureRandom();
+        IkeV2SessionCrypto.IkeSaKeys keys = testKeys();
+        BleSecureConnectionsCrypto.LocalOobMaterial oob =
+                BleSecureConnectionsCrypto.generateLocalOob(random);
+        AppleNetworkRelayPairingMaterial networkKeys =
+                AppleNetworkRelayPairingMaterial.generate(random);
+        AppleNetworkRelayInnerAddresses addresses =
+                AppleNetworkRelayInnerAddresses.generate(random);
+        ApplePairingNotifyPayloads.LocalBatch batch =
+                ApplePairingNotifyPayloads.createLocalBatch(
+                        oob,
+                        networkKeys,
+                        addresses,
+                        "Android",
+                        "test-build",
+                        null);
+        List<ApplePairingNotifyPayloads.PrivateNotify> localNotifies = batch.notifies();
+        List<ApplePairingNotifyPayloads.PrivateNotify> watchNotifies =
+                new ArrayList<>(localNotifies.subList(0, 9));
+        IkeV2SessionCrypto.PairingPrivateNotifyResponseAccumulator accumulator =
+                new IkeV2SessionCrypto.PairingPrivateNotifyResponseAccumulator(keys);
+        IkeV2SessionCrypto.PairingPrivateNotifyResponse response = null;
+        try {
+            List<byte[]> fragments =
+                    IkeV2SessionCrypto.createPairingPrivateNotifyWatchRequestForTest(
+                            random, keys, watchNotifies, 180);
+            assertTrue(fragments.size() >= 2);
+            byte[] emptyAck =
+                    IkeV2SessionCrypto.createPairingPrivateNotifyEmptyResponseForTest(
+                            random, keys).get(0);
+            assertNull(accumulator.accept(emptyAck));
+            for (int i = 0; i < fragments.size() - 1; i++) {
+                assertNull(accumulator.accept(fragments.get(i)));
+            }
+            response = accumulator.accept(fragments.get(fragments.size() - 1));
+
+            try (IkeV2SessionCrypto.WatchRequestRetryMatcher matcher =
+                         response.createRetryMatcher()) {
+                for (int i = 0; i < fragments.size() - 1; i++) {
+                    assertEquals(
+                            IkeV2SessionCrypto.WatchRequestRetryStatus.NEED_MORE_FRAGMENTS,
+                            matcher.accept(fragments.get(i)));
+                    assertTrue(matcher.hasPartialMatch());
+                }
+                assertEquals(
+                        IkeV2SessionCrypto.WatchRequestRetryStatus.COMPLETE_RETRY,
+                        matcher.accept(fragments.get(fragments.size() - 1)));
+                assertFalse(matcher.hasPartialMatch());
+
+                // Freshly encrypted fragment or out-of-order fragment is rejected.
+                List<byte[]> freshFragments =
+                        IkeV2SessionCrypto.createPairingPrivateNotifyWatchRequestForTest(
+                                random, keys, watchNotifies, 180);
+                assertEquals(
+                        IkeV2SessionCrypto.WatchRequestRetryStatus.REJECTED,
+                        matcher.accept(freshFragments.get(0)));
+                assertEquals(
+                        IkeV2SessionCrypto.WatchRequestRetryStatus.REJECTED,
+                        matcher.accept(fragments.get(1)));
+            }
+        } finally {
+            accumulator.destroy();
+            if (response != null) {
+                response.destroy();
+            }
             destroy(localNotifies);
             destroy(watchNotifies);
             batch.destroy();

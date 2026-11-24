@@ -18,6 +18,8 @@ pub(crate) struct State {
     pub(crate) activated: bool,
     pub(crate) ids_ready: bool,
     pub(crate) ready: bool,
+    pub(crate) transport_epoch: Option<String>,
+    pub(crate) update: Option<watch_core::update::Observation>,
     pub(crate) error: Option<String>,
     pub(crate) journal: VecDeque<String>,
 }
@@ -35,6 +37,8 @@ impl Default for State {
             activated: false,
             ids_ready: false,
             ready: false,
+            transport_epoch: None,
+            update: None,
             error: None,
             journal: VecDeque::new(),
         }
@@ -105,6 +109,25 @@ impl State {
         if ["DISCONNECTING", "FAILED"].contains(&self.phase.as_str()) {
             return;
         }
+        if let Some(epoch) = line
+            .strip_prefix("BRIDGE_TRANSPORT_V1:READY:")
+            .filter(|s| token(s))
+        {
+            self.transport_epoch = Some(epoch.to_owned());
+        }
+        if let Some(json) = line.strip_prefix("WATCH_UPDATE_V1:") {
+            if json.len() <= 8192
+                && self.ready
+                && let Ok(observation) =
+                    serde_json::from_str::<watch_core::update::Observation>(json)
+                && observation.valid()
+                && self.pair_id.as_deref() == Some(observation.pair_id.as_str())
+                && self.transport_epoch.as_deref() == Some(observation.epoch.as_str())
+            {
+                self.update = Some(observation);
+            }
+            return; // Public snapshot only; never copy an archive into the journal.
+        }
         if let Some(report) = line.split("WATCH_DISCOVERED_V1:").nth(1) {
             let fields: Vec<_> = report.split(':').collect();
             if self.phase == "DISCOVERING"
@@ -171,6 +194,8 @@ impl State {
             self.phase = "PAIRING_SECURITY".into();
         }
         if line == "BRIDGE_TRANSPORT_V1:DOWN" {
+            self.transport_epoch = None;
+            self.update = None;
             self.ready = false;
             self.ids_ready = false;
             if self.phase != "DISCONNECTING" {
@@ -237,6 +262,46 @@ impl State {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn ota_observations_are_owned_by_both_pair_and_transport_epoch() {
+        let pair = "11111111-1111-4111-8111-111111111111";
+        let epoch = "22222222-2222-4222-8222-222222222222";
+        let mut state = State {
+            ready: true,
+            verified: true,
+            activated: true,
+            pair_id: Some(pair.into()),
+            ..State::default()
+        };
+        state.observe(&format!("BRIDGE_TRANSPORT_V1:READY:{epoch}"));
+        let observation = json!({"pairId":pair,"epoch":epoch,"known":true,"phase":"AVAILABLE",
+            "observedAt":100000,"scanCompleted":true,"installAttempted":false,
+            "installedVersion":"26.2","installedBuild":"23S303","targetVersion":"27.0.1",
+            "targetBuild":"24R365","downloadBytes":null,"requiredSpaceBytes":null,"progress":null,
+            "stalled":false,"termsAccepted":true,"errorCode":null});
+        let publish = |value: &Value| format!("WATCH_UPDATE_V1:{value}");
+        let before = state.journal.len();
+        state.observe(&publish(&observation));
+        assert_eq!(
+            state.update.as_ref().unwrap().phase,
+            watch_core::update::Phase::Available
+        );
+        assert_eq!(state.journal.len(), before);
+        for field in ["pairId", "epoch"] {
+            let mut foreign = observation.clone();
+            foreign[field] = json!("33333333-3333-4333-8333-333333333333");
+            foreign["targetBuild"] = json!("24R366");
+            state.observe(&publish(&foreign));
+            assert_eq!(
+                state.update.as_ref().unwrap().target_build.as_deref(),
+                Some("24R365")
+            );
+        }
+        state.observe("BRIDGE_TRANSPORT_V1:DOWN");
+        assert!(state.update.is_none());
+        state.observe(&publish(&observation));
+        assert!(state.update.is_none());
+    }
     #[test]
     fn native_transport_failure_keeps_its_cause_after_worker_exit() {
         let mut state = State::default();

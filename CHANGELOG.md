@@ -2,8 +2,20 @@
 
 ## Unreleased — experimental release candidate
 
-Source versions: Companion **1.0.86+87**, Android Bridge **0.2.429 / 629**,
+Source versions: Companion **1.0.88+89**, Android Bridge **0.2.431 / 631**,
 shared Rust crates **0.1.1**. No public stable release is declared.
+
+- Add source-verified iOS 27.0.1 / 24A446 companion profile (pairing 26–27,
+  IDS control 5, service minimum 40), selected from Watch protocol evidence.
+  Preserve the iOS 26.6 / 23G71 profile for pairing version 25. Persist current
+  system metadata only after matching the authenticated peer IDS identity.
+- Implement native OTA query, catalog scan, download/preparation and manual
+  installation through the shared Java HAL on Android/Linux/Windows. Rust and
+  Flutter expose scoped native observations, never optimistic completion.
+  Persist the installation target before submission; do not automatically retry
+  installation. Confirm completion against the authenticated post-restart build.
+  Agreements/passcode and download/signature/admission checks remain Watch-owned.
+  watchOS 27 pairing and physical OTA acceptance remain untested; macOS OTA is unavailable.
 
 - Discover every model using the supported NetworkRelay advertisement format,
   independently of the display catalog and setup compatibility range.
@@ -21,6 +33,10 @@ shared Rust crates **0.1.1**. No public stable release is declared.
   metadata distinguishes successful socket submission from Java pipe writes;
   relay only the bounded metadata schema into the protocol journal, without keys
   or packet payloads. Hardware acceptance on Ultra 1 remains pending.
+- Android notifications: expose notification-access/listener readiness in Companion,
+  persist exact per-package forwarding policy and show observed Android applications.
+  Decode expanded/inbox/messaging content with UTF-8 limits, restore silently and
+  report test queue receipts without claiming Watch display. Hardware delivery awaits verification.
 - Share the Flutter connection UI across Android, Linux, Windows and macOS.
 - Linux: pairing, activation and saved-pair reconnect verified on Mint 22.3 / Intel AX211.
 - Windows: USB HCI pairing, activation and encrypted reconnect verified on Windows 10 / Realtek `0bda:b00e`; user-scoped DPAPI storage.

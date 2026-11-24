@@ -256,7 +256,7 @@ public final class OperationalWatchService extends Service implements Operationa
     }
 
     private void publishState(String state, boolean ready) {
-        if (!ready) { health.disconnect();transportEpoch = null; }
+        if (!ready) { health.disconnect();transportEpoch = null; CompanionSessionState.softwareUpdate(null); }
         connected = ready;
         AppleWatchNotificationListenerService.transportState(ready ? transportEpoch : null);
         CompanionSessionState.connection(ready ? "CONNECTED" : stopping ? "STOPPING" : "CONNECTING");
@@ -361,6 +361,17 @@ public final class OperationalWatchService extends Service implements Operationa
                         health.handleHealthSendStatus(line.substring(HealthOutboundIpcCodec.STATUS_PREFIX.length()));
                     } else if(line.startsWith(HealthRegistryObservationCodec.PREFIX)) {
                         health.handleHealthRegistryObservation(line.substring(HealthRegistryObservationCodec.PREFIX.length()));
+                    } else if (line.startsWith(SoftwareUpdateSession.PREFIX)) {
+                        try {
+                            String json = line.substring(SoftwareUpdateSession.PREFIX.length());
+                            Object value = BoundedJson.decode(json.getBytes(java.nio.charset.StandardCharsets.UTF_8), 8192);
+                            if (!ready || active != this || !connected || transportEpoch == null
+                                    || !(value instanceof java.util.Map<?, ?> observation)
+                                    || !pairing.equals(observation.get("pairId"))
+                                    || !transportEpoch.toString().equals(observation.get("epoch")))
+                                throw new IllegalArgumentException("Foreign update observation");
+                            CompanionSessionState.softwareUpdate(json);
+                        } catch (IllegalArgumentException invalid) { log("SOFTWARE UPDATE IPC rejected; values logged=false."); }
                     } else if (line.startsWith(BridgeApplicationEventCodec.PREFIX)) {
                         handleApplicationEvent(line.substring(BridgeApplicationEventCodec.PREFIX.length()));
                     } else if (line.startsWith(MonogramMirrorIpcCodec.PREFIX)) {

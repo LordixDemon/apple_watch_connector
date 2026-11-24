@@ -1,10 +1,7 @@
 package dev.applewatchandroid.bridge;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -47,25 +44,16 @@ final class Ipv6TcpStream
 
     public static volatile java.util.function.Consumer<String> diagnosticLogger = null;
 
-    private static final long U32_MASK = 0xffff_ffffL;
-    private static final int OPTION_END = 0;
-    private static final int OPTION_NO_OPERATION = 1;
-    private static final int OPTION_MSS = 2;
-
     final byte[] localAddress;
     final byte[] remoteAddress;
     private final int localPort;
     private int remotePort;
     private final long initialSendSequence;
-    private final List<Outstanding> outstanding =
-            new ArrayList<>();
-    private final ArrayDeque<byte[]> pendingSend = new ArrayDeque<>();
-    private int pendingSendOffset;
-    private long pendingSendBytes;
-    private static final long MAX_PENDING_SEND_BYTES = 4L * 1024 * 1024;
+    private final Ipv6TcpSegmentBuffer segments;
 
     void setRemotePort(int remotePort) {
         this.remotePort = remotePort;
+        this.segments.setRemotePort(remotePort);
     }
 
     int remotePort() {
@@ -82,21 +70,12 @@ final class Ipv6TcpStream
     private long receiveNext;
     private int peerWindow = RECEIVE_WINDOW;
     private int peerMss = SAFE_COMPANION_LINK_MSS;
-    private boolean timestampsEnabled;
-    private long peerTimestampValue;
     private byte[] pendingFastOpenPayload =
             new byte[0];
     private byte[] activeFastOpenPayload =
             new byte[0];
     private boolean started;
     private boolean closed;
-    private int behindWindowRetransmitTick;
-    /**
-     * Live 0.2.124/0.2.126: payload fast-retransmit mints a <em>new</em>
-     * ERTM I-frame. While NanoRegistry Check is held, that fills TxWindow
-     * to 32; the HAL retransmits the original I-frame instead.
-     */
-    private boolean payloadFastRetransmitEnabled = true;
 
     private Ipv6TcpStream(
             byte[] localAddress,
@@ -104,19 +83,19 @@ final class Ipv6TcpStream
             int localPort,
             int remotePort,
             long initialSendSequence) {
-        requireAddress(
+        Ipv6TcpSegmentBuffer.requireAddress(
                 "local",
                 localAddress);
-        requireAddress(
+        Ipv6TcpSegmentBuffer.requireAddress(
                 "remote",
                 remoteAddress);
-        requirePort(
+        Ipv6TcpSegmentBuffer.requirePort(
                 "local",
                 localPort);
-        requirePort(
+        Ipv6TcpSegmentBuffer.requirePort(
                 "remote",
                 remotePort);
-        requireU32(
+        Ipv6TcpSegmentBuffer.requireU32(
                 "initial TCP sequence",
                 initialSendSequence);
         this.localAddress =
@@ -131,6 +110,12 @@ final class Ipv6TcpStream
                 initialSendSequence;
         sendNext =
                 initialSendSequence;
+        this.segments =
+                new Ipv6TcpSegmentBuffer(
+                        this.localAddress,
+                        this.remoteAddress,
+                        localPort,
+                        remotePort);
     }
 
     static Ipv6TcpStream active(
@@ -219,23 +204,22 @@ final class Ipv6TcpStream
             stream.state = State.SYN_RECEIVED;
             stream.peerWindow = syn.window;
             stream.peerMss =
-                    parsePeerMss(
+                    Ipv6TcpSegmentBuffer.parsePeerMss(
                             syn.options);
             stream.receiveNext =
-                    add32(
+                    Ipv6TcpSegmentBuffer.add32(
                             syn.sequence,
                             1L + syn.payload.length);
             stream.replacePendingFastOpenPayload(
                     syn.payload);
             stream.sendNext =
-                    add32(
+                    Ipv6TcpSegmentBuffer.add32(
                             stream.initialSendSequence,
                             1);
             Ipv6TcpPacketCodec.PeerOptions peer =
                     Ipv6TcpPacketCodec.parsePeerOptions(syn.options);
             if (peer.timestampValue >= 0) {
-                stream.timestampsEnabled = true;
-                stream.peerTimestampValue = peer.timestampValue;
+                stream.segments.enableTimestamps(peer.timestampValue);
             }
             byte[] synAckOptions =
                     Ipv6TcpPacketCodec.encodeSynAckOptions(
@@ -252,14 +236,14 @@ final class Ipv6TcpStream
                                 new byte[0],
                                 stream.sendNext);
             } finally {
-                wipe(synAckOptions);
+                Ipv6TcpSegmentBuffer.wipe(synAckOptions);
             }
             PassiveOpen output =
                     new PassiveOpen(
                             stream,
                             response);
             stream = null;
-            wipe(
+            Ipv6TcpSegmentBuffer.wipe(
                     response);
             response = null;
             return output;
@@ -268,7 +252,7 @@ final class Ipv6TcpStream
             if (stream != null) {
                 stream.close();
             }
-            wipe(
+            Ipv6TcpSegmentBuffer.wipe(
                     response);
         }
     }
@@ -310,20 +294,20 @@ final class Ipv6TcpStream
             stream.started = true;
             stream.state = State.ESTABLISHED;
             stream.peerWindow = packet.window;
-            stream.peerMss = parsePeerMss(packet.options);
+            stream.peerMss = Ipv6TcpSegmentBuffer.parsePeerMss(packet.options);
             // Live 0.2.304: adopted ACKs must carry the peer's timestamp
             // option. The Watch negotiates TS on every flow and PAWS-drops
             // bare ACKs, so the 0.2.301 stale-quartet adoption was ignored
             // and the Watch retransmitted the stale segment for ~8.6 min.
-            stream.observePeerOptions(packet.options);
+            stream.segments.observePeerOptions(packet.options);
             stream.sendUnacknowledged = packet.acknowledgement;
             stream.sendNext = packet.acknowledgement;
             stream.receiveNext =
-                    add32(
+                    Ipv6TcpSegmentBuffer.add32(
                             packet.sequence,
                             packet.payload.length);
             if (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_FIN)) {
-                stream.receiveNext = add32(stream.receiveNext, 1);
+                stream.receiveNext = Ipv6TcpSegmentBuffer.add32(stream.receiveNext, 1);
                 stream.state = State.CLOSE_WAIT;
             }
             response = stream.encodeAck();
@@ -336,8 +320,8 @@ final class Ipv6TcpStream
                             response,
                             payload);
             stream = null;
-            wipe(response);
-            wipe(payload);
+            Ipv6TcpSegmentBuffer.wipe(response);
+            Ipv6TcpSegmentBuffer.wipe(payload);
             response = null;
             payload = null;
             return output;
@@ -346,8 +330,8 @@ final class Ipv6TcpStream
             if (stream != null) {
                 stream.close();
             }
-            wipe(response);
-            wipe(payload);
+            Ipv6TcpSegmentBuffer.wipe(response);
+            Ipv6TcpSegmentBuffer.wipe(payload);
         }
     }
 
@@ -383,7 +367,7 @@ final class Ipv6TcpStream
         activeFastOpenPayload =
                 fastOpenPayload.clone();
         sendNext =
-                add32(
+                Ipv6TcpSegmentBuffer.add32(
                         initialSendSequence,
                         1L + fastOpenPayload.length);
         byte[] options =
@@ -398,7 +382,7 @@ final class Ipv6TcpStream
                     fastOpenPayload,
                     sendNext);
         } finally {
-            wipe(
+            Ipv6TcpSegmentBuffer.wipe(
                     options);
         }
     }
@@ -440,7 +424,7 @@ final class Ipv6TcpStream
                 }
                 if (state == State.SYN_SENT) {
                     if (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_ACK)) {
-                        long synAckTarget = add32(initialSendSequence, 1L);
+                        long synAckTarget = Ipv6TcpSegmentBuffer.add32(initialSendSequence, 1L);
                         long fullAckTarget = sendNext;
                         long ack = packet.acknowledgement;
                         if (ack != synAckTarget && ack != fullAckTarget) {
@@ -496,9 +480,9 @@ final class Ipv6TcpStream
                     outbound,
                     delivered);
         } catch (RuntimeException failure) {
-            wipeAll(
+            Ipv6TcpSegmentBuffer.wipeAll(
                     outbound);
-            wipeAll(
+            Ipv6TcpSegmentBuffer.wipeAll(
                     delivered);
             throw failure;
         } finally {
@@ -521,19 +505,14 @@ final class Ipv6TcpStream
         if (bytes.length == 0) {
             return List.of();
         }
-        if (pendingSendBytes + bytes.length > MAX_PENDING_SEND_BYTES) {
-            throw new IllegalStateException(
-                    "TCP pending send queue exceeded its capacity");
-        }
-        pendingSend.addLast(bytes.clone());
-        pendingSendBytes += bytes.length;
+        segments.enqueueSend(bytes);
         List<byte[]> output =
                 new ArrayList<>();
         try {
             drainPendingSend(output);
             return List.copyOf(output);
         } catch (RuntimeException failure) {
-            wipeAll(output);
+            Ipv6TcpSegmentBuffer.wipeAll(output);
             throw failure;
         }
     }
@@ -541,51 +520,18 @@ final class Ipv6TcpStream
     /** Keep application byte ordering while the peer's advertised window is full. */
     private void drainPendingSend(List<byte[]> output) {
         if (state != State.ESTABLISHED && state != State.CLOSE_WAIT) return;
-        while (!pendingSend.isEmpty()) {
-                long available = Math.max(0L, (long) peerWindow
-                        - distance32(sendUnacknowledged, sendNext));
-                if (available == 0) return;
-                byte[] bytes = pendingSend.peekFirst();
-                int length =
-                        (int) Math.min(available, Math.min(
-                                peerMss,
-                                bytes.length - pendingSendOffset));
-                byte[] payload =
-                        Arrays.copyOfRange(
-                                bytes,
-                                pendingSendOffset,
-                                pendingSendOffset + length);
-                long segmentEnd =
-                        add32(
-                                sendNext,
-                                length);
-                try {
-                    output.add(
-                            encodeAndRetain(
-                                    sendNext,
-                                    receiveNext,
-                                    Ipv6TcpPacketCodec.FLAG_ACK
-                                            | Ipv6TcpPacketCodec.FLAG_PSH,
-                                    new byte[0],
-                                    payload,
-                                    segmentEnd));
-                    sendNext = segmentEnd;
-                    pendingSendOffset += length;
-                    pendingSendBytes -= length;
-                    if (pendingSendOffset == bytes.length) {
-                        wipe(pendingSend.removeFirst());
-                        pendingSendOffset = 0;
-                    }
-                } finally {
-                    wipe(
-                            payload);
-                }
-        }
+        sendNext = segments.drainPendingSend(
+                sendUnacknowledged,
+                sendNext,
+                receiveNext,
+                peerWindow,
+                peerMss,
+                output);
     }
 
     byte[] closeOutput() {
         requireUsable();
-        if (pendingSendBytes != 0) {
+        if (segments.hasPendingSend()) {
             throw new IllegalStateException("TCP output still has queued application bytes");
         }
         if (state != State.ESTABLISHED
@@ -598,7 +544,7 @@ final class Ipv6TcpStream
                 Ipv6TcpPacketCodec.FLAG_FIN
                         | Ipv6TcpPacketCodec.FLAG_ACK;
         long finEnd =
-                add32(
+                Ipv6TcpSegmentBuffer.add32(
                         sendNext,
                         1);
         byte[] fin =
@@ -626,29 +572,8 @@ final class Ipv6TcpStream
 
     List<byte[]> retransmitOutstanding() {
         requireUsable();
-        List<byte[]> output =
-                new ArrayList<>(
-                        Math.min(
-                                outstanding.size(),
-                                MAX_RETRANSMIT_PER_PASS));
-        try {
-            int emitted = 0;
-            for (Outstanding retained : outstanding) {
-                if (emitted >= MAX_RETRANSMIT_PER_PASS) {
-                    break;
-                }
-                output.add(
-                        refreshRetransmit(
-                                retained.packet));
-                emitted++;
-            }
-            return List.copyOf(
-                    output);
-        } catch (RuntimeException failure) {
-            wipeAll(
-                    output);
-            throw failure;
-        }
+        return segments.retransmitOutstanding(
+                receiveNext);
     }
 
     State state() {
@@ -679,14 +604,14 @@ final class Ipv6TcpStream
                 && state != State.LAST_ACK) {
             return 0L;
         }
-        return pendingSendBytes + distance32(
+        return segments.pendingSendBytes() + Ipv6TcpSegmentBuffer.distance32(
                 sendUnacknowledged,
                 sendNext);
     }
 
     void setPayloadFastRetransmitEnabled(
             boolean enabled) {
-        payloadFastRetransmitEnabled = enabled;
+        segments.setPayloadFastRetransmitEnabled(enabled);
     }
 
     long receiveNext() {
@@ -707,7 +632,7 @@ final class Ipv6TcpStream
         }
         if (packet.options != null && packet.options.length > 0) {
             peerMss =
-                    parsePeerMss(
+                    Ipv6TcpSegmentBuffer.parsePeerMss(
                             packet.options);
             observePeerOptions(packet.options);
         }
@@ -717,13 +642,13 @@ final class Ipv6TcpStream
                         ? 1L
                         : 0L;
         receiveNext =
-                add32(
+                Ipv6TcpSegmentBuffer.add32(
                         packet.sequence,
                         synCost + packet.payload.length);
         if (packet.hasFlag(
                 Ipv6TcpPacketCodec.FLAG_ACK)) {
             long synAckTarget =
-                    add32(
+                    Ipv6TcpSegmentBuffer.add32(
                             initialSendSequence,
                             1L);
             long fullAckTarget =
@@ -753,13 +678,13 @@ final class Ipv6TcpStream
             if (packet.hasFlag(
                     Ipv6TcpPacketCodec.FLAG_FIN)) {
                 receiveNext =
-                        add32(
+                        Ipv6TcpSegmentBuffer.add32(
                                 receiveNext,
                                 1L);
                 outbound.add(
                         encodeAck());
                 state = State.CLOSE_WAIT;
-                wipe(
+                Ipv6TcpSegmentBuffer.wipe(
                         activeFastOpenPayload);
                 activeFastOpenPayload =
                         new byte[0];
@@ -772,7 +697,7 @@ final class Ipv6TcpStream
                             encodeAck());
                 } else {
                     int offset =
-                            (int) distance32(
+                            (int) Ipv6TcpSegmentBuffer.distance32(
                                     synAckTarget,
                                     ack);
                     byte[] remainingPayload =
@@ -790,14 +715,14 @@ final class Ipv6TcpStream
                                         remainingPayload,
                                         sendNext));
                     } finally {
-                        wipe(
+                        Ipv6TcpSegmentBuffer.wipe(
                                 remainingPayload);
                     }
                 }
             } else if (packet.payload.length != 0) {
                 outbound.add(encodeAck());
             }
-            wipe(
+            Ipv6TcpSegmentBuffer.wipe(
                     activeFastOpenPayload);
             activeFastOpenPayload =
                     new byte[0];
@@ -828,7 +753,7 @@ final class Ipv6TcpStream
                             new byte[0],
                             sendNext));
         } finally {
-            wipe(
+            Ipv6TcpSegmentBuffer.wipe(
                     options);
         }
     }
@@ -846,7 +771,7 @@ final class Ipv6TcpStream
         if (syn) {
             boolean samePeerSyn =
                     packet.sequence
-                            == add32(
+                            == Ipv6TcpSegmentBuffer.add32(
                             receiveNext,
                             -1L - packet.payload.length)
                             && Arrays.equals(
@@ -898,7 +823,7 @@ final class Ipv6TcpStream
             delivered.add(
                     packet.payload.clone());
             receiveNext =
-                    add32(
+                    Ipv6TcpSegmentBuffer.add32(
                             receiveNext,
                             packet.payload.length);
             outbound.add(
@@ -945,7 +870,7 @@ final class Ipv6TcpStream
                 packet.acknowledgement,
                 false);
         if (packet.sequence != receiveNext) {
-            long behind = distance32(packet.sequence, receiveNext);
+            long behind = Ipv6TcpSegmentBuffer.distance32(packet.sequence, receiveNext);
             if (behind > 0 && behind < 0x80000000L && behind < (long) packet.payload.length) {
                 int offset = (int) behind;
                 byte[] newPayload = Arrays.copyOfRange(
@@ -953,19 +878,19 @@ final class Ipv6TcpStream
                         offset,
                         packet.payload.length);
                 delivered.add(newPayload);
-                receiveNext = add32(receiveNext, newPayload.length);
-                behindWindowRetransmitTick = 0;
+                receiveNext = Ipv6TcpSegmentBuffer.add32(receiveNext, newPayload.length);
+                segments.resetBehindWindowRetransmitTick();
                 if (logger != null) {
                     logger.accept(String.format(
                             java.util.Locale.US,
                             "[TCP RX OVERLAP] seq=%d expectedSeq=%d overlap=%d newBytes=%d",
                             packet.sequence,
-                            add32(packet.sequence, offset),
+                            Ipv6TcpSegmentBuffer.add32(packet.sequence, offset),
                             offset,
                             newPayload.length));
                 }
                 if (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_FIN)) {
-                    receiveNext = add32(receiveNext, 1);
+                    receiveNext = Ipv6TcpSegmentBuffer.add32(receiveNext, 1);
                 }
                 outbound.add(encodeAck());
                 return;
@@ -1002,13 +927,13 @@ final class Ipv6TcpStream
             return;
         }
         if (!duplicateAck) {
-            behindWindowRetransmitTick = 0;
+            segments.resetBehindWindowRetransmitTick();
         }
         if (packet.payload.length != 0) {
             delivered.add(
                     packet.payload.clone());
             receiveNext =
-                    add32(
+                    Ipv6TcpSegmentBuffer.add32(
                             receiveNext,
                             packet.payload.length);
         }
@@ -1017,7 +942,7 @@ final class Ipv6TcpStream
                         Ipv6TcpPacketCodec.FLAG_FIN);
         if (fin) {
             receiveNext =
-                    add32(
+                    Ipv6TcpSegmentBuffer.add32(
                             receiveNext,
                             1);
         }
@@ -1026,8 +951,8 @@ final class Ipv6TcpStream
             outbound.add(
                     encodeAck());
         } else if (duplicateAck
-                && !outstanding.isEmpty()
-                && payloadFastRetransmitEnabled) {
+                && segments.hasOutstanding()
+                && segments.isPayloadFastRetransmitEnabled()) {
             maybeFastRetransmit(
                     outbound);
         }
@@ -1053,136 +978,29 @@ final class Ipv6TcpStream
     private void acceptAcknowledgement(
             long acknowledgement,
             boolean mustAcknowledgeAll) {
-        long outstandingBytes =
-                distance32(
-                        sendUnacknowledged,
-                        sendNext);
-        long advance =
-                distance32(
-                        sendUnacknowledged,
-                        acknowledgement);
-        if (advance > outstandingBytes) {
-            return;
-        }
-        if (mustAcknowledgeAll
-                && acknowledgement != sendNext) {
-            throw new IllegalArgumentException(
-                    "TCP handshake did not acknowledge the SYN");
-        }
-        if (advance == 0) {
-            return;
-        }
-        long oldUnacknowledged =
-                sendUnacknowledged;
-        Iterator<Outstanding> iterator =
-                outstanding.iterator();
-        while (iterator.hasNext()) {
-            Outstanding retained =
-                    iterator.next();
-            long retainedEndDistance =
-                    distance32(
-                            oldUnacknowledged,
-                            retained.endSequence);
-            if (retainedEndDistance <= advance) {
-                retained.destroy();
-                iterator.remove();
-            }
-        }
         sendUnacknowledged =
-                acknowledgement;
+                segments.acceptAcknowledgement(
+                        sendUnacknowledged,
+                        sendNext,
+                        acknowledgement,
+                        mustAcknowledgeAll);
     }
 
     private byte[] encodeAck() {
-        // While Check (or any payload) is unacked, SND.NXT is already past
-        // Watch RCV.NXT. An empty ACK with that SEQ is a future segment;
-        // live 0.2.123 Watch ignored it and kept the 9-byte handshake replay.
-        long sequence =
-                outstanding.isEmpty()
-                        ? sendNext
-                        : sendUnacknowledged;
-        byte[] options = timestampOptions();
-        try {
-            return Ipv6TcpPacketCodec.encode(
-                    localAddress,
-                    remoteAddress,
-                    localPort,
-                    remotePort,
-                    sequence,
-                    receiveNext,
-                    Ipv6TcpPacketCodec.FLAG_ACK,
-                    RECEIVE_WINDOW,
-                    0,
-                    options,
-                    new byte[0]);
-        } finally {
-            wipe(options);
-        }
+        return segments.encodeAck(
+                sendUnacknowledged,
+                sendNext,
+                receiveNext);
     }
 
     private void observePeerOptions(byte[] options) {
-        Ipv6TcpPacketCodec.PeerOptions peer =
-                Ipv6TcpPacketCodec.parsePeerOptions(options);
-        if (peer.timestampValue >= 0) {
-            timestampsEnabled = true;
-            peerTimestampValue = peer.timestampValue;
-        }
-    }
-
-    private byte[] timestampOptions() {
-        if (!timestampsEnabled) {
-            return new byte[0];
-        }
-        return Ipv6TcpPacketCodec.encodeTimestampOption(peerTimestampValue);
-    }
-
-    private byte[] withTimestamps(byte[] options) {
-        if (!timestampsEnabled || containsTimestamp(options)) {
-            return options == null ? new byte[0] : options;
-        }
-        byte[] timestamps = timestampOptions();
-        if (options == null || options.length == 0) {
-            return timestamps;
-        }
-        byte[] merged = new byte[options.length + timestamps.length];
-        System.arraycopy(options, 0, merged, 0, options.length);
-        System.arraycopy(timestamps, 0, merged, options.length, timestamps.length);
-        wipe(timestamps);
-        return merged;
-    }
-
-    private static boolean containsTimestamp(byte[] options) {
-        if (options == null) {
-            return false;
-        }
-        int index = 0;
-        while (index < options.length) {
-            int kind = options[index] & 0xff;
-            if (kind == 0) {
-                return false;
-            }
-            if (kind == 1) {
-                index++;
-                continue;
-            }
-            if (kind == 8) {
-                return true;
-            }
-            if (index + 1 >= options.length) {
-                return false;
-            }
-            int length = options[index + 1] & 0xff;
-            if (length < 2) {
-                return false;
-            }
-            index += length;
-        }
-        return false;
+        segments.observePeerOptions(options);
     }
 
     private boolean sequenceAlreadyDelivered(
             long sequence) {
         long behind =
-                distance32(
+                Ipv6TcpSegmentBuffer.distance32(
                         sequence,
                         receiveNext);
         return behind != 0
@@ -1191,104 +1009,15 @@ final class Ipv6TcpStream
 
     private void maybeFastRetransmit(
             List<byte[]> outbound) {
-        if (!payloadFastRetransmitEnabled
-                || outstanding.isEmpty()) {
-            return;
-        }
-        behindWindowRetransmitTick++;
-        // Second behind-window replay, not the first (live 0.2.121 Check
-        // TX+2 ms) and not the third (live 0.2.123 only two 49155 OOO
-        // before the 1.7 s RTO).
-        if (behindWindowRetransmitTick != 2
-                && (behindWindowRetransmitTick - 2) % 3 != 0) {
-            return;
-        }
-        Outstanding oldest =
-                outstanding.isEmpty() ? null : outstanding.get(0);
-        if (oldest == null) {
-            return;
-        }
-        byte[] retried =
-                refreshRetransmit(
-                        oldest.packet);
-        outbound.add(
-                retried);
-        java.util.function.Consumer<String> logger = diagnosticLogger;
-        if (logger != null) {
-            logger.accept(String.format(
-                    java.util.Locale.US,
-                    "[TCP TX RETRANSMIT] port %d->%d segments=1 una=%d nxt=%d",
-                    localPort,
-                    remotePort,
-                    sendUnacknowledged,
-                    sendNext));
-        }
-    }
-
-    private byte[] refreshRetransmit(
-            byte[] original) {
-        Ipv6TcpPacketCodec.Packet decoded = null;
-        byte[] refreshedOptions = null;
-        try {
-            decoded =
-                    Ipv6TcpPacketCodec.decode(
-                            original);
-            refreshedOptions = refreshTimestampOption(decoded.options);
-            return Ipv6TcpPacketCodec.encode(
-                    localAddress,
-                    remoteAddress,
-                    localPort,
-                    remotePort,
-                    decoded.sequence,
-                    receiveNext,
-                    decoded.flags,
-                    RECEIVE_WINDOW,
-                    0,
-                    refreshedOptions,
-                    decoded.payload);
-        } finally {
-            wipe(refreshedOptions);
-            if (decoded != null) {
-                decoded.close();
-            }
-        }
-    }
-
-    /** Preserve SYN/MSS options, but avoid PAWS rejection after newer packets advanced TS.Recent. */
-    private byte[] refreshTimestampOption(byte[] options) {
-        byte[] refreshed = options.clone();
-        int offset = 0;
-        while (offset < refreshed.length) {
-            int kind = refreshed[offset] & 0xff;
-            if (kind == 0) break;
-            if (kind == 1) { offset++; continue; }
-            if (offset + 1 >= refreshed.length) break;
-            int length = refreshed[offset + 1] & 0xff;
-            if (length < 2 || offset + length > refreshed.length) break;
-            if (kind == 8 && length == 10) {
-                byte[] current = Ipv6TcpPacketCodec.encodeTimestampOption(peerTimestampValue);
-                try { System.arraycopy(current, 2, refreshed, offset, 10); }
-                finally { wipe(current); }
-                break;
-            }
-            offset += length;
-        }
-        return refreshed;
+        segments.maybeFastRetransmit(
+                sendUnacknowledged,
+                sendNext,
+                receiveNext,
+                outbound);
     }
 
     private byte[] encodeRstForAck(long sequence) {
-        return Ipv6TcpPacketCodec.encode(
-                localAddress,
-                remoteAddress,
-                localPort,
-                remotePort,
-                sequence,
-                0L,
-                Ipv6TcpPacketCodec.FLAG_RST,
-                0,
-                0,
-                new byte[0],
-                new byte[0]);
+        return segments.encodeRstForAck(sequence);
     }
 
     private byte[] encodeAndRetain(
@@ -1298,34 +1027,13 @@ final class Ipv6TcpStream
             byte[] options,
             byte[] payload,
             long endSequence) {
-        byte[] stamped = withTimestamps(options);
-        byte[] packet =
-                Ipv6TcpPacketCodec.encode(
-                        localAddress,
-                        remoteAddress,
-                        localPort,
-                        remotePort,
-                        sequence,
-                        acknowledgement,
-                        flags,
-                        RECEIVE_WINDOW,
-                        0,
-                        stamped,
-                        payload);
-        if (stamped != options) {
-            wipe(stamped);
-        }
-        try {
-            outstanding.add(
-                    new Outstanding(
-                            endSequence,
-                            packet));
-            return packet;
-        } catch (RuntimeException failure) {
-            wipe(
-                    packet);
-            throw failure;
-        }
+        return segments.encodeAndRetain(
+                sequence,
+                acknowledgement,
+                flags,
+                options,
+                payload,
+                endSequence);
     }
 
     private void requireTuple(
@@ -1339,20 +1047,14 @@ final class Ipv6TcpStream
 
     private void replacePendingFastOpenPayload(
             byte[] replacement) {
-        wipe(
+        Ipv6TcpSegmentBuffer.wipe(
                 pendingFastOpenPayload);
         pendingFastOpenPayload =
                 replacement.clone();
     }
 
     private void clearOutstanding() {
-        for (Outstanding retained : outstanding) {
-            retained.destroy();
-        }
-        outstanding.clear();
-        while (!pendingSend.isEmpty()) wipe(pendingSend.removeFirst());
-        pendingSendBytes = 0;
-        pendingSendOffset = 0;
+        segments.clearOutstanding();
     }
 
     private void requireUsable() {
@@ -1369,131 +1071,18 @@ final class Ipv6TcpStream
         }
         closed = true;
         clearOutstanding();
-        wipe(
+        Ipv6TcpSegmentBuffer.wipe(
                 localAddress);
-        wipe(
+        Ipv6TcpSegmentBuffer.wipe(
                 remoteAddress);
-        wipe(
+        Ipv6TcpSegmentBuffer.wipe(
                 pendingFastOpenPayload);
         pendingFastOpenPayload =
                 new byte[0];
-        wipe(
+        Ipv6TcpSegmentBuffer.wipe(
                 activeFastOpenPayload);
         activeFastOpenPayload =
                 new byte[0];
-    }
-
-    private static int parsePeerMss(
-            byte[] options) {
-        int mss = SAFE_COMPANION_LINK_MSS;
-        int offset = 0;
-        while (offset < options.length) {
-            int kind =
-                    options[offset] & 0xff;
-            if (kind == OPTION_END) {
-                break;
-            }
-            if (kind == OPTION_NO_OPERATION) {
-                offset++;
-                continue;
-            }
-            if (offset + 1 >= options.length) {
-                throw new IllegalArgumentException(
-                        "TCP option length byte is missing");
-            }
-            int length =
-                    options[offset + 1] & 0xff;
-            if (length < 2
-                    || offset + length > options.length) {
-                throw new IllegalArgumentException(
-                        "TCP option has an invalid length");
-            }
-            if (kind == OPTION_MSS) {
-                if (length != 4) {
-                    throw new IllegalArgumentException(
-                            "TCP MSS option has an invalid length");
-                }
-                int peer =
-                        ((options[offset + 2] & 0xff) << 8)
-                                | (options[offset + 3] & 0xff);
-                if (peer == 0) {
-                    throw new IllegalArgumentException(
-                            "TCP peer advertised an MSS of zero");
-                }
-                mss =
-                        Math.min(
-                                SAFE_COMPANION_LINK_MSS,
-                                peer);
-            }
-            offset += length;
-        }
-        return mss;
-    }
-
-    private static long add32(
-            long value,
-            long delta) {
-        return (value + delta)
-                & U32_MASK;
-    }
-
-    private static long distance32(
-            long start,
-            long end) {
-        return (end - start)
-                & U32_MASK;
-    }
-
-    private static void requireAddress(
-            String label,
-            byte[] address) {
-        if (address == null
-                || address.length != 16) {
-            throw new IllegalArgumentException(
-                    "TCP "
-                            + label
-                            + " IPv6 address must be 16 bytes");
-        }
-    }
-
-    private static void requirePort(
-            String label,
-            int port) {
-        if (port <= 0
-                || port > 0xffff) {
-            throw new IllegalArgumentException(
-                    "TCP "
-                            + label
-                            + " port must be 1..65535");
-        }
-    }
-
-    private static void requireU32(
-            String label,
-            long value) {
-        if (value < 0
-                || value > U32_MASK) {
-            throw new IllegalArgumentException(
-                    label + " must fit uint32");
-        }
-    }
-
-    private static void wipe(
-            byte[] value) {
-        if (value != null) {
-            Arrays.fill(
-                    value,
-                    (byte) 0);
-        }
-    }
-
-    private static void wipeAll(
-            List<byte[]> values) {
-        for (byte[] value : values) {
-            wipe(
-                    value);
-        }
-        values.clear();
     }
 
     static final class PassiveOpen
@@ -1540,7 +1129,7 @@ final class Ipv6TcpStream
                 stream.close();
                 stream = null;
             }
-            wipe(
+            Ipv6TcpSegmentBuffer.wipe(
                     synAcknowledgement);
             synAcknowledgement =
                     new byte[0];
@@ -1599,8 +1188,8 @@ final class Ipv6TcpStream
                 stream.close();
                 stream = null;
             }
-            wipe(acknowledgement);
-            wipe(deliveredPayload);
+            Ipv6TcpSegmentBuffer.wipe(acknowledgement);
+            Ipv6TcpSegmentBuffer.wipe(deliveredPayload);
             acknowledgement = new byte[0];
             deliveredPayload = new byte[0];
         }
@@ -1624,9 +1213,9 @@ final class Ipv6TcpStream
             this.delivered =
                     cloneAll(
                             delivered);
-            wipeAll(
+            Ipv6TcpSegmentBuffer.wipeAll(
                     outbound);
-            wipeAll(
+            Ipv6TcpSegmentBuffer.wipeAll(
                     delivered);
         }
 
@@ -1655,9 +1244,9 @@ final class Ipv6TcpStream
                 return;
             }
             closed = true;
-            wipeAll(
+            Ipv6TcpSegmentBuffer.wipeAll(
                     outbound);
-            wipeAll(
+            Ipv6TcpSegmentBuffer.wipeAll(
                     delivered);
         }
 
@@ -1674,20 +1263,4 @@ final class Ipv6TcpStream
         }
     }
 
-    private static final class Outstanding {
-        final long endSequence;
-        final byte[] packet;
-
-        Outstanding(
-                long endSequence,
-                byte[] packet) {
-            this.endSequence = endSequence;
-            this.packet = packet.clone();
-        }
-
-        void destroy() {
-            wipe(
-                    packet);
-        }
-    }
 }

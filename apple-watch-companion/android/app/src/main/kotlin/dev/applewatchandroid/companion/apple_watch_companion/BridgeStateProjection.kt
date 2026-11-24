@@ -9,15 +9,26 @@ internal object BridgeStateProjection {
         put("bridgeAvailable", true)
         put("features", mapOf(
             "nativeFaces" to true, "watchSettings" to true, "telemetry" to true,
-            "phoneFind" to true, "notificationRelay" to true,
+            "phoneFind" to true, "notificationRelay" to true, "softwareUpdates" to true,
             "health" to false, "appManagement" to false))
         put("pairingAvailable", true)
         put("discoveryAvailable", false)
         put("wifiAvailable", true)
+        for (key in listOf("notificationAccessGranted", "notificationListenerConnected",
+                "notificationRelayEnabled", "notificationRelayReady")) {
+            if (data.containsKey(key)) put(key, data.getBoolean(key))
+        }
+        if (data.containsKey("notificationPendingCount")) put("notificationPendingCount", data.getInt("notificationPendingCount"))
+        val notificationApps = data.getParcelableArrayList<Bundle>("notificationApps")
+        if (notificationApps != null && notificationApps.size <= 512) {
+            put("notificationApps", notificationApps.map { row -> mapOf(
+                "packageName" to row.getString("packageName"), "name" to row.getString("name"),
+                "enabled" to row.getBoolean("enabled")) })
+        }
         data.getString("deviceName")?.let { put("deviceName", it) }
         for (key in listOf("pairId", "pairState", "productType", "buildVersion", "connectionStatus",
                 "setupPhase", "discoveredProductType", "discoveredWatchOs", "activationTitle",
-                "activationMessage", "bridgeJournal", "identityError")) {
+                "activationMessage", "bridgeJournal", "identityError", "softwareUpdateJson")) {
             data.getString(key)?.let { put(key, it) }
         }
         for (key in listOf("identityKnown", "hasPair", "operationalEligible", "activationConfirmed",

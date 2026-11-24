@@ -7,9 +7,58 @@ import '../models/native_pigment_baseline.dart';
 import '../models/native_pigment_mirror.dart';
 import '../models/native_monogram_mirror.dart';
 import 'native_monogram_text_rules.dart';
+import '../models/software_update_state.dart';
 
 /// Commands return delivery receipts; only observations establish Watch state.
 mixin BridgeCommands {
+  SoftwareUpdateState get softwareUpdate;
+  Future<String> updateSoftware(
+    String method,
+    SoftwareUpdateState baseline,
+  ) async {
+    if (!const {
+          'querySoftwareUpdate',
+          'checkSoftwareUpdate',
+          'downloadSoftwareUpdate',
+          'installSoftwareUpdate',
+        }.contains(method) ||
+        !baseline.canQuery ||
+        baseline.pair != softwareUpdate.pair ||
+        baseline.epoch != softwareUpdate.epoch ||
+        !softwareUpdate.canQuery) {
+      return 'UNAVAILABLE';
+    }
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (method == 'downloadSoftwareUpdate' &&
+            !softwareUpdate.canDownload(now) ||
+        method == 'installSoftwareUpdate' && !softwareUpdate.canInstall(now) ||
+        !method.startsWith('query') &&
+            !method.startsWith('check') &&
+            baseline.targetBuild != softwareUpdate.targetBuild) {
+      return 'REJECTED';
+    }
+    try {
+      final receipt = await invokeBridgeMethod(method, {
+        'pairId': baseline.pair,
+        'epoch': baseline.epoch,
+        'build': ?baseline.targetBuild,
+      });
+      if (!softwareUpdate.canQuery ||
+          baseline.epoch != softwareUpdate.epoch ||
+          baseline.pair != softwareUpdate.pair) {
+        return 'UNKNOWN';
+      }
+      final status = receipt is Map ? receipt['status'] : null;
+      return const {'QUEUED', 'REJECTED', 'UNAVAILABLE'}.contains(status)
+          ? status as String
+          : 'UNKNOWN';
+    } on PlatformException {
+      return 'UNAVAILABLE';
+    } on MissingPluginException {
+      return 'UNAVAILABLE';
+    }
+  }
+
   NativeFaceCollection get faceCollection;
   NativePigmentMirror? get pigmentMirror;
   NativeMonogramMirror? get monogramMirror;
@@ -414,19 +463,81 @@ mixin BridgeCommands {
   /// Unpairs the current Apple Watch and wipes keys.
   Future<bool> unpairWatch() => _invokeConfirmed('unpairWatch');
 
-  /// Sends a mirrored notification to Apple Watch (com.apple.private.alloy.bulletindistributor).
+  Future<bool> requestNotificationAccess() async {
+    try {
+      final receipt = await invokeBridgeMethod('requestNotificationAccess');
+      return receipt is Map && receipt['status'] == 'OPENED';
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  Future<String> setNotificationRelay(
+    bool enabled, {
+    String? packageName,
+  }) async {
+    try {
+      final receipt = await invokeBridgeMethod('setNotificationRelay', {
+        'value': enabled,
+        'packageName': ?packageName,
+      });
+      return receipt is Map && receipt['status'] is String
+          ? receipt['status'] as String
+          : 'UNAVAILABLE';
+    } on MissingPluginException {
+      return 'UNAVAILABLE';
+    } on PlatformException {
+      return 'UNAVAILABLE';
+    }
+  }
+
+  Future<({String status, String? requestId})> queueNotificationTest(
+    String title,
+    String message, {
+    String? sectionDisplayName,
+    String? sectionId,
+  }) async {
+    try {
+      final receipt = await invokeBridgeMethod('sendNotification', {
+        'title': title,
+        'message': message,
+        'sectionDisplayName': sectionDisplayName ?? 'Watch Companion',
+        'sectionId':
+            sectionId ??
+            'dev.applewatchandroid.companion.apple_watch_companion',
+      });
+      final status = receipt is Map ? receipt['status'] : null;
+      final id = _readNativeRequestId(receipt);
+      if (status is String) {
+        return (
+          status: status == 'QUEUED' && id == null ? 'UNKNOWN' : status,
+          requestId: id,
+        );
+      }
+    } on MissingPluginException {
+      return (status: 'UNAVAILABLE', requestId: null);
+    } on PlatformException {
+      return (status: 'UNAVAILABLE', requestId: null);
+    }
+    return (status: 'UNKNOWN', requestId: null);
+  }
+
+  /// True means accepted into the phone queue, never confirmed Watch display.
   Future<bool> sendNotificationTest(
     String title,
     String message, {
     String? sectionDisplayName,
     String? sectionId,
   }) async {
-    return _invokeConfirmed('sendNotification', {
-      'title': title,
-      'message': message,
-      'sectionDisplayName': sectionDisplayName ?? 'Messages',
-      'sectionId': sectionId ?? 'com.apple.MobileSMS',
-    });
+    return (await queueNotificationTest(
+          title,
+          message,
+          sectionDisplayName: sectionDisplayName,
+          sectionId: sectionId,
+        )).status ==
+        'QUEUED';
   }
 
   /// Sends incoming call notification to Apple Watch (com.apple.private.alloy.telephony).

@@ -10,6 +10,8 @@ import '../models/native_monogram_mirror.dart';
 import 'companion_platform.dart';
 import '../models/health_metrics.dart';
 import '../models/phone_find_state.dart';
+import '../models/notification_relay_state.dart';
+import '../models/software_update_state.dart';
 import '../models/native_watch_settings.dart';
 import '../models/native_pigment_preferences.dart';
 import '../models/native_pigment_mirror.dart';
@@ -36,6 +38,11 @@ class WatchBridgeService with BridgeCommands {
       StreamController<PhoneFindState>.broadcast();
   PhoneFindState _phoneFindState = const PhoneFindState();
   PhoneFindState get phoneFindState => _phoneFindState;
+  NotificationRelayState _notifications = const NotificationRelayState();
+  NotificationRelayState get notifications => _notifications;
+  SoftwareUpdateState _softwareUpdate = const SoftwareUpdateState();
+  @override
+  SoftwareUpdateState get softwareUpdate => _softwareUpdate;
   final StreamController<NativeWatchSettings> _nativeSettingsController =
       StreamController<NativeWatchSettings>.broadcast();
   NativeWatchSettings _nativeSettings = const NativeWatchSettings();
@@ -148,6 +155,8 @@ class WatchBridgeService with BridgeCommands {
     _monogram = observation.monogram;
     _monogramMirror = observation.monogramMirror;
     _phoneFindState = observation.phoneFind;
+    _notifications = observation.notifications;
+    _softwareUpdate = observation.softwareUpdate;
     if (pigmentsChanged) _pigmentPreferences = observation.pigments;
     _pigmentMirror = observation.pigmentMirror;
     _connectionController.add(_connectionState);

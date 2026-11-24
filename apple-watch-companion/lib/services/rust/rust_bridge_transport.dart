@@ -145,6 +145,8 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
         'hasPair': pairId.isNotEmpty,
         'pairId': pairId,
         'connected': ready,
+        'softwareUpdate': snapshot['softwareUpdate'],
+        'faceCollectionEpoch': (snapshot['softwareUpdate'] as Map?)?['epoch'],
         'operationalEligible':
             snapshot['operationalEligible'] == true && pairId.isNotEmpty,
         'activationConfirmed':
@@ -239,6 +241,15 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
     }
     Map<String, dynamic> request;
     switch (method) {
+      case 'querySoftwareUpdate':
+      case 'checkSoftwareUpdate':
+      case 'downloadSoftwareUpdate':
+      case 'installSoftwareUpdate':
+        if (_connection['connected'] != true ||
+            (_connection['features'] as Map?)?['softwareUpdates'] != true) {
+          return {'status': 'UNAVAILABLE'};
+        }
+        request = {'method': method, ...?arguments};
       case 'refreshBluetoothAdapters':
       case 'selectBluetoothAdapter':
         if (_connection['adapterSelectionAvailable'] != true) {

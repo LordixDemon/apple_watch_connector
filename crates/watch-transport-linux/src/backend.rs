@@ -336,11 +336,13 @@ impl LinuxBackend {
             "logPath":self.state_dir.join("protocol.log").to_string_lossy(),"phase":state.phase,"adapterState":state.adapter,"selectedId":state.selected,
             "devices":state.devices.iter().map(|d|d.value.clone()).collect::<Vec<_>>(),
             "pairId":state.pair_id,"productType":product,"activationConfirmed":state.activated,
+            "softwareUpdate":state.update,
             "watchReady":state.ready,"operationalEligible":state.verified,"pinRequired":state.phase=="PIN_REQUIRED",
             "pairingStreamOpen":self.child.is_some() && !["IDLE","DISCOVERING","CONNECTING","DISCONNECTING","FAILED"].contains(&state.phase.as_str()),
             "pairingStage":state.phase,"error":state.error,"journal":state.journal.iter().cloned().collect::<Vec<_>>().join("\n"),
             "capabilities":{"platform":if cfg!(target_os="windows") {"windows"} else {"linux"},"backend":if cfg!(target_os="windows") {"usb_hci_shared_protocol"} else {"hci_user_channel_shared_protocol"},
                 "adapterSelection":true,"discovery":available,"bluetoothLink":available,"fixedL2cap":available,"pairing":available,
+                "features":{"softwareUpdates":available},
                 "operationalIds":available,"ownerConfirmation":true,"wifi":false,"pairingUnavailableReason":if available {None} else {Some(if cfg!(target_os="windows") {"WINDOWS_RAW_HCI_REQUIRED"} else {"LINUX_BACKEND_NOT_INSTALLED"})}}});
         snapshot
             .as_object_mut()
@@ -355,6 +357,55 @@ impl LinuxBackend {
             Some("scan" | "pair") => self.start(false),
             Some("resume") => self.start(true),
             Some("confirmSetup") => self.confirm_setup(),
+            Some(
+                method @ ("querySoftwareUpdate"
+                | "checkSoftwareUpdate"
+                | "downloadSoftwareUpdate"
+                | "installSoftwareUpdate"),
+            ) => {
+                let state = self.state.lock().unwrap();
+                let Some(epoch) = state.transport_epoch.as_deref() else {
+                    return json!({"status":"UNAVAILABLE"});
+                };
+                if !state.ready
+                    || state.pair_id.as_deref() != request["pairId"].as_str()
+                    || Some(epoch) != request["epoch"].as_str()
+                {
+                    return json!({"status":"UNAVAILABLE"});
+                }
+                let command = match method {
+                    "querySoftwareUpdate" => "UPDATE_QUERY".to_owned(),
+                    "checkSoftwareUpdate" => "UPDATE_SCAN".to_owned(),
+                    _ => {
+                        let Some(build) = request["build"].as_str().filter(|s| {
+                            !s.is_empty()
+                                && s.len() <= 32
+                                && s.bytes().all(|b| b.is_ascii_alphanumeric())
+                        }) else {
+                            return json!({"status":"REJECTED"});
+                        };
+                        if state
+                            .update
+                            .as_ref()
+                            .and_then(|u| u.target_build.as_deref())
+                            != Some(build)
+                        {
+                            return json!({"status":"REJECTED"});
+                        }
+                        format!(
+                            "{}:{build}",
+                            if method == "downloadSoftwareUpdate" {
+                                "UPDATE_DOWNLOAD"
+                            } else {
+                                "UPDATE_INSTALL"
+                            }
+                        )
+                    }
+                };
+                let envelope = format!("WATCH_UPDATE_COMMAND_V1:{epoch}:{command}");
+                drop(state);
+                self.send(&envelope)
+            }
             Some("refreshAdapters") => {
                 if self.child.is_some() {
                     return json!({"status":"BUSY"});
@@ -448,6 +499,20 @@ impl Drop for LinuxBackend {
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;
+    #[test]
+    fn ota_commands_require_owned_epoch_even_when_legacy_ready_flag_is_true() {
+        let mut backend = LinuxBackend::new();
+        {
+            let mut state = backend.state.lock().unwrap();
+            state.ready = true;
+            state.pair_id = Some("11111111-1111-4111-8111-111111111111".into());
+        }
+        assert_eq!(backend.command(json!({"method":"installSoftwareUpdate", "pairId":"11111111-1111-4111-8111-111111111111"}))["status"], "UNAVAILABLE");
+        backend.state.lock().unwrap().transport_epoch =
+            Some("22222222-2222-4222-8222-222222222222".into());
+        assert_eq!(backend.command(json!({"method":"querySoftwareUpdate", "pairId":"11111111-1111-4111-8111-111111111111",
+            "epoch":"33333333-3333-4333-8333-333333333333"}))["status"], "UNAVAILABLE");
+    }
 
     fn with_child(command: &mut Command) -> LinuxBackend {
         let mut backend = LinuxBackend::new();

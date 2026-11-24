@@ -25,12 +25,21 @@ final class BluetoothSmpCodec {
     static final int PAIRING_PUBLIC_KEY = 0x0c;
     static final int PAIRING_DHKEY_CHECK = 0x0d;
 
+    static final int IO_CAPABILITY_DISPLAY_ONLY = 0x00;
     static final int IO_CAPABILITY_DISPLAY_YES_NO = 0x01;
+    static final int IO_CAPABILITY_KEYBOARD_ONLY = 0x02;
+    static final int IO_CAPABILITY_NO_INPUT_NO_OUTPUT = 0x03;
+    static final int IO_CAPABILITY_KEYBOARD_DISPLAY = 0x04;
+    static final int OOB_DATA_NOT_PRESENT = 0x00;
     static final int OOB_DATA_PRESENT = 0x01;
     static final int AUTH_BONDING = 0x01;
     static final int AUTH_MITM = 0x04;
     static final int AUTH_SECURE_CONNECTIONS = 0x08;
     static final int AUTH_CT2 = 0x20;
+    static final int AUTH_SC_MITM_BOND =
+            AUTH_BONDING
+                    | AUTH_MITM
+                    | AUTH_SECURE_CONNECTIONS;
     static final int AUTH_SC_MITM_BOND_CT2 =
             AUTH_BONDING
                     | AUTH_MITM
@@ -45,8 +54,10 @@ final class BluetoothSmpCodec {
                     | KEY_DISTRIBUTION_SIGNING;
     static final int MAXIMUM_ENCRYPTION_KEY_SIZE = 16;
 
+    static final int FAILURE_PASSKEY_ENTRY_FAILED = 0x01;
     static final int FAILURE_CONFIRM_VALUE = 0x04;
     static final int FAILURE_UNSPECIFIED_REASON = 0x08;
+    static final int FAILURE_DHKEY_CHECK_FAILED = 0x0b;
 
     private BluetoothSmpCodec() {
     }
@@ -55,6 +66,36 @@ final class BluetoothSmpCodec {
         return new PairingFeatures(
                 PAIRING_REQUEST,
                 IO_CAPABILITY_DISPLAY_YES_NO,
+                OOB_DATA_PRESENT,
+                AUTH_SC_MITM_BOND_CT2,
+                MAXIMUM_ENCRYPTION_KEY_SIZE,
+                STANDARD_LE_KEY_DISTRIBUTION,
+                STANDARD_LE_KEY_DISTRIBUTION);
+    }
+
+    /**
+     * [EXPERIMENTAL LEGACY] Initiator Pairing Request for manual 6-digit passkey entry
+     * (Watch displays passcode, companion acts as KeyboardOnly).
+     */
+    static PairingFeatures createLegacyPasskeyPairingRequest() {
+        return new PairingFeatures(
+                PAIRING_REQUEST,
+                IO_CAPABILITY_KEYBOARD_ONLY,
+                OOB_DATA_NOT_PRESENT,
+                AUTH_SC_MITM_BOND_CT2,
+                MAXIMUM_ENCRYPTION_KEY_SIZE,
+                STANDARD_LE_KEY_DISTRIBUTION,
+                STANDARD_LE_KEY_DISTRIBUTION);
+    }
+
+    /**
+     * [EXPERIMENTAL LEGACY] Initiator Pairing Request when a legacy 16-byte optical OOB key
+     * is available alongside KeyboardDisplay fallback.
+     */
+    static PairingFeatures createLegacyOobPairingRequest() {
+        return new PairingFeatures(
+                PAIRING_REQUEST,
+                IO_CAPABILITY_KEYBOARD_DISPLAY,
                 OOB_DATA_PRESENT,
                 AUTH_SC_MITM_BOND_CT2,
                 MAXIMUM_ENCRYPTION_KEY_SIZE,
@@ -161,6 +202,67 @@ final class BluetoothSmpCodec {
                 publicKey,
                 BleSecureConnectionsCrypto
                         .PUBLIC_KEY_LENGTH);
+    }
+
+    static byte[] pairingConfirm(byte[] confirmValue) {
+        return valuePdu(
+                PAIRING_CONFIRM,
+                confirmValue,
+                BleSecureConnectionsCrypto.AES_VALUE_LENGTH);
+    }
+
+    static byte[] parsePairingConfirm(byte[] pdu) {
+        return parseValuePdu(
+                PAIRING_CONFIRM,
+                pdu,
+                BleSecureConnectionsCrypto.AES_VALUE_LENGTH);
+    }
+
+    static byte[] encryptionInformation(byte[] longTermKey) {
+        return valuePdu(
+                ENCRYPTION_INFORMATION,
+                longTermKey,
+                BleSecureConnectionsCrypto.AES_VALUE_LENGTH);
+    }
+
+    static byte[] parseEncryptionInformation(byte[] pdu) {
+        return parseValuePdu(
+                ENCRYPTION_INFORMATION,
+                pdu,
+                BleSecureConnectionsCrypto.AES_VALUE_LENGTH);
+    }
+
+    static byte[] centralIdentification(int ediv, byte[] rand) {
+        if ((ediv & ~0xffff) != 0 || rand == null || rand.length != 8) {
+            throw new IllegalArgumentException(
+                    "SMP central identification requires uint16 EDIV and 8-byte Rand");
+        }
+        byte[] pdu = new byte[11];
+        pdu[0] = (byte) CENTRAL_IDENTIFICATION;
+        pdu[1] = (byte) (ediv & 0xff);
+        pdu[2] = (byte) ((ediv >>> 8) & 0xff);
+        System.arraycopy(rand, 0, pdu, 3, rand.length);
+        return pdu;
+    }
+
+    static CentralIdentification parseCentralIdentification(byte[] pdu) {
+        requireOpcodeAndLength(pdu, CENTRAL_IDENTIFICATION, 11);
+        int ediv = unsigned(pdu[1]) | (unsigned(pdu[2]) << 8);
+        return new CentralIdentification(ediv, Arrays.copyOfRange(pdu, 3, 11));
+    }
+
+    static byte[] signingInformation(byte[] csrk) {
+        return valuePdu(
+                SIGNING_INFORMATION,
+                csrk,
+                BleSecureConnectionsCrypto.AES_VALUE_LENGTH);
+    }
+
+    static byte[] parseSigningInformation(byte[] pdu) {
+        return parseValuePdu(
+                SIGNING_INFORMATION,
+                pdu,
+                BleSecureConnectionsCrypto.AES_VALUE_LENGTH);
     }
 
     static byte[] parsePairingPublicKey(
@@ -395,6 +497,24 @@ final class BluetoothSmpCodec {
                 byte[] address) {
             this.addressType = addressType;
             this.address = address.clone();
+        }
+    }
+
+    static final class CentralIdentification {
+        final int ediv;
+        private final byte[] rand;
+
+        CentralIdentification(int ediv, byte[] rand) {
+            this.ediv = ediv;
+            this.rand = rand.clone();
+        }
+
+        byte[] rand() {
+            return rand.clone();
+        }
+
+        void destroy() {
+            Arrays.fill(rand, (byte) 0);
         }
     }
 }

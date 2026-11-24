@@ -19,6 +19,8 @@ import '../services/native_pigment_favorites.dart';
 
 import '../models/health_metrics.dart';
 import '../models/phone_find_state.dart';
+import '../models/notification_relay_state.dart';
+import '../models/software_update_state.dart';
 import '../models/native_watch_settings.dart';
 import '../models/native_monogram_preferences.dart';
 import '../models/native_monogram_mirror.dart';
@@ -137,6 +139,18 @@ class WatchProvider extends ChangeNotifier {
 
   WatchDevice get device => _device;
   PhoneFindState get phoneFind => _observations.phoneFind;
+  NotificationRelayState get notifications => _observations.notifications;
+  SoftwareUpdateState get softwareUpdate => _observations.softwareUpdate;
+  Future<String> updateSoftware(String method, SoftwareUpdateState baseline) =>
+      _bridge.updateSoftware(method, baseline);
+  Future<bool> requestNotificationAccess() =>
+      _bridge.requestNotificationAccess();
+  Future<String> setNotificationRelay(bool enabled, {String? packageName}) =>
+      _bridge.setNotificationRelay(enabled, packageName: packageName);
+  Future<({String status, String? requestId})> queueTestNotification(
+    String title,
+    String body,
+  ) => _bridge.queueNotificationTest(title, body);
   NativeWatchSettings get nativeSettings => _observations.nativeSettings;
   NativeMonogramPreferences get monogramPreferences =>
       _observations.monogramPreferences;

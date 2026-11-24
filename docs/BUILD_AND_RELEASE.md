@@ -15,8 +15,8 @@ logs and saved-pair updates. This document covers candidate auditing and signing
 
 ## Candidate versions and support
 
-Current source versions: Companion `1.0.86+87`, Android Bridge `0.2.429` (code
-`629`), shared Rust crates `0.1.1`. These components have independent version
+Current source versions: Companion `1.0.88+89`, Android Bridge `0.2.431` (code
+`631`), shared Rust crates `0.1.1`. These components have independent version
 numbers; publish the exact tested combination and its Git revision together.
 The current status is **experimental release candidate**, not a stable 1.0
 support promise. Changes awaiting a candidate are in [CHANGELOG](../CHANGELOG.md).
@@ -33,6 +33,7 @@ identity always comes from authenticated discovery/pairing records.
 | Battery / About; wrist, orientation, 24-hour setting | Native observations and three whitelisted writes | Not exposed by desktop FFI | Not exposed by desktop FFI | Not exposed by desktop FFI |
 | Phone Wi-Fi profile transfer | Tested WPA2-PSK/CCMP network | Unavailable | Unavailable | Unavailable |
 | Notification relay / Find Phone | Implemented, permission and acceptance limits apply | Unavailable | Unavailable | Unavailable |
+| Native software updates | Implemented; device test pending | Shared HAL/FFI implemented; device test pending | Shared HAL/FFI implemented; device test pending | Unavailable |
 | Complete Health, app management, calls/audio | Incomplete | Unavailable | Unavailable | Unavailable |
 
 The UI reads backend-declared feature groups. Unsupported sections/actions are
@@ -176,9 +177,9 @@ export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }--remap-path-prefix=$HOME=/build"
 (cd apple-watch-bridge && ./gradlew :app:assembleRelease)
 bash apple-watch-bridge/tool/build_magisk_module.sh \
   apple-watch-bridge/app/build/outputs/apk/release/app-release.apk \
-  apple-watch-bridge/build/apple-watch-bridge-magisk-0.2.429.zip
+  apple-watch-bridge/build/apple-watch-bridge-magisk-0.2.431.zip
 python3 -m unittest discover -s tools -p 'test_magisk_module.py'
-shasum -a 256 apple-watch-bridge/build/apple-watch-bridge-magisk-0.2.429.zip
+shasum -a 256 apple-watch-bridge/build/apple-watch-bridge-magisk-0.2.431.zip
 ```
 
 The Rust remap removes local home-directory paths from compiled diagnostics;

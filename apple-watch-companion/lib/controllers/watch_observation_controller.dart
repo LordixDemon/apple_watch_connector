@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../models/watch_device.dart';
 import '../models/health_metrics.dart';
 import '../models/phone_find_state.dart';
+import '../models/notification_relay_state.dart';
+import '../models/software_update_state.dart';
 import '../models/native_watch_settings.dart';
 import '../models/native_monogram_preferences.dart';
 import '../models/native_monogram_mirror.dart';
@@ -19,6 +21,8 @@ class WatchObservationController extends ChangeNotifier {
   HealthMetrics _health = HealthMetrics.initial();
   bool _hasHealthObservation = false;
   PhoneFindState _phoneFind = const PhoneFindState();
+  NotificationRelayState _notifications = const NotificationRelayState();
+  SoftwareUpdateState _softwareUpdate = const SoftwareUpdateState();
   NativeWatchSettings _nativeSettings = const NativeWatchSettings();
   NativeMonogramPreferences _monogram =
       const NativeMonogramPreferences.unknown();
@@ -33,6 +37,8 @@ class WatchObservationController extends ChangeNotifier {
     : _bridge = bridge,
       _device = bridge.currentDevice {
     _phoneFind = bridge.phoneFindState;
+    _notifications = bridge.notifications;
+    _softwareUpdate = bridge.softwareUpdate;
     _nativeSettings = bridge.nativeSettings;
     _monogram = bridge.monogramPreferences;
     _pigmentPreferences = bridge.pigmentPreferences;
@@ -45,6 +51,8 @@ class WatchObservationController extends ChangeNotifier {
   HealthMetrics get health => _health;
   bool get hasHealthObservation => _hasHealthObservation;
   PhoneFindState get phoneFind => _phoneFind;
+  NotificationRelayState get notifications => _notifications;
+  SoftwareUpdateState get softwareUpdate => _softwareUpdate;
   NativeWatchSettings get nativeSettings => _nativeSettings;
   NativeMonogramPreferences get monogramPreferences => _monogram;
   NativeMonogramMirror? get monogramMirror => _monogramMirror;
@@ -57,6 +65,7 @@ class WatchObservationController extends ChangeNotifier {
 
   void disconnectLocally() {
     _device = _device.copyWith(isConnected: false);
+    _softwareUpdate = const SoftwareUpdateState();
     _pigmentPreferences = const NativePigmentPreferences.unknown();
     _monogram = const NativeMonogramPreferences.unknown();
     _pigmentMirror = null;
@@ -77,6 +86,8 @@ class WatchObservationController extends ChangeNotifier {
         _pigmentPreferences = state.pigments;
         _pigmentMirror = state.pigmentMirror;
         _phoneFind = state.phoneFind;
+        _notifications = state.notifications;
+        _softwareUpdate = state.softwareUpdate;
         _changed();
       }),
     );

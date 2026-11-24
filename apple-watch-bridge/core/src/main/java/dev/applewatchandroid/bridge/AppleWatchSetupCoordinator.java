@@ -99,6 +99,11 @@ final class AppleWatchSetupCoordinator {
     private boolean pairingSessionCapabilityPresent;
     private Integer compatibilityState;
     private Integer lastSentCompatibilityState;
+    private CompanionProtocolProfile profile = CompanionProtocolProfile.IOS_26_6;
+    void useProfile(CompanionProtocolProfile selected) {
+        if (selected == null || phase != Phase.IDLE) throw new IllegalStateException("Setup profile is frozen");
+        profile = selected;
+    }
 
     private boolean pairingSessionPropertyObserved;
     private boolean pairingSessionIdPresent;
@@ -118,24 +123,20 @@ final class AppleWatchSetupCoordinator {
                 .isNetworkRelayCandidate(
                         identifier,
                         metadata,
-                        NanoRegistryClassDCodec
-                                .IOS_26_6_PHONE_MIN_VERSION,
-                        NanoRegistryClassDCodec
-                                .IOS_26_6_PHONE_MAX_VERSION)) {
+                        profile.minimum, profile.maximum)) {
             throw new IllegalArgumentException(
                     "Unsupported Watch NetworkRelay setup: product="
                             + (metadata == null ? "unknown" : metadata.productType())
                             + ", pairingVersion=" + (metadata == null ? -1 : metadata.pairingVersion)
-                            + ", supportedVersion=" + NanoRegistryClassDCodec.IOS_26_6_PHONE_MIN_VERSION
-                            + ".." + NanoRegistryClassDCodec.IOS_26_6_PHONE_MAX_VERSION);
+                            + ", supportedVersion=" + profile.minimum + ".." + profile.maximum);
         }
         return beginGeneration(newGeneration, new WatchPairingIdentity(metadata), metadata.pairingVersion);
     }
 
     synchronized List<Action> beginRestoredGeneration(long newGeneration, String storedProductType,
             int observedPairingVersion) {
-        NanoRegistryClassDCodec.PairingModeRequest.modernIos26_6(
-                NanoRegistryClassDCodec.COMPATIBILITY_STATE_CHECK, observedPairingVersion);
+        NanoRegistryClassDCodec.PairingModeRequest.forProfile(
+                NanoRegistryClassDCodec.COMPATIBILITY_STATE_CHECK, observedPairingVersion, profile);
         return beginGeneration(newGeneration, new WatchPairingIdentity(storedProductType), observedPairingVersion);
     }
 
@@ -642,11 +643,9 @@ final class AppleWatchSetupCoordinator {
         boolean compatible =
                 idsMaxPairingVersion == null
                         || (idsMaxPairingVersion
-                        >= NanoRegistryClassDCodec
-                        .IOS_26_6_PHONE_MIN_VERSION
+                        >= profile.minimum
                         && idsMaxPairingVersion
-                        <= NanoRegistryClassDCodec
-                        .IOS_26_6_PHONE_MAX_VERSION);
+                        <= profile.maximum);
         if (paired) {
             if (!identityValidated) {
                 return null;
@@ -873,6 +872,10 @@ final class AppleWatchSetupCoordinator {
 
         NanoRegistryClassDCodec.PairingModeRequest
                 pairingModeRequest() {
+            return pairingModeRequest(runtimeWatchPairingVersion != null && runtimeWatchPairingVersion == 27
+                    ? CompanionProtocolProfile.IOS_27_0_1 : CompanionProtocolProfile.IOS_26_6);
+        }
+        NanoRegistryClassDCodec.PairingModeRequest pairingModeRequest(CompanionProtocolProfile profile) {
             if (type
                     != ActionType
                             .SEND_COMPATIBILITY_STATE
@@ -883,9 +886,9 @@ final class AppleWatchSetupCoordinator {
             }
             return NanoRegistryClassDCodec
                     .PairingModeRequest
-                    .modernIos26_6(
+                    .forProfile(
                             compatibilityState,
-                            runtimeWatchPairingVersion);
+                            runtimeWatchPairingVersion, profile);
         }
     }
 

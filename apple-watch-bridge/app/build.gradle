@@ -12,8 +12,8 @@ android {
         applicationId "dev.applewatchandroid.bridge"
         minSdk 33
         targetSdk 36
-        versionCode 629
-        versionName "0.2.429"
+        versionCode 631
+        versionName "0.2.431"
 
         testInstrumentationRunner "dev.applewatchandroid.bridge.HealthDefaultsInstrumentation"
     }

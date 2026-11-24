@@ -16,6 +16,37 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class PairingSessionRecordTest {
+    @Test public void authenticatedSystemObservationSurvivesSealingWithoutChangingPairingState() {
+        Fixture fixture = Fixture.create();
+        List<PairingSessionRecord> records = new ArrayList<>();
+        byte[] serialized = null;
+        try {
+            var initial = fixture.createRecord(); records.add(initial);
+            assertNull(initial.observedPeerMaximum());
+            assertThrows(IllegalArgumentException.class, () -> initial.withObservedPeerSystem(initial.peerIdsDeviceId(), 27, "24R365"));
+            byte[] bond = fixture.bondRecord();
+            PairingSessionRecord current;
+            try { current = initial.withBluetoothBond(bond); } finally { wipe(bond); }
+            records.add(current);
+            current = current.withPreludeNegotiated(NrLinkBluetoothPrelude.LocalRole.RESPONDER); records.add(current);
+            current = current.withClassDEstablished(null); records.add(current);
+            current = current.advanceTo(PairingSessionRecord.DurableState.CLASS_C_ESTABLISHED); records.add(current);
+            current = current.markIdsAuthenticationAccepted(); records.add(current);
+            current = current.advanceTo(PairingSessionRecord.DurableState.IDS_CONTROL_READY); records.add(current);
+            var ready = current;
+            assertThrows(IllegalArgumentException.class, () -> ready.withObservedPeerSystem(java.util.UUID.randomUUID().toString(), 27, "24R365"));
+            current = current.withObservedPeerSystem(current.peerIdsDeviceId(), 27, "24R365"); records.add(current);
+            serialized = current.serialize();
+            current = PairingSessionRecord.parse(serialized); records.add(current);
+            assertEquals(Integer.valueOf(27), current.observedPeerMaximum());
+            assertEquals("24R365", current.peerBuildVersion());
+            assertEquals(ready.state(), current.state());
+            assertEquals(ready.localIdsDeviceUuid(), current.localIdsDeviceUuid());
+            assertEquals(ready.peerIdsDeviceId(), current.peerIdsDeviceId());
+            current = current.advanceTo(PairingSessionRecord.DurableState.IDS_DATA_READY); records.add(current);
+            assertEquals(Integer.valueOf(27), current.observedPeerMaximum());
+        } finally { records.forEach(PairingSessionRecord::destroy); fixture.destroy(); wipe(serialized); }
+    }
     @Test
     public void spsMetadataSurvivesRecordCopiesWithoutClaimingSetupOrActivation() {
         Fixture fixture = Fixture.create();

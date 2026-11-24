@@ -1,9 +1,5 @@
 package dev.applewatchandroid.bridge;
 
-import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,17 +32,17 @@ final class IdsServiceConnectorCoordinator
      */
     public static volatile java.util.function.Consumer<String> diagnosticLogger = null;
 
-    private static void diagnose(String message) {
+    static void diagnose(String message) {
         java.util.function.Consumer<String> logger = diagnosticLogger;
         if (logger != null) {
             logger.accept("[NWSC] " + message);
         }
     }
 
-    private static final int MAX_PRELUDE_FRAME_LENGTH =
+    static final int MAX_PRELUDE_FRAME_LENGTH =
             NwServiceConnectorCodec.NORMAL_FIXED_FRAME_LENGTH
                     + NwServiceConnectorCodec.MAX_SERVICE_LENGTH;
-    private static final int MAX_INLINE_REMAINDER_LENGTH =
+    static final int MAX_INLINE_REMAINDER_LENGTH =
             64 * 1024;
 
     enum ConnectionPhase {
@@ -73,13 +69,13 @@ final class IdsServiceConnectorCoordinator
         KEY_PROBE_RESPONDED
     }
 
-    private final SecureRandom random;
-    private final NwServiceConnectorSequenceAllocator sequences;
-    private final IdsIpv6TcpRouter tcp;
-    private final IdsPortMap ports;
-    private ConnectorContext normal;
-    private ConnectorContext cloud;
-    private final Map<Long, ConnectionState> connections =
+    final SecureRandom random;
+    final NwServiceConnectorSequenceAllocator sequences;
+    final IdsIpv6TcpRouter tcp;
+    final IdsPortMap ports;
+    IdsServiceConnectorState.ConnectorContext normal;
+    IdsServiceConnectorState.ConnectorContext cloud;
+    final Map<Long, IdsServiceConnectorState.ConnectionState> connections =
             new LinkedHashMap<>();
 
     private boolean closed;
@@ -155,7 +151,7 @@ final class IdsServiceConnectorCoordinator
                 privateKeyC);
         try {
             normal =
-                    new ConnectorContext(
+                    new IdsServiceConnectorState.ConnectorContext(
                             IdsIpsecServiceRoute.Connector.NORMAL,
                             IdsIpsecServiceRoute.NORMAL_LISTENER_PORT,
                             NwServiceConnectorEndpointIdentifier.ipv6(
@@ -185,7 +181,7 @@ final class IdsServiceConnectorCoordinator
                                     privateKeyC,
                                     sequences));
             cloud =
-                    new ConnectorContext(
+                    new IdsServiceConnectorState.ConnectorContext(
                             IdsIpsecServiceRoute.Connector.CLOUD,
                             IdsIpsecServiceRoute.CLOUD_LISTENER_PORT,
                             NwServiceConnectorEndpointIdentifier.ipv6(
@@ -291,10 +287,10 @@ final class IdsServiceConnectorCoordinator
             IdsPortMap portMap) {
         byte[] localPrivD = explicitLocalPrivD != null
                 ? explicitLocalPrivD.clone()
-                : deriveEd25519PrivateKey(localClassD, "IDS-CLASS-D");
+                : IdsServiceConnectorState.deriveEd25519PrivateKey(localClassD, "IDS-CLASS-D");
         byte[] localPrivC = explicitLocalPrivC != null
                 ? explicitLocalPrivC.clone()
-                : deriveEd25519PrivateKey(localClassC, "IDS-CLASS-C");
+                : IdsServiceConnectorState.deriveEd25519PrivateKey(localClassC, "IDS-CLASS-C");
         byte[] remotePubD = explicitRemotePubD != null
                 ? explicitRemotePubD.clone()
                 : null;
@@ -315,7 +311,7 @@ final class IdsServiceConnectorCoordinator
         coordinator.cloud.close();
 
         coordinator.normal =
-                new ConnectorContext(
+                new IdsServiceConnectorState.ConnectorContext(
                         IdsIpsecServiceRoute.Connector.NORMAL,
                         IdsIpsecServiceRoute.NORMAL_LISTENER_PORT,
                         NwServiceConnectorEndpointIdentifier.ipv6(
@@ -345,7 +341,7 @@ final class IdsServiceConnectorCoordinator
                                 localPrivC,
                                 sequences));
         coordinator.cloud =
-                new ConnectorContext(
+                new IdsServiceConnectorState.ConnectorContext(
                         IdsIpsecServiceRoute.Connector.CLOUD,
                         IdsIpsecServiceRoute.CLOUD_LISTENER_PORT,
                         NwServiceConnectorEndpointIdentifier.ipv6(
@@ -428,25 +424,25 @@ final class IdsServiceConnectorCoordinator
                 new ArrayList<>();
         List<ConnectionEvent> events =
                 new ArrayList<>();
-        startReverseKeyProbe(
+        handshakeEngine.startReverseKeyProbe(
                 normal,
                 OrdinaryIkeAuth.DataClass.CLASS_D,
                 0,
                 outbound,
                 events);
-        startReverseKeyProbe(
+        handshakeEngine.startReverseKeyProbe(
                 cloud,
                 OrdinaryIkeAuth.DataClass.CLASS_D,
                 0,
                 outbound,
                 events);
-        startReverseKeyProbe(
+        handshakeEngine.startReverseKeyProbe(
                 normal,
                 OrdinaryIkeAuth.DataClass.CLASS_C,
                 0,
                 outbound,
                 events);
-        startReverseKeyProbe(
+        handshakeEngine.startReverseKeyProbe(
                 cloud,
                 OrdinaryIkeAuth.DataClass.CLASS_C,
                 0,
@@ -555,7 +551,7 @@ final class IdsServiceConnectorCoordinator
         IdsIpsecServiceRoute route =
                 requireCanonicalRoute(
                         requestedRoute);
-        ConnectorContext connector =
+        IdsServiceConnectorState.ConnectorContext connector =
                 connector(
                         route.connector);
         if (connector.outgoingByService.containsKey(
@@ -573,7 +569,7 @@ final class IdsServiceConnectorCoordinator
                         dataClass(
                                 route));
         NwServiceConnectorHandshake.OutgoingStart start = null;
-        OutgoingAttempt attempt = null;
+        IdsServiceConnectorState.OutgoingAttempt attempt = null;
         boolean ownsPort = port <= 0;
         int dynamicPort = port > 0 ? port : ports.allocate();
         try {
@@ -589,7 +585,7 @@ final class IdsServiceConnectorCoordinator
                     start.frame();
             try {
                 attempt =
-                        new OutgoingAttempt(
+                        new IdsServiceConnectorState.OutgoingAttempt(
                                 connector,
                                 route,
                                 endpointIdentifier,
@@ -604,8 +600,8 @@ final class IdsServiceConnectorCoordinator
                     route.service,
                     attempt);
 
-            ActiveTransport active =
-                    startAttemptTransportWithPort(
+            IdsServiceConnectorState.ActiveTransport active =
+                    handshakeEngine.startAttemptTransportWithPort(
                             attempt,
                             dynamicPort,
                             ownsPort);
@@ -625,7 +621,7 @@ final class IdsServiceConnectorCoordinator
             if (attempt != null) {
                 connector.outgoingByService.remove(
                         route.service);
-                cancelAttemptTransport(
+                handshakeEngine.cancelAttemptTransport(
                         attempt);
                 attempt.close();
             }
@@ -664,12 +660,12 @@ final class IdsServiceConnectorCoordinator
                     accepted.outboundPackets());
             for (IdsIpv6TcpRouter.StreamEvent streamEvent :
                     accepted.events()) {
-                ConnectionState state =
+                IdsServiceConnectorState.ConnectionState state =
                         connections.get(
                                 streamEvent.connectionId);
                 if (state == null) {
                     state =
-                            registerIncoming(
+                            handshakeEngine.registerIncoming(
                                     streamEvent.connectionId);
                 }
                 List<byte[]> delivered =
@@ -677,7 +673,7 @@ final class IdsServiceConnectorCoordinator
                 boolean wasEmpty = delivered.isEmpty();
                 try {
                     for (byte[] bytes : delivered) {
-                        processStreamBytes(
+                        handshakeEngine.processStreamBytes(
                                 state,
                                 bytes,
                                 outbound,
@@ -835,10 +831,10 @@ final class IdsServiceConnectorCoordinator
             long connectionId,
             byte[] bytes) {
         requireUsable();
-        ConnectionState state =
+        IdsServiceConnectorState.ConnectionState state =
                 connections.get(connectionId);
         if (state == null || state.phase != ConnectionPhase.ACTIVE_SERVICE || !tcp.isEstablished(state.connectionId)) {
-            for (ConnectionState candidate : connections.values()) {
+            for (IdsServiceConnectorState.ConnectionState candidate : connections.values()) {
                 if (candidate.phase == ConnectionPhase.ACTIVE_SERVICE && tcp.isEstablished(candidate.connectionId)) {
                     if (state == null || (candidate.connector == state.connector && candidate.dataClass == state.dataClass)) {
                         state = candidate;
@@ -887,7 +883,7 @@ final class IdsServiceConnectorCoordinator
     synchronized PacketBatch closeConnection(
             long connectionId) {
         requireUsable();
-        ConnectionState state =
+        IdsServiceConnectorState.ConnectionState state =
                 connections.get(
                         connectionId);
         if (state == null) {
@@ -929,7 +925,7 @@ final class IdsServiceConnectorCoordinator
     synchronized ConnectionSnapshot connection(
             long connectionId) {
         requireUsable();
-        ConnectionState state =
+        IdsServiceConnectorState.ConnectionState state =
                 requireConnection(
                         connectionId);
         IdsIpv6TcpRouter.ConnectionSnapshot tcpState =
@@ -956,7 +952,7 @@ final class IdsServiceConnectorCoordinator
         if (closed) {
             return false;
         }
-        ConnectionState state = connections.get(connectionId);
+        IdsServiceConnectorState.ConnectionState state = connections.get(connectionId);
         if (state == null || state.phase != ConnectionPhase.ACTIVE_SERVICE) {
             return false;
         }
@@ -967,7 +963,7 @@ final class IdsServiceConnectorCoordinator
         if (closed) {
             return false;
         }
-        ConnectionState state = connections.get(connectionId);
+        IdsServiceConnectorState.ConnectionState state = connections.get(connectionId);
         if (state == null) {
             return false;
         }
@@ -984,7 +980,7 @@ final class IdsServiceConnectorCoordinator
         if (closed) {
             return false;
         }
-        ConnectionState state = connections.get(connectionId);
+        IdsServiceConnectorState.ConnectionState state = connections.get(connectionId);
         if (state == null) {
             return false;
         }
@@ -997,7 +993,7 @@ final class IdsServiceConnectorCoordinator
         if (closed) {
             return false;
         }
-        ConnectionState state = connections.get(connectionId);
+        IdsServiceConnectorState.ConnectionState state = connections.get(connectionId);
         return state != null && state.isAdopted;
     }
 
@@ -1005,7 +1001,7 @@ final class IdsServiceConnectorCoordinator
         if (closed) {
             return null;
         }
-        ConnectionState state = connections.get(connectionId);
+        IdsServiceConnectorState.ConnectionState state = connections.get(connectionId);
         return state != null ? state.serviceName : null;
     }
 
@@ -1013,7 +1009,7 @@ final class IdsServiceConnectorCoordinator
         if (closed) {
             return null;
         }
-        ConnectionState state = connections.get(connectionId);
+        IdsServiceConnectorState.ConnectionState state = connections.get(connectionId);
         return state != null ? state.dataClass : null;
     }
 
@@ -1021,9 +1017,9 @@ final class IdsServiceConnectorCoordinator
         if (closed) {
             return 0L;
         }
-        for (Map.Entry<Long, ConnectionState> entry : connections.entrySet()) {
+        for (Map.Entry<Long, IdsServiceConnectorState.ConnectionState> entry : connections.entrySet()) {
             if (isControlConnection(entry.getKey())) {
-                ConnectionState state = entry.getValue();
+                IdsServiceConnectorState.ConnectionState state = entry.getValue();
                 if (state.phase == ConnectionPhase.ACTIVE_SERVICE) {
                     return entry.getKey();
                 }
@@ -1054,1176 +1050,25 @@ final class IdsServiceConnectorCoordinator
         return ports.dynamicAllocatedCount();
     }
 
-    private ConnectionState registerIncoming(
-            long connectionId) {
-        IdsIpv6TcpRouter.ConnectionSnapshot snapshot =
-                tcp.connection(
-                        connectionId);
-        ConnectorContext connector =
-                connectorForPort(
-                        snapshot.localPort,
-                        snapshot.remotePort);
-        ConnectionState state =
-                ConnectionState.incoming(
-                        connectionId,
-                        connector,
-                        snapshot.dataClass,
-                        snapshot.localPort);
-        state.isAdopted = tcp.isAdopted(connectionId);
-        ConnectionState previous =
-                connections.put(
-                        connectionId,
-                        state);
-        if (previous != null) {
-            connections.put(
-                    connectionId,
-                    previous);
-            state.close();
-            throw new IllegalStateException(
-                    "IDS incoming connection registry collision");
-        }
-        return state;
-    }
+    final IdsServiceConnectorHandshakeEngine handshakeEngine = new IdsServiceConnectorHandshakeEngine(this);
 
-    private void processStreamBytes(
-            ConnectionState state,
-            byte[] bytes,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        if (bytes == null) {
-            throw protocolFailure(
-                    state,
-                    "IDS TCP delivered absent bytes");
-        }
-        if (bytes.length == 0) {
-            return;
-        }
-        boolean feedbackFrame =
-                bytes.length == NwServiceConnectorCodec.FEEDBACK_FRAME_LENGTH
-                        && bytes[0] == 0
-                        && (bytes[1] & 0xff) == NwServiceConnectorCodec.FEEDBACK_BODY_LENGTH;
-        boolean awaitingOutgoingFeedback =
-                state.outgoingAttempt != null
-                        || state.phase == ConnectionPhase.OUTGOING_NORMAL_PRELUDE;
-        if (feedbackFrame && awaitingOutgoingFeedback) {
-            if (state.prelude.completed()) {
-                state.prelude.close();
-                state.prelude =
-                        new PreludeBuffer();
-            }
-        } else if (state.phase
-                == ConnectionPhase.ACTIVE_SERVICE
-                || state.prelude.completed()) {
-            if (feedbackFrame) {
-                diagnose("drop late 44-byte Feedback on "
-                        + state.phase
-                        + " tcp="
-                        + state.dynamicPort
-                        + "->"
-                        + (state.route != null ? state.route.listenerPort : 0));
-                return;
-            }
-            events.add(
-                    ConnectionEvent.application(
-                            state,
-                            bytes));
-            return;
-        } else if (state.phase == ConnectionPhase.INCOMING_PRELUDE
-                && state.isAdopted) {
-            state.phase = ConnectionPhase.ACTIVE_SERVICE;
-            if (state.serviceName == null) {
-                state.serviceName = state.connector == cloud
-                        ? IdsIpsecServiceRoute.CONTROL_SERVICE
-                        : (state.dataClass == OrdinaryIkeAuth.DataClass.CLASS_C
-                                ? NanoRegistryPropertyCodec.CLASS_C_SERVICE
-                                : NanoRegistryPropertyCodec.CLASS_D_SERVICE);
-            }
-                int protectionClass = state.dataClass == OrdinaryIkeAuth.DataClass.CLASS_C
-                        ? IdsUtunConnectionName.PROTECTION_CLASS_C
-                        : IdsUtunConnectionName.PROTECTION_CLASS_D;
-                state.route = state.connector == cloud
-                        ? IdsIpsecServiceRoute.control()
-                        : IdsIpsecServiceRoute.localDelivery(
-                                IdsServiceConnectorName.localDelivery(
-                                        IdsUtunConnectionName.defaultPaired(
-                                                IdsUtunConnectionName.PRIORITY_URGENT,
-                                                protectionClass)));
-            state.connector.activeByService.put(state.serviceName, state);
-            diagnose("transitioned adopted stream to ACTIVE_SERVICE: connId="
-                    + state.connectionId
-                    + " service="
-                    + state.serviceName
-                    + " len="
-                    + bytes.length);
-            events.add(
-                    ConnectionEvent.simple(
-                            EventType.SERVICE_ACCEPTED,
-                            state,
-                            0,
-                            state.serviceName,
-                            state.route));
-            events.add(
-                    ConnectionEvent.application(
-                            state,
-                            bytes));
-            return;
-        }
 
-        byte[] currentBytes = bytes;
-        while (currentBytes != null && currentBytes.length > 0) {
-            PreludeBuffer.Result completed;
-            try {
-                completed =
-                        state.prelude.push(
-                                currentBytes);
-            } catch (RuntimeException failure) {
-                if (connections.get(
-                        state.connectionId)
-                        == state) {
-                    removeConnectionState(
-                            state,
-                            true);
-                }
-                throw failure;
-            }
-            boolean preludeComplete = completed.complete();
-            try {
-                if (!preludeComplete) {
-                    break;
-                }
-                byte[] frame =
-                        completed.frame();
-                try {
-                    processPreludeFrame(
-                            state,
-                            frame,
-                            outbound,
-                            events);
-                } catch (RuntimeException failure) {
-                    if (connections.get(
-                            state.connectionId)
-                            == state) {
-                        removeConnectionState(
-                                state,
-                                true);
-                    }
-                    throw failure;
-                } finally {
-                    wipe(
-                            frame);
-                }
-                byte[] remainder =
-                        completed.remainder();
-                try {
-                    if (remainder.length == 0) {
-                        break;
-                    }
-                    if (state.phase == ConnectionPhase.ACTIVE_SERVICE) {
-                        if (remainder.length >= NwServiceConnectorCodec.LENGTH_PREFIX_LENGTH) {
-                            int nextLen = ((remainder[0] & 0xff) << 8) | (remainder[1] & 0xff);
-                            if (nextLen == NwServiceConnectorCodec.FEEDBACK_BODY_LENGTH
-                                    && remainder.length >= NwServiceConnectorCodec.FEEDBACK_FRAME_LENGTH) {
-                                currentBytes = remainder.clone();
-                                state.prelude.close();
-                                state.prelude = new PreludeBuffer();
-                                continue;
-                            }
-                        }
-                        events.add(
-                                ConnectionEvent.application(
-                                        state,
-                                        remainder));
-                        break;
-                    } else {
-                        currentBytes = remainder.clone();
-                        state.prelude.close();
-                        state.prelude = new PreludeBuffer();
-                    }
-                } finally {
-                    wipe(
-                            remainder);
-                }
-            } finally {
-                completed.close();
-                if (preludeComplete && state.phase != ConnectionPhase.ACTIVE_SERVICE) {
-                    state.prelude.close();
-                    state.prelude =
-                            new PreludeBuffer();
-                }
-            }
-        }
-    }
 
-    private boolean processPreludeFrame(
-            ConnectionState state,
-            byte[] frame,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        NwServiceConnectorCodec.Message message =
-                NwServiceConnectorCodec.decode(
-                        frame);
-        try {
-            if (state.phase == ConnectionPhase.REJECTED) {
-                if (message instanceof NwServiceConnectorCodec.Feedback feedback) {
-                    if (state.outgoingAttempt != null) {
-                        return processNormalFeedback(
-                                state,
-                                message,
-                                outbound,
-                                events);
-                    }
-                } else if (message instanceof NwServiceConnectorCodec.SignedRequest) {
-                    processIncomingRequest(
-                            state,
-                            message,
-                            outbound,
-                            events);
-                    return false;
-                }
-            }
-            return switch (state.phase) {
-                case INCOMING_PRELUDE, KEY_PROBE_RESPONDED -> {
-                    if (message instanceof NwServiceConnectorCodec.Feedback) {
-                        if (state.outgoingAttempt != null
-                                || !state.connector.outgoingByService.isEmpty()
-                                || !normal.outgoingByService.isEmpty()
-                                || !cloud.outgoingByService.isEmpty()) {
-                            yield processNormalFeedback(
-                                    state,
-                                    message,
-                                    outbound,
-                                    events);
-                        } else {
-                            diagnose("Ignoring unsolicited NWSC Feedback without a pending service request");
-                            yield false;
-                        }
-                    } else if (message instanceof NwServiceConnectorCodec.SignedRequest) {
-                        processIncomingRequest(
-                                state,
-                                message,
-                                outbound,
-                                events);
-                        yield false;
-                    } else {
-                        state.phase = ConnectionPhase.ACTIVE_SERVICE;
-                        events.add(
-                                ConnectionEvent.application(
-                                        state,
-                                        frame));
-                        yield true;
-                    }
-                }
-                case OUTGOING_NORMAL_PRELUDE -> {
-                    if (message instanceof NwServiceConnectorCodec.Feedback) {
-                        yield processNormalFeedback(
-                                state,
-                                message,
-                                outbound,
-                                events);
-                    } else if (message instanceof NwServiceConnectorCodec.SignedRequest) {
-                        processIncomingRequest(
-                                state,
-                                message,
-                                outbound,
-                                events);
-                        yield false;
-                    } else {
-                        throw protocolFailure(
-                                state,
-                                "Outgoing IDS normal request got mismatched message: " + message);
-                    }
-                }
-                case OUTGOING_KEY_PROBE_PRELUDE, WAITING_FOR_REMOTE_KEY -> {
-                    if (message instanceof NwServiceConnectorCodec.Feedback) {
-                        processKeyProbeFeedback(
-                                state,
-                                message,
-                                outbound,
-                                events);
-                        yield false;
-                    } else if (message instanceof NwServiceConnectorCodec.SignedRequest) {
-                        processIncomingRequest(
-                                state,
-                                message,
-                                outbound,
-                                events);
-                        yield false;
-                    } else {
-                        throw protocolFailure(
-                                state,
-                                "Waiting for remote key got invalid message: " + message);
-                    }
-                }
-                case ACTIVE_SERVICE -> {
-                    if (message instanceof NwServiceConnectorCodec.Feedback) {
-                        yield processNormalFeedback(
-                                state,
-                                message,
-                                outbound,
-                                events);
-                    } else if (message instanceof NwServiceConnectorCodec.SignedRequest) {
-                        processIncomingRequest(
-                                state,
-                                message,
-                                outbound,
-                                events);
-                        yield false;
-                    } else {
-                        events.add(
-                                ConnectionEvent.application(
-                                        state,
-                                        frame));
-                        yield true;
-                    }
-                }
-                default -> throw protocolFailure(
-                        state,
-                        "IDS connection has no NWSC prelude state");
-            };
-        } finally {
-            message.destroy();
-        }
-    }
 
-    private void processIncomingRequest(
-            ConnectionState state,
-            NwServiceConnectorCodec.Message message,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        if (!(message
-                instanceof NwServiceConnectorCodec
-                .SignedRequest signedRequest)) {
-            throw protocolFailure(
-                    state,
-                    "Passive IDS connection did not start with a signed request");
-        }
 
-        if (signedRequest.localPort <= 0
-                || signedRequest.localPort > 65535) {
-            try (NwServiceConnectorHandshake.IncomingResult rejected =
-                         state.connector.handshake(state.dataClass)
-                                 .createIncomingRejection(
-                                         true)) {
-                sendFeedback(
-                        state,
-                        rejected.feedbackFrame(),
-                        outbound);
-            }
-            state.phase =
-                    ConnectionPhase.REJECTED;
-            events.add(
-                    ConnectionEvent.simple(
-                            EventType.SERVICE_REJECTED_BY_POLICY,
-                            state,
-                            0,
-                            null,
-                            null));
-            return;
-        }
 
-        if (signedRequest
-                instanceof NwServiceConnectorCodec
-                .OperationRequest operation) {
-            processIncomingOperation(
-                    state,
-                    operation,
-                    outbound,
-                    events);
-            return;
-        }
-        if (!(signedRequest
-                instanceof NwServiceConnectorCodec
-                .NormalStartRequest normalRequest)) {
-            throw protocolFailure(
-                    state,
-                    "Passive IDS connection has an unknown signed request");
-        }
 
-        IdsIpsecServiceRoute route =
-                routeForIncoming(
-                        normalRequest.serviceName,
-                        state.connector,
-                        state.dataClass);
-        try (NwServiceConnectorHandshake.IncomingResult decision =
-                     state.connector.handshake(state.dataClass)
-                             .receiveIncomingRequest(
-                                     state.endpointIdentifier,
-                                     normalRequest,
-                                     route != null)) {
-            IncomingMetadata metadata =
-                    new IncomingMetadata(
-                            state.connectionId,
-                            route,
-                            state.endpointIdentifier,
-                            normalRequest.serviceName,
-                            normalRequest.sequence,
-                            normalRequest.requestUuid);
-            try {
-                applyIncomingDecision(
-                        state,
-                        metadata,
-                        decision,
-                        outbound,
-                        events);
-            } finally {
-                if (state.pendingIncoming == null) {
-                    metadata.close();
-                }
-            }
-        }
-    }
 
-    private void processIncomingOperation(
-            ConnectionState state,
-            NwServiceConnectorCodec.OperationRequest operation,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        try (NwServiceConnectorHandshake.IncomingResult response =
-                     state.connector.handshake(state.dataClass)
-                             .receiveIncomingRequest(
-                                     state.endpointIdentifier,
-                                     operation,
-                                     true)) {
-            sendFeedback(
-                    state,
-                    response.feedbackFrame(),
-                    outbound);
-            state.phase =
-                    ConnectionPhase.KEY_PROBE_RESPONDED;
-            events.add(
-                    ConnectionEvent.simple(
-                            EventType.KEY_PROBE_RESPONDED,
-                            state,
-                            0,
-                            null,
-                            null));
-            // Live Watch reverse-probes our SYN source (49154→1029),
-            // stores the Ed25519 key from ACCEPTED probe Feedback, FINs
-            // the probe, then sends 44-byte NWSC Feedback on the original
-            // tuple (stand 15:39: 61314→1029 / 61315→1026). 0.2.97/98
-            // tore that TCP down and SYNed a new port; Watch's ACCEPTED
-            // landed on the dead tuple (drop stale) and ACL 0x13 followed.
-            // Keep the first SYN. OPERATION_RETRY still parks a resend.
-            if (operation.operation
-                    == NwServiceConnectorCodec.OPERATION_NO_OP
-                    && state.localPort != 0) {
-                for (OutgoingAttempt attempt :
-                        state.connector.outgoingByService.values()) {
-                    ConnectionState outgoing =
-                            connections.get(
-                                    attempt.connectionId);
-                    if (outgoing != null
-                            && outgoing.dynamicPort != 0
-                            && outgoing.dynamicPort == state.localPort) {
-                        diagnose("keeping original outgoing after Watch reverse key probe to source port "
-                                + state.localPort
-                                + "; waiting for ACCEPTED Feedback on that TCP");
-                        break;
-                    }
-                }
-            }
-            if (response.retryPendingOutgoing) {
-                for (OutgoingAttempt attempt :
-                        state.connector.outgoingByService.values()) {
-                    if (attempt.endpointIdentifier.equals(
-                            state.endpointIdentifier)) {
-                        attempt.waitingForRetry = true;
-                    }
-                }
-                retryPendingOutgoing(
-                        state.connector,
-                        state.endpointIdentifier,
-                        outbound,
-                        events);
-            }
-        }
-    }
 
-    private void applyIncomingDecision(
-            ConnectionState state,
-            IncomingMetadata metadata,
-            NwServiceConnectorHandshake.IncomingResult decision,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        diagnose("incoming request service="
-                + metadata.serviceName
-                + " endpoint=" + state.endpointIdentifier
-                + " disposition=" + decision.disposition
-                + " startReverseKeyProbe=" + decision.startReverseKeyProbe
-                + " routed=" + (metadata.route != null));
-        if (decision.disposition
-                == NwServiceConnectorHandshake
-                .IncomingDisposition.WAITING_FOR_REMOTE_KEY) {
-            state.phase =
-                    ConnectionPhase.WAITING_FOR_REMOTE_KEY;
-            state.pendingIncoming =
-                    metadata;
-            state.connector.pendingIncoming.add(
-                    metadata);
-            if (decision.startReverseKeyProbe) {
-                startReverseKeyProbe(
-                        state.connector,
-                        state.dataClass,
-                        state.connectionId,
-                        outbound,
-                        events);
-            }
-            return;
-        }
 
-        NwServiceConnectorHandshake.IncomingResult finalDecision =
-                decision;
-        NwServiceConnectorHandshake.IncomingResult arbitrationRejection =
-                null;
-        try {
-            if (decision.disposition
-                    == NwServiceConnectorHandshake
-                    .IncomingDisposition.ACCEPTED) {
-                ConnectionState active =
-                        state.connector.activeByService.get(
-                                metadata.serviceName);
-                if (active != null
-                        && !NwServiceConnectorHandshake
-                        .incomingSupersedesActive(
-                                metadata.sequence,
-                                metadata.requestUuid,
-                                active.serviceSequence,
-                                active.serviceUuid)) {
-                    arbitrationRejection =
-                            state.connector.handshake(state.dataClass)
-                                    .createIncomingRejection(
-                                            false);
-                    finalDecision =
-                            arbitrationRejection;
-                }
-            }
 
-            if (finalDecision.cancelOutgoingNormal) {
-                cancelOutgoingForCollision(
-                        state.connector,
-                        finalDecision.cancelOutgoingServiceName,
-                        state.connectionId,
-                        events);
-            }
 
-            sendFeedback(
-                    state,
-                    finalDecision.feedbackFrame(),
-                    outbound);
-            switch (finalDecision.disposition) {
-                case ACCEPTED -> {
-                    ConnectionState active =
-                            state.connector.activeByService.get(
-                                    metadata.serviceName);
-                    if (active != null) {
-                        long supersededId =
-                                active.connectionId;
-                        removeConnectionState(
-                                active,
-                                false);
-                        events.add(
-                                ConnectionEvent.simple(
-                                        EventType.ACTIVE_SUPERSEDED,
-                                        state,
-                                        supersededId,
-                                        metadata.serviceName,
-                                        metadata.route));
-                    }
-                    activate(
-                            state,
-                            metadata.route,
-                            metadata.serviceName,
-                            metadata.sequence,
-                            metadata.requestUuid);
-                    events.add(
-                            ConnectionEvent.simple(
-                                    EventType.SERVICE_ACCEPTED,
-                                    state,
-                                    0,
-                                    metadata.serviceName,
-                                    metadata.route));
-                }
-                case REJECTED_BY_POLICY -> {
-                    state.phase =
-                            ConnectionPhase.REJECTED;
-                    events.add(
-                            ConnectionEvent.simple(
-                                    EventType
-                                            .SERVICE_REJECTED_BY_POLICY,
-                                    state,
-                                    0,
-                                    metadata.serviceName,
-                                    metadata.route));
-                }
-                case REJECTED_TRANSIENT -> {
-                    state.phase =
-                            ConnectionPhase.REJECTED;
-                    events.add(
-                            ConnectionEvent.simple(
-                                    EventType
-                                            .SERVICE_REJECTED_TRANSIENT,
-                                    state,
-                                    0,
-                                    metadata.serviceName,
-                                    metadata.route));
-                }
-                case WAITING_FOR_REMOTE_KEY ->
-                        throw new IllegalStateException(
-                                "Resolved NWSC decision remained pending");
-            }
-        } finally {
-            if (arbitrationRejection != null) {
-                arbitrationRejection.close();
-            }
-        }
-    }
 
-    private boolean processNormalFeedback(
-            ConnectionState state,
-            NwServiceConnectorCodec.Message message,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        if (!(message
-                instanceof NwServiceConnectorCodec.Feedback feedback)) {
-            throw protocolFailure(
-                    state,
-                    "Outgoing IDS normal request got mismatched feedback");
-        }
-        OutgoingAttempt attempt =
-                state.outgoingAttempt;
-        if (attempt == null && feedback != null) {
-            for (OutgoingAttempt candidate : state.connector.outgoingByService.values()) {
-                if (candidate.sequence == feedback.sequence) {
-                    attempt = candidate;
-                    break;
-                }
-            }
-        }
-        if (attempt == null && !state.connector.outgoingByService.isEmpty()) {
-            attempt = state.connector.outgoingByService.values().iterator().next();
-        }
-        if (attempt == null) {
-            diagnose("outgoing feedback has no matching attempt seq="
-                    + feedback.sequence
-                    + " tcp="
-                    + state.dynamicPort);
-            return true;
-        }
-        NwServiceConnectorHandshake.OutgoingDisposition disposition;
-        try {
-            disposition =
-                    attempt.connector.handshake(dataClass(attempt.route))
-                            .receiveNormalFeedback(
-                                    feedback);
-        } catch (IllegalArgumentException e) {
-            diagnose("outgoing feedback not applied seq="
-                    + feedback.sequence
-                    + " tcp="
-                    + state.dynamicPort
-                    + " reason="
-                    + e.getMessage());
-            return true;
-        }
-        diagnose("outgoing feedback disposition="
-                + disposition
-                + " seq=" + feedback.sequence
-                + " service=" + attempt.route.service
-                + " tcp=" + state.dynamicPort
-                + "->" + attempt.route.listenerPort);
-        switch (disposition) {
-            case ACCEPTED -> {
-                state.connector.outgoingByService.remove(
-                        attempt.route.service);
-                activate(
-                        state,
-                        attempt.route,
-                        attempt.route.service,
-                        attempt.sequence,
-                        attempt.requestUuid);
-                state.outgoingAttempt = null;
-                attempt.connectionId = 0;
-                attempt.close();
-                events.add(
-                        ConnectionEvent.simple(
-                                EventType.SERVICE_ACCEPTED,
-                                state,
-                                0,
-                                state.serviceName,
-                                state.route));
-                return true;
-            }
-            case REJECTED_BY_POLICY -> {
-                // iOS 26.6 should_accept_connection block_invoke.211:
-                // flags & 0x40 → cancel_request_inner, never a new SYN.
-                // Every 44-byte Feedback carries a pubkey, so treating
-                // "has key" as WAITING retried policy rejects too.
-                state.connector.outgoingByService.remove(
-                        attempt.route.service);
-                state.phase =
-                        ConnectionPhase.REJECTED;
-                state.outgoingAttempt = null;
-                attempt.connectionId = 0;
-                attempt.close();
-                events.add(
-                        ConnectionEvent.simple(
-                                EventType.SERVICE_REJECTED_BY_POLICY,
-                                state,
-                                0,
-                                attempt.route.service,
-                                attempt.route));
-                removeConnectionState(
-                        state,
-                        false);
-                return false;
-            }
-            case WAITING -> {
-                // flags == 0: Apple starts a path watcher and leaves the
-                // unique connection up (0x182b7ed84 → start_path_watcher).
-                // Stand 15:50: Watch sent this 44-byte frame on live 1026
-                // after 20s; tearing it down and SYNing 1027 caused ACL 0x13.
-                diagnose("keeping original outgoing after transient Feedback; "
-                        + "waiting for ACCEPTED on this TCP");
-                return true;
-            }
-            default -> throw new IllegalStateException(
-                    "Unknown outgoing NWSC disposition");
-        }
-    }
 
-    private void processKeyProbeFeedback(
-            ConnectionState state,
-            NwServiceConnectorCodec.Message message,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        if (!(message
-                instanceof NwServiceConnectorCodec.Feedback feedback)) {
-            throw protocolFailure(
-                    state,
-                    "Outgoing IDS key probe got non-feedback message: "
-                            + (message != null ? message.getClass().getSimpleName() : "null"));
-        }
-        ConnectorContext connector =
-                state.connector;
-        KeyProbe probe =
-                state.keyProbe;
-        if (probe == null) {
-            probe = connector.keyProbes.get(state.endpointIdentifier);
-        }
-        List<IncomingMetadata> pending =
-                connector.removePendingIncoming(
-                        state.endpointIdentifier);
-        try (NwServiceConnectorHandshake.IncomingBatch decisions =
-                     connector.handshake(state.dataClass)
-                             .receiveKeyProbeFeedback(
-                                     state.endpointIdentifier,
-                                     feedback)) {
-            ConnectorContext other = connector == normal ? cloud : normal;
-            if (other != null && feedback.publicEd25519 != null) {
-                String otherEndpoint = other.endpointIdentifier(state.dataClass);
-                if (otherEndpoint != null) {
-                    other.handshake(state.dataClass).seedRemoteKey(otherEndpoint, feedback.publicEd25519);
-                }
-            }
-            if (decisions.size()
-                    != pending.size()) {
-                throw new IllegalStateException(
-                        "NWSC key-probe result count is inconsistent");
-            }
-            if (probe != null) {
-                long probeConnectionId =
-                        probe.connectionId != 0 ? probe.connectionId : state.connectionId;
-                state.keyProbe = null;
-                probe.connectionId = 0;
-                connector.keyProbes.remove(
-                        state.endpointIdentifier);
-                if (probeConnectionId != 0) {
-                    ConnectionState probeState =
-                            connections.get(
-                                    probeConnectionId);
-                    if (probeState != null) {
-                        removeConnectionState(
-                                probeState,
-                                false);
-                    }
-                }
-                probe.close();
-                events.add(
-                        ConnectionEvent.detached(
-                                EventType.KEY_PROBE_COMPLETED,
-                                probeConnectionId,
-                                0,
-                                null,
-                                null));
-            }
 
-            retryPendingOutgoing(
-                    connector,
-                    state.endpointIdentifier,
-                    outbound,
-                    events);
 
-            for (int index = 0;
-                    index < pending.size();
-                    index++) {
-                IncomingMetadata metadata =
-                        pending.get(
-                                index);
-                ConnectionState original =
-                        connections.get(
-                                metadata.connectionId);
-                try {
-                    if (original == null
-                            || original.pendingIncoming
-                            != metadata) {
-                        continue;
-                    }
-                    original.pendingIncoming = null;
-                    applyIncomingDecision(
-                            original,
-                            metadata,
-                            decisions.get(
-                                    index),
-                            outbound,
-                            events);
-                } finally {
-                    metadata.close();
-                }
-            }
-        } finally {
-            for (IncomingMetadata metadata : pending) {
-                metadata.close();
-            }
-        }
-    }
-
-    private void startReverseKeyProbe(
-            ConnectorContext connector,
-            OrdinaryIkeAuth.DataClass dataClass,
-            long originalConnectionId,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        String endpointIdentifier =
-                connector.endpointIdentifier(
-                        dataClass);
-        if (connector.keyProbes.containsKey(
-                endpointIdentifier)) {
-            diagnose("reverse key probe suppressed: one is already pending for "
-                    + endpointIdentifier);
-            throw new IllegalStateException(
-                    "NWSC requested a duplicate reverse key probe");
-        }
-        diagnose("starting reverse key probe endpoint="
-                + endpointIdentifier
-                + " listenerPort=" + connector.listenerPort);
-        NwServiceConnectorHandshake.OutgoingStart start = null;
-        KeyProbe probe = null;
-        int dynamicPort =
-                ports.allocate();
-        try {
-            start =
-                    connector.handshake(dataClass).startKeyProbe(
-                            endpointIdentifier,
-                            connector.listenerPort);
-            byte[] frame =
-                    start.frame();
-            try {
-                probe =
-                        new KeyProbe(
-                                connector,
-                                endpointIdentifier,
-                                start.sequence,
-                                frame);
-            } finally {
-                wipe(
-                        frame);
-            }
-            try (IdsIpv6TcpRouter.ActiveOpen active =
-                         tcp.openActive(
-                                 dataClass,
-                                 dynamicPort,
-                                 connector.listenerPort,
-                                 probe.frame)) {
-                ConnectionState state =
-                        ConnectionState.keyProbe(
-                                active.connectionId,
-                                connector,
-                                dataClass,
-                                dynamicPort,
-                                probe);
-                connections.put(
-                        active.connectionId,
-                        state);
-                probe.connectionId =
-                        active.connectionId;
-                connector.keyProbes.put(
-                        endpointIdentifier,
-                        probe);
-                addPacket(
-                        outbound,
-                        active.dataClass,
-                        active.packet());
-                events.add(
-                        ConnectionEvent.simple(
-                                EventType.KEY_PROBE_STARTED,
-                                state,
-                                originalConnectionId,
-                                null,
-                                null));
-                dynamicPort = 0;
-                probe = null;
-            }
-        } catch (RuntimeException failure) {
-            connector.handshake(dataClass).cancelKeyProbe(
-                    endpointIdentifier);
-            if (dynamicPort != 0) {
-                ports.release(
-                        dynamicPort);
-            }
-            if (probe != null) {
-                probe.close();
-            }
-            throw failure;
-        } finally {
-            if (start != null) {
-                start.close();
-            }
-        }
-    }
-
-    private void retryPendingOutgoing(
-            ConnectorContext connector,
-            String endpointIdentifier,
-            List<RoutedPacket> outbound,
-            List<ConnectionEvent> events) {
-        List<OutgoingAttempt> attempts =
-                new ArrayList<>(
-                        connector.outgoingByService.values());
-        for (OutgoingAttempt attempt : attempts) {
-            if (!attempt.waitingForRetry) {
-                continue;
-            }
-            long oldConnectionId =
-                    attempt.connectionId;
-            if (oldConnectionId != 0) {
-                ConnectionState old =
-                        connections.get(
-                                oldConnectionId);
-                if (old != null) {
-                    old.outgoingAttempt = null;
-                    removeConnectionState(
-                            old,
-                            false);
-                }
-                attempt.connectionId = 0;
-            }
-            ActiveTransport restarted =
-                    startAttemptTransport(
-                            attempt);
-            try {
-                attempt.waitingForRetry = false;
-                addPacket(
-                        outbound,
-                        restarted.dataClass,
-                        restarted.packet);
-                events.add(
-                        ConnectionEvent.detached(
-                                EventType.OUTGOING_RETRIED,
-                                restarted.connectionId,
-                                oldConnectionId,
-                                attempt.route.service,
-                                attempt.route));
-            } finally {
-                restarted.close();
-            }
-        }
-    }
-
-    private ActiveTransport startAttemptTransportWithPort(
-            OutgoingAttempt attempt,
-            int dynamicPort,
-            boolean ownsDynamicPort) {
-        OrdinaryIkeAuth.DataClass dataClass =
-                dataClass(
-                        attempt.route);
-        try (IdsIpv6TcpRouter.ActiveOpen active =
-                     tcp.openActive(
-                             dataClass,
-                             dynamicPort,
-                             attempt.route.listenerPort,
-                             attempt.frame)) {
-            ConnectionState state =
-                    ConnectionState.outgoing(
-                            active.connectionId,
-                            attempt.connector,
-                            dataClass,
-                            dynamicPort,
-                            ownsDynamicPort,
-                            attempt);
-            connections.put(
-                            active.connectionId,
-                            state);
-            attempt.connectionId =
-                    active.connectionId;
-            return new ActiveTransport(
-                    active.connectionId,
-                    active.dataClass,
-                    active.packet());
-        }
-    }
-
-    private ActiveTransport startAttemptTransport(
-            OutgoingAttempt attempt) {
-        int dynamicPort =
-                ports.allocate();
-        try {
-            attempt.connector.handshake(dataClass(attempt.route)).cancelNormalRequest(
-                    attempt.endpointIdentifier,
-                    attempt.route.service);
-            try (NwServiceConnectorHandshake.OutgoingStart restarted =
-                         attempt.connector.handshake(dataClass(attempt.route)).startNormalRequest(
-                                 attempt.endpointIdentifier,
-                                 dynamicPort,
-                                 attempt.requestUuid,
-                                 attempt.route.service)) {
-                attempt.replaceFrame(
-                        restarted.sequence,
-                        restarted.frame());
-            }
-            return startAttemptTransportWithPort(
-                    attempt,
-                    dynamicPort,
-                    true);
-        } catch (RuntimeException failure) {
-            ports.release(
-                    dynamicPort);
-            throw failure;
-        }
-    }
-
-    private void cancelOutgoingForCollision(
-            ConnectorContext connector,
-            String serviceName,
-            long winnerConnectionId,
-            List<ConnectionEvent> events) {
-        OutgoingAttempt attempt =
-                connector.outgoingByService.remove(
-                        serviceName);
-        ConnectionState active =
-                connector.activeByService.remove(
-                        serviceName);
-        if (attempt != null) {
-            long cancelledConnectionId =
-                    attempt.connectionId;
-            cancelAttemptTransport(
-                    attempt);
-            attempt.close();
-            if (active != null) {
-                removeConnectionState(
-                        active,
-                        true);
-            }
-            events.add(
-                    ConnectionEvent.detached(
-                            EventType.OUTGOING_CANCELLED,
-                            cancelledConnectionId,
-                            winnerConnectionId,
-                            serviceName,
-                            attempt.route));
-            return;
-        }
-        if (active != null) {
-            long cancelledConnectionId =
-                    active.connectionId;
-            removeConnectionState(
-                    active,
-                    true);
-            events.add(
-                    ConnectionEvent.detached(
-                            EventType.OUTGOING_CANCELLED,
-                            cancelledConnectionId,
-                            winnerConnectionId,
-                            serviceName,
-                            active.route));
-        }
-    }
-
-    private void cancelAttemptTransport(
-            OutgoingAttempt attempt) {
-        if (attempt.connectionId == 0) {
-            return;
-        }
-        ConnectionState state =
-                connections.get(
-                        attempt.connectionId);
-        if (state != null) {
-            state.outgoingAttempt = null;
-            removeConnectionState(
-                    state,
-                    false);
-        }
-        attempt.connectionId = 0;
-    }
-
-    private void sendFeedback(
-            ConnectionState state,
-            byte[] feedback,
-            List<RoutedPacket> outbound) {
-        if (feedback == null) {
-            throw protocolFailure(
-                    state,
-                    "NWSC decision has no feedback frame");
-        }
-        try (IdsIpv6TcpRouter.PacketBatch sent =
-                     tcp.send(
-                             state.connectionId,
-                             feedback)) {
-            addPackets(
-                    outbound,
-                    sent.dataClass,
-                    sent.packets());
-        } finally {
-            wipe(
-                    feedback);
-        }
-    }
-
-    private void activate(
-            ConnectionState state,
-            IdsIpsecServiceRoute route,
-            String serviceName,
-            long sequence,
-            byte[] requestUuid) {
-        if (route == null
-                || serviceName == null
-                || requestUuid == null) {
-            throw new IllegalArgumentException(
-                    "Accepted IDS service metadata is incomplete");
-        }
-        ConnectionState previous =
-                state.connector.activeByService.put(
-                        serviceName,
-                        state);
-        if (previous != null
-                && previous != state) {
-            state.connector.activeByService.put(
-                    serviceName,
-                    previous);
-            throw new IllegalStateException(
-                    "IDS active-service registry collision");
-        }
-        state.phase =
-                ConnectionPhase.ACTIVE_SERVICE;
-        state.route = route;
-        state.serviceName = serviceName;
-        state.serviceSequence = sequence;
-        wipe(
-                state.serviceUuid);
-        state.serviceUuid =
-                requestUuid.clone();
-    }
-
-    private void removeConnectionState(
-            ConnectionState state,
+    void removeConnectionState(
+            IdsServiceConnectorState.ConnectionState state,
             boolean cancelHandshakeState) {
         connections.remove(
                 state.connectionId);
@@ -2253,7 +1098,7 @@ final class IdsServiceConnectorCoordinator
             state.pendingIncoming = null;
         }
         if (state.outgoingAttempt != null) {
-            OutgoingAttempt attempt =
+            IdsServiceConnectorState.OutgoingAttempt attempt =
                     state.outgoingAttempt;
             state.outgoingAttempt = null;
             attempt.connectionId = 0;
@@ -2267,7 +1112,7 @@ final class IdsServiceConnectorCoordinator
             }
         }
         if (state.keyProbe != null) {
-            KeyProbe probe =
+            IdsServiceConnectorState.KeyProbe probe =
                     state.keyProbe;
             state.keyProbe = null;
             probe.connectionId = 0;
@@ -2282,8 +1127,8 @@ final class IdsServiceConnectorCoordinator
         state.close();
     }
 
-    private IllegalArgumentException protocolFailure(
-            ConnectionState state,
+    IllegalArgumentException protocolFailure(
+            IdsServiceConnectorState.ConnectionState state,
             String message) {
         removeConnectionState(
                 state,
@@ -2292,9 +1137,9 @@ final class IdsServiceConnectorCoordinator
                 message);
     }
 
-    private ConnectionState requireConnection(
+    IdsServiceConnectorState.ConnectionState requireConnection(
             long connectionId) {
-        ConnectionState state =
+        IdsServiceConnectorState.ConnectionState state =
                 connections.get(
                         connectionId);
         if (state == null) {
@@ -2304,7 +1149,7 @@ final class IdsServiceConnectorCoordinator
         return state;
     }
 
-    private ConnectorContext connector(
+    IdsServiceConnectorState.ConnectorContext connector(
             IdsIpsecServiceRoute.Connector connector) {
         return connector
                 == IdsIpsecServiceRoute.Connector.NORMAL
@@ -2312,7 +1157,7 @@ final class IdsServiceConnectorCoordinator
                 : cloud;
     }
 
-    private ConnectorContext connectorForPort(
+    IdsServiceConnectorState.ConnectorContext connectorForPort(
             int localPort,
             int remotePort) {
         if (localPort == cloud.listenerPort
@@ -2323,7 +1168,7 @@ final class IdsServiceConnectorCoordinator
                 || remotePort == normal.listenerPort) {
             return normal;
         }
-        for (ConnectionState existing : connections.values()) {
+        for (IdsServiceConnectorState.ConnectionState existing : connections.values()) {
             if (existing.outgoingAttempt != null
                     && existing.dynamicPort == localPort) {
                 return existing.connector;
@@ -2332,7 +1177,7 @@ final class IdsServiceConnectorCoordinator
         return normal;
     }
 
-    private static OrdinaryIkeAuth.DataClass dataClass(
+    static OrdinaryIkeAuth.DataClass dataClass(
             IdsIpsecServiceRoute route) {
         return switch (route.networkRelayDataClass) {
             case IdsIpsecServiceRoute.NETWORK_RELAY_CLASS_D ->
@@ -2344,9 +1189,9 @@ final class IdsServiceConnectorCoordinator
         };
     }
 
-    private static IdsIpsecServiceRoute routeForIncoming(
+    static IdsIpsecServiceRoute routeForIncoming(
             String serviceName,
-            ConnectorContext connector,
+            IdsServiceConnectorState.ConnectorContext connector,
             OrdinaryIkeAuth.DataClass dataClass) {
         if (serviceName == null) {
             return null;
@@ -2382,7 +1227,7 @@ final class IdsServiceConnectorCoordinator
         return candidate;
     }
 
-    private static IdsIpsecServiceRoute requireCanonicalRoute(
+    static IdsIpsecServiceRoute requireCanonicalRoute(
             IdsIpsecServiceRoute route) {
         if (route == null) {
             throw new IllegalArgumentException(
@@ -2415,7 +1260,7 @@ final class IdsServiceConnectorCoordinator
         return route;
     }
 
-    private byte[] randomNormalUuid() {
+    byte[] randomNormalUuid() {
         byte[] uuid =
                 new byte[NwServiceConnectorCodec.UUID_LENGTH];
         random.nextBytes(
@@ -2426,7 +1271,7 @@ final class IdsServiceConnectorCoordinator
         return uuid;
     }
 
-    private void requireUsable() {
+    void requireUsable() {
         if (closed) {
             throw new IllegalStateException(
                     "IDS service-connector coordinator is closed");
@@ -2439,7 +1284,7 @@ final class IdsServiceConnectorCoordinator
             return;
         }
         closed = true;
-        for (ConnectionState state :
+        for (IdsServiceConnectorState.ConnectionState state :
                 new ArrayList<>(
                         connections.values())) {
             removeConnectionState(
@@ -2453,7 +1298,7 @@ final class IdsServiceConnectorCoordinator
         ports.close();
     }
 
-    private static void addPackets(
+    static void addPackets(
             List<RoutedPacket> output,
             OrdinaryIkeAuth.DataClass dataClass,
             List<byte[]> packets) {
@@ -2470,7 +1315,7 @@ final class IdsServiceConnectorCoordinator
         }
     }
 
-    private static void addPacket(
+    static void addPacket(
             List<RoutedPacket> output,
             OrdinaryIkeAuth.DataClass dataClass,
             byte[] packet) {
@@ -2485,7 +1330,7 @@ final class IdsServiceConnectorCoordinator
         }
     }
 
-    private static void closePackets(
+    static void closePackets(
             List<RoutedPacket> packets) {
         for (RoutedPacket packet : packets) {
             packet.close();
@@ -2493,7 +1338,7 @@ final class IdsServiceConnectorCoordinator
         packets.clear();
     }
 
-    private static void closeEvents(
+    static void closeEvents(
             List<ConnectionEvent> events) {
         for (ConnectionEvent event : events) {
             event.close();
@@ -2501,7 +1346,7 @@ final class IdsServiceConnectorCoordinator
         events.clear();
     }
 
-    private static void wipe(
+    static void wipe(
             byte[] value) {
         if (value != null) {
             Arrays.fill(
@@ -2510,7 +1355,7 @@ final class IdsServiceConnectorCoordinator
         }
     }
 
-    private static void wipeAll(
+    static void wipeAll(
             List<byte[]> values) {
         for (byte[] value : values) {
             wipe(
@@ -2761,8 +1606,8 @@ final class IdsServiceConnectorCoordinator
                             : applicationBytes.clone();
         }
 
-        private static ConnectionEvent application(
-                ConnectionState state,
+        static ConnectionEvent application(
+                IdsServiceConnectorState.ConnectionState state,
                 byte[] bytes) {
             return new ConnectionEvent(
                     EventType.APPLICATION_BYTES,
@@ -2773,9 +1618,9 @@ final class IdsServiceConnectorCoordinator
                     bytes);
         }
 
-        private static ConnectionEvent simple(
+        static ConnectionEvent simple(
                 EventType type,
-                ConnectionState state,
+                IdsServiceConnectorState.ConnectionState state,
                 long relatedConnectionId,
                 String serviceName,
                 IdsIpsecServiceRoute route) {
@@ -2787,7 +1632,7 @@ final class IdsServiceConnectorCoordinator
                     route);
         }
 
-        private static ConnectionEvent detached(
+        static ConnectionEvent detached(
                 EventType type,
                 long connectionId,
                 long relatedConnectionId,
@@ -2871,390 +1716,11 @@ final class IdsServiceConnectorCoordinator
         }
     }
 
-    private static final class ConnectorContext
-            implements AutoCloseable {
-        final IdsIpsecServiceRoute.Connector connector;
-        final int listenerPort;
-        final String classDEndpointIdentifier;
-        final String classCEndpointIdentifier;
-        final NwServiceConnectorHandshake classDHandshake;
-        final NwServiceConnectorHandshake classCHandshake;
-        final Map<String, OutgoingAttempt> outgoingByService =
-                new LinkedHashMap<>();
-        final Map<String, ConnectionState> activeByService =
-                new LinkedHashMap<>();
-        final List<IncomingMetadata> pendingIncoming =
-                new ArrayList<>();
-        final Map<String, KeyProbe> keyProbes =
-                new LinkedHashMap<>();
 
-        private ConnectorContext(
-                IdsIpsecServiceRoute.Connector connector,
-                int listenerPort,
-                String classDEndpointIdentifier,
-                String classCEndpointIdentifier,
-                NwServiceConnectorHandshake classDHandshake,
-                NwServiceConnectorHandshake classCHandshake) {
-            this.connector =
-                    connector;
-            this.listenerPort =
-                    listenerPort;
-            this.classDEndpointIdentifier =
-                    classDEndpointIdentifier;
-            this.classCEndpointIdentifier =
-                    classCEndpointIdentifier;
-            this.classDHandshake =
-                    classDHandshake;
-            this.classCHandshake =
-                    classCHandshake;
-        }
 
-        NwServiceConnectorHandshake handshake(
-                OrdinaryIkeAuth.DataClass dataClass) {
-            return dataClass == OrdinaryIkeAuth.DataClass.CLASS_D
-                    ? classDHandshake
-                    : classCHandshake;
-        }
 
-        NwServiceConnectorHandshake handshake(
-                String endpointIdentifier) {
-            if (classCEndpointIdentifier != null
-                    && classCEndpointIdentifier.equals(endpointIdentifier)) {
-                return classCHandshake;
-            }
-            return classDHandshake;
-        }
 
-        private String endpointIdentifier(
-                OrdinaryIkeAuth.DataClass dataClass) {
-            return switch (dataClass) {
-                case CLASS_D -> classDEndpointIdentifier;
-                case CLASS_C -> classCEndpointIdentifier;
-            };
-        }
 
-        private List<IncomingMetadata> removePendingIncoming(
-                String endpointIdentifier) {
-            List<IncomingMetadata> matching =
-                    new ArrayList<>();
-            for (int index = 0;
-                    index < pendingIncoming.size();) {
-                IncomingMetadata metadata =
-                        pendingIncoming.get(
-                                index);
-                if (metadata.endpointIdentifier.equals(
-                        endpointIdentifier)) {
-                    matching.add(
-                            metadata);
-                    pendingIncoming.remove(
-                            index);
-                } else {
-                    index++;
-                }
-            }
-            return matching;
-        }
-
-        @Override
-        public void close() {
-            for (OutgoingAttempt attempt :
-                    outgoingByService.values()) {
-                attempt.close();
-            }
-            outgoingByService.clear();
-            activeByService.clear();
-            for (IncomingMetadata metadata : pendingIncoming) {
-                metadata.close();
-            }
-            pendingIncoming.clear();
-            for (KeyProbe keyProbe :
-                    keyProbes.values()) {
-                keyProbe.close();
-            }
-            keyProbes.clear();
-            if (classDHandshake != null) {
-                classDHandshake.close();
-            }
-            if (classCHandshake != null) {
-                classCHandshake.close();
-            }
-        }
-    }
-
-    private static final class ConnectionState
-            implements AutoCloseable {
-        final long connectionId;
-        final ConnectorContext connector;
-        final OrdinaryIkeAuth.DataClass dataClass;
-        final String endpointIdentifier;
-        PreludeBuffer prelude =
-                new PreludeBuffer();
-        ConnectionPhase phase;
-        int dynamicPort;
-        boolean ownsDynamicPort;
-        int localPort;
-        boolean isAdopted;
-        OutgoingAttempt outgoingAttempt;
-        KeyProbe keyProbe;
-        IncomingMetadata pendingIncoming;
-        IdsIpsecServiceRoute route;
-        String serviceName;
-        long serviceSequence;
-        byte[] serviceUuid =
-                new byte[0];
-        boolean closed;
-
-        private ConnectionState(
-                long connectionId,
-                ConnectorContext connector,
-                OrdinaryIkeAuth.DataClass dataClass,
-                ConnectionPhase phase,
-                int dynamicPort) {
-            this.connectionId =
-                    connectionId;
-            this.connector =
-                    connector;
-            this.dataClass =
-                    dataClass;
-            endpointIdentifier =
-                    connector.endpointIdentifier(
-                            dataClass);
-            this.phase =
-                    phase;
-            this.dynamicPort =
-                    dynamicPort;
-        }
-
-        private static ConnectionState incoming(
-                long connectionId,
-                ConnectorContext connector,
-                OrdinaryIkeAuth.DataClass dataClass,
-                int localPort) {
-            ConnectionState state = new ConnectionState(
-                    connectionId,
-                    connector,
-                    dataClass,
-                    ConnectionPhase.INCOMING_PRELUDE,
-                    0);
-            state.localPort = localPort;
-            return state;
-        }
-
-        private static ConnectionState outgoing(
-                long connectionId,
-                ConnectorContext connector,
-                OrdinaryIkeAuth.DataClass dataClass,
-                int dynamicPort,
-                boolean ownsDynamicPort,
-                OutgoingAttempt attempt) {
-            ConnectionState state =
-                    new ConnectionState(
-                            connectionId,
-                            connector,
-                            dataClass,
-                            ConnectionPhase.OUTGOING_NORMAL_PRELUDE,
-                            dynamicPort);
-            state.ownsDynamicPort =
-                    ownsDynamicPort;
-            state.outgoingAttempt =
-                    attempt;
-            return state;
-        }
-
-        private static ConnectionState keyProbe(
-                long connectionId,
-                ConnectorContext connector,
-                OrdinaryIkeAuth.DataClass dataClass,
-                int dynamicPort,
-                KeyProbe probe) {
-            ConnectionState state =
-                    new ConnectionState(
-                            connectionId,
-                            connector,
-                            dataClass,
-                            ConnectionPhase
-                                    .OUTGOING_KEY_PROBE_PRELUDE,
-                            dynamicPort);
-            state.ownsDynamicPort =
-                    true;
-            state.keyProbe =
-                    probe;
-            return state;
-        }
-
-        @Override
-        public void close() {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            prelude.close();
-            wipe(
-                    serviceUuid);
-            serviceUuid =
-                    new byte[0];
-        }
-    }
-
-    private static final class OutgoingAttempt
-            implements AutoCloseable {
-        final ConnectorContext connector;
-        final IdsIpsecServiceRoute route;
-        final String endpointIdentifier;
-        final byte[] requestUuid;
-        long sequence;
-        byte[] frame;
-        long connectionId;
-        boolean waitingForRetry;
-        boolean closed;
-
-        private OutgoingAttempt(
-                ConnectorContext connector,
-                IdsIpsecServiceRoute route,
-                String endpointIdentifier,
-                long sequence,
-                byte[] requestUuid,
-                byte[] frame) {
-            this.connector =
-                    connector;
-            this.route = route;
-            this.endpointIdentifier =
-                    endpointIdentifier;
-            this.sequence =
-                    sequence;
-            this.requestUuid =
-                    requestUuid.clone();
-            this.frame =
-                    frame.clone();
-        }
-
-        void replaceFrame(long newSequence, byte[] newFrame) {
-            wipe(this.frame);
-            this.sequence = newSequence;
-            this.frame = newFrame.clone();
-        }
-
-        @Override
-        public void close() {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            wipe(
-                    requestUuid);
-            wipe(
-                    frame);
-        }
-    }
-
-    private static final class KeyProbe
-            implements AutoCloseable {
-        final ConnectorContext connector;
-        final String endpointIdentifier;
-        final long sequence;
-        final byte[] frame;
-        long connectionId;
-        boolean closed;
-
-        private KeyProbe(
-                ConnectorContext connector,
-                String endpointIdentifier,
-                long sequence,
-                byte[] frame) {
-            this.connector =
-                    connector;
-            this.endpointIdentifier =
-                    endpointIdentifier;
-            this.sequence =
-                    sequence;
-            this.frame =
-                    frame.clone();
-        }
-
-        @Override
-        public void close() {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            wipe(
-                    frame);
-        }
-    }
-
-    private static final class IncomingMetadata
-            implements AutoCloseable {
-        final long connectionId;
-        final IdsIpsecServiceRoute route;
-        final String endpointIdentifier;
-        final String serviceName;
-        final long sequence;
-        final byte[] requestUuid;
-        boolean abandoned;
-        boolean closed;
-
-        private IncomingMetadata(
-                long connectionId,
-                IdsIpsecServiceRoute route,
-                String endpointIdentifier,
-                String serviceName,
-                long sequence,
-                byte[] requestUuid) {
-            this.connectionId =
-                    connectionId;
-            this.route = route;
-            this.endpointIdentifier =
-                    endpointIdentifier;
-            this.serviceName =
-                    serviceName;
-            this.sequence =
-                    sequence;
-            this.requestUuid =
-                    requestUuid.clone();
-        }
-
-        @Override
-        public void close() {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            wipe(
-                    requestUuid);
-        }
-    }
-
-    private static final class ActiveTransport
-            implements AutoCloseable {
-        final long connectionId;
-        final OrdinaryIkeAuth.DataClass dataClass;
-        byte[] packet;
-        boolean closed;
-
-        private ActiveTransport(
-                long connectionId,
-                OrdinaryIkeAuth.DataClass dataClass,
-                byte[] packet) {
-            this.connectionId =
-                    connectionId;
-            this.dataClass =
-                    dataClass;
-            this.packet =
-                    packet.clone();
-        }
-
-        @Override
-        public void close() {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            wipe(
-                    packet);
-            packet =
-                    new byte[0];
-        }
-    }
 
     static final class PreludeBuffer
             implements AutoCloseable {
@@ -3376,7 +1842,7 @@ final class IdsServiceConnectorCoordinator
             }
         }
 
-        private void requireUsable() {
+        void requireUsable() {
             if (closed) {
                 throw new IllegalStateException(
                         "NWSC first-frame buffer is closed");
@@ -3484,42 +1950,7 @@ final class IdsServiceConnectorCoordinator
         }
     }
 
-    private static byte[] deriveEd25519PrivateKey(
-            byte[] address,
-            String purpose) {
-        if (address == null
-                || address.length == 0) {
-            byte[] randomKey =
-                    new byte[32];
-            new SecureRandom().nextBytes(
-                    randomKey);
-            return randomKey;
-        }
-        try {
-            MessageDigest digest =
-                    MessageDigest.getInstance("SHA-256");
-            digest.update(
-                    purpose.getBytes(StandardCharsets.UTF_8));
-            digest.update(
-                    address);
-            return digest.digest();
-        } catch (NoSuchAlgorithmException impossible) {
-            throw new AssertionError(impossible);
-        }
-    }
 
-    private static byte[] deriveEd25519PublicKey(
-            byte[] privateKey) {
-        if (privateKey == null
-                || privateKey.length != 32) {
-            return null;
-        }
-        return new Ed25519PrivateKeyParameters(
-                privateKey,
-                0)
-                .generatePublicKey()
-                .getEncoded();
-    }
 
     static boolean isRawIdsSocketPairFrame(byte[] bytes) {
         if (bytes == null || bytes.length < IdsSocketPairCodec.HEADER_LENGTH) {

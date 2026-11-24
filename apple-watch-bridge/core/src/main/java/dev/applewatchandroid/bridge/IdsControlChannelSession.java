@@ -33,6 +33,7 @@ final class IdsControlChannelSession
     private boolean localHelloSent;
     private boolean poisoned;
     private boolean closed;
+    private CompanionProtocolProfile profile = CompanionProtocolProfile.IOS_26_6;
 
     private IdsControlChannelSession(
             UUID localInstanceId,
@@ -95,12 +96,10 @@ final class IdsControlChannelSession
         }
         localHelloSent = true;
         IdsControlChannelCodec.HelloMessage hello =
-                IosCompanionProfile26_6.hello(
+                profile.hello(
                         localInstanceId,
                         localDeviceId,
-                        false,
-                        directMessagingSupported,
-                        true);
+                        directMessagingSupported);
         try {
             return IdsControlChannelCodec.encodeFramed(
                     hello);
@@ -183,11 +182,11 @@ final class IdsControlChannelSession
         }
         long overlapMin =
                 Math.max(
-                        IosCompanionProfile26_6.MIN_COMPATIBILITY_VERSION,
+                        profile.minimum,
                         remoteHello.minCompatibilityVersion);
         long overlapMax =
                 Math.min(
-                        IosCompanionProfile26_6.MAX_COMPATIBILITY_VERSION,
+                        profile.maximum,
                         remoteHello.maxCompatibilityVersion);
         if (overlapMin <= overlapMax) {
             return Compatibility.MATCHED;
@@ -202,6 +201,13 @@ final class IdsControlChannelSession
                     "IDS service map requires the peer Hello");
         }
         return serviceMap;
+    }
+
+    synchronized IdsControlChannelSession useProfile(CompanionProtocolProfile selected) {
+        requireUsable();
+        if (selected == null || localHelloSent || remoteHello != null) throw new IllegalStateException("IDS profile is frozen");
+        profile = selected;
+        return this;
     }
 
     private void requireUsable() {

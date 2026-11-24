@@ -3962,6 +3962,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reorder {face}'**
   String nativeFaceLibraryReorder(String face);
+
+  /// No description provided for @notificationForwarding.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward Phone Notifications'**
+  String get notificationForwarding;
+
+  /// No description provided for @notificationForwardingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward notifications from Android apps to your Apple Watch. Existing notifications are restored silently after reconnecting.'**
+  String get notificationForwardingDescription;
+
+  /// No description provided for @notificationBridgeUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to an updated Android Bridge to configure forwarding.'**
+  String get notificationBridgeUnavailable;
+
+  /// No description provided for @notificationAccessRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow notification access on your phone.'**
+  String get notificationAccessRequired;
+
+  /// No description provided for @notificationForwardingPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification forwarding is paused.'**
+  String get notificationForwardingPaused;
+
+  /// No description provided for @notificationListenerWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for Android notification access to connect.'**
+  String get notificationListenerWaiting;
+
+  /// No description provided for @notificationWatchWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your Apple Watch to connect.'**
+  String get notificationWatchWaiting;
+
+  /// No description provided for @notificationForwardingReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to forward phone notifications.'**
+  String get notificationForwardingReady;
+
+  /// No description provided for @notificationAllowAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Notification Access'**
+  String get notificationAllowAccess;
+
+  /// No description provided for @notificationManageAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Notification Access'**
+  String get notificationManageAccess;
+
+  /// No description provided for @notificationAccessDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Apple Watch Notification Mirror in Android settings.'**
+  String get notificationAccessDescription;
+
+  /// No description provided for @notificationAccessFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open notification access settings.'**
+  String get notificationAccessFailed;
+
+  /// No description provided for @notificationSettingsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save notification settings. Try again.'**
+  String get notificationSettingsFailed;
+
+  /// No description provided for @notificationAppDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Apps appear here after posting a notification. Forwarding is enabled by default; turn off any app you do not want on your watch.'**
+  String get notificationAppDiscovery;
+
+  /// No description provided for @notificationNoApps.
+  ///
+  /// In en, this message translates to:
+  /// **'No apps observed yet'**
+  String get notificationNoApps;
+
+  /// No description provided for @notificationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} notifications or removals are waiting for delivery.'**
+  String notificationPending(int count);
+
+  /// No description provided for @notificationTestDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a test alert when forwarding is ready.'**
+  String get notificationTestDescription;
+
+  /// No description provided for @notificationTestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a test notification from Watch Companion.'**
+  String get notificationTestBody;
+
+  /// No description provided for @notificationQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Queued'**
+  String get notificationQueued;
+
+  /// No description provided for @notificationQueuedDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'The test alert is queued for your Apple Watch. Check the watch to confirm it appears.'**
+  String get notificationQueuedDetails;
+
+  /// No description provided for @notificationTestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Not Queued'**
+  String get notificationTestFailed;
+
+  /// No description provided for @notificationTestFailedDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not queue the test alert. Check your watch connection and try again.'**
+  String get notificationTestFailedDetails;
+
+  /// No description provided for @updateUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Software updates are unavailable on this connection.'**
+  String get updateUnavailable;
+
+  /// No description provided for @updateConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your Apple Watch to check for updates.'**
+  String get updateConnect;
+
+  /// No description provided for @updateUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the watch\'s update status.'**
+  String get updateUnknown;
+
+  /// No description provided for @updateIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'No update is currently selected. Check for updates to query Apple\'s catalog.'**
+  String get updateIdle;
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get updateAvailable;
+
+  /// No description provided for @updatePreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading and preparing on your Apple Watch'**
+  String get updatePreparing;
+
+  /// No description provided for @updateWaitingPreparation.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for preparation conditions'**
+  String get updateWaitingPreparation;
+
+  /// No description provided for @updatePrepared.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to install'**
+  String get updatePrepared;
+
+  /// No description provided for @updateWaitingInstallation.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for installation conditions'**
+  String get updateWaitingInstallation;
+
+  /// No description provided for @updateInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing on your Apple Watch'**
+  String get updateInstalling;
+
+  /// No description provided for @updateRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the watch to restart and confirm the new build'**
+  String get updateRestart;
+
+  /// No description provided for @updateComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'The watch has confirmed the installed build.'**
+  String get updateComplete;
+
+  /// No description provided for @updateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The watch reported an update error. Refresh its status before continuing.'**
+  String get updateFailed;
+
+  /// No description provided for @updateStalled.
+  ///
+  /// In en, this message translates to:
+  /// **'The watch reports that progress has stalled.'**
+  String get updateStalled;
+
+  /// No description provided for @updateStageProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% of the current stage'**
+  String updateStageProgress(String percent);
+
+  /// No description provided for @updateRequirements.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your watch on its charger with at least 50% battery and connected to Wi-Fi. Keep the companion nearby. Downloading, verification and installation are performed by the watch.'**
+  String get updateRequirements;
+
+  /// No description provided for @updateTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and accept the update agreement in Settings → General → Software Update on your watch, then refresh here.'**
+  String get updateTerms;
+
+  /// No description provided for @updateDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download and Prepare'**
+  String get updateDownload;
+
+  /// No description provided for @updateInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Update'**
+  String get updateInstall;
+
+  /// No description provided for @updateRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh Status'**
+  String get updateRefresh;
+
+  /// No description provided for @updateConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Install watchOS {version} ({build})? The watch will restart. Keep it on the charger until installation finishes.'**
+  String updateConfirm(String version, String build);
+
+  /// No description provided for @updateQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Request queued. Waiting for confirmation from the watch.'**
+  String get updateQueued;
+
+  /// No description provided for @updateNotQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'The request could not be queued. Refresh the watch\'s status and try again.'**
+  String get updateNotQueued;
+
+  /// No description provided for @updateUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery is unconfirmed. Refresh status before issuing another command.'**
+  String get updateUnconfirmed;
+
+  /// No description provided for @updateInstallUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'An installation request was already submitted. Refresh status or finish installation on the watch. The request will not be resent automatically.'**
+  String get updateInstallUnconfirmed;
+
+  /// No description provided for @updateDownloadSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Download: {size}'**
+  String updateDownloadSize(String size);
+
+  /// No description provided for @updateRequiredSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Required free space: {size}'**
+  String updateRequiredSpace(String size);
 }
 
 class _AppLocalizationsDelegate

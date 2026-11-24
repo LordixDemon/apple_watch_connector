@@ -82,20 +82,6 @@ final class AppleWatchPostCommitCoordinator {
         UNEXPECTED_EVENT
     }
 
-    private enum ActivationStage {
-        NOT_STARTED,
-        PERMIT_SEND_PENDING,
-        WAITING_SESSION_REQUEST,
-        SESSION_PROXY_PENDING,
-        SESSION_DATA_SEND_PENDING,
-        WAITING_ACTIVATION_REQUEST,
-        ACTIVATION_PROXY_PENDING,
-        ACTIVATION_DATA_SEND_PENDING,
-        WAITING_OUTCOME,
-        RELAUNCH_NORMAL_SEND_PENDING,
-        CONFIRMED
-    }
-
     private long generation;
     private Phase phase =
             Phase.IDLE;
@@ -125,18 +111,9 @@ final class AppleWatchPostCommitCoordinator {
     private boolean pairedSyncObserved;
     private boolean idsSetupCompletedSendInFlight;
 
-    private int activationAttempt;
-    private ActivationStage activationStage =
-            ActivationStage.NOT_STARTED;
-    private boolean activationOutcomeObserved;
-    private boolean activationRedrivePending;
-    /**
-     * Empty protobuf 4 arrived while activation was still unconfirmed.
-     * watchOS answers CanBeginActivation that way when the Gizmo is already
-     * activated and will not start a session. It is not confirmation by
-     * itself: live 0.2.197 also saw this message before a real session.
-     */
-    private boolean gizmoFinishedBeforeSession;
+    private final PostCommitActivationMachine activation =
+            new PostCommitActivationMachine(
+                    this);
     synchronized List<Action> begin(
             long newGeneration,
             PairingSessionRecord.DurableState restoredState,
@@ -347,21 +324,13 @@ final class AppleWatchPostCommitCoordinator {
                     Failure.UNKNOWN_LANGUAGE_STATUS);
         }
         languageAndLocaleComplete = true;
-        if (status.completedAfterRelaunch()
-                && !activationOutcomeObserved
-                && durableState.wireValue()
-                < PairingSessionRecord.DurableState
-                .ACTIVATION_CONFIRMED.wireValue()) {
-            activationAttempt++;
-            activationStage =
-                    ActivationStage.RELAUNCH_NORMAL_SEND_PENDING;
-            return List.of(
-                    Action.activation(
-                            generation,
-                            ActionType
-                                    .SEND_NORMAL_AFTER_LANGUAGE_RELAUNCH,
-                            null,
-                            activationAttempt));
+        if (status.completedAfterRelaunch()) {
+            Action relaunch =
+                    activation.startRelaunchNormalIfUnconfirmed();
+            if (relaunch != null) {
+                return List.of(
+                        relaunch);
+            }
         }
         return appendProgressActions();
     }
@@ -370,126 +339,36 @@ final class AppleWatchPostCommitCoordinator {
             long eventGeneration,
             int eventActivationAttempt,
             boolean success) {
-        if (!acceptsForward(eventGeneration)
-                || activationStage
-                != ActivationStage.RELAUNCH_NORMAL_SEND_PENDING
-                || activationAttempt != eventActivationAttempt) {
-            return List.of();
-        }
-        if (!success) {
-            return fail(
-                    Failure.TRANSPORT_SEND);
-        }
-        activationStage =
-                ActivationStage.PERMIT_SEND_PENDING;
-        return List.of(
-                Action.activation(
-                        generation,
-                        ActionType.SEND_ACTIVATION_PERMIT,
-                        null,
-                        activationAttempt));
+        return activation.onRelaunchNormalSendResult(
+                eventGeneration,
+                eventActivationAttempt,
+                success);
     }
 
     synchronized List<Action> onActivationPermitSendResult(
             long eventGeneration,
             int eventActivationAttempt,
             boolean success) {
-        if (!acceptsForward(eventGeneration)
-                || activationStage
-                != ActivationStage.PERMIT_SEND_PENDING
-                || activationAttempt != eventActivationAttempt) {
-            return List.of();
-        }
-        if (!success) {
-            return fail(
-                    Failure.TRANSPORT_SEND);
-        }
-        activationStage =
-                ActivationStage.WAITING_SESSION_REQUEST;
-        return List.of();
+        return activation.onActivationPermitSendResult(
+                eventGeneration,
+                eventActivationAttempt,
+                success);
     }
 
     synchronized List<Action> onActivationRequest(
             long eventGeneration) {
-        if (!acceptsForward(eventGeneration)) {
-            // Live 0.2.300: ProxyActivation is a service request from the
-            // Watch, not a forward checkpoint step. After a synthetic
-            // ACTIVATION_CONFIRMED latch the pipeline parks in
-            // VERIFYING_OPERATIONAL_HEALTH or COMPLETE while an erased Watch
-            // still needs Albert; the owner re-arms the drive with
-            // RETRY_ACTIVATION. Answer whenever the drive is armed; ignore
-            // strays (a proxy is already in flight or the drive was never
-            // armed) and never fail a finished pipeline.
-            if (!acceptsActivationService(eventGeneration)) {
-                return List.of();
-            }
-            if (activationStage
-                    == ActivationStage.WAITING_SESSION_REQUEST) {
-                return onActivationRequest(
-                        eventGeneration,
-                        activationAttempt,
-                        MobileActivationHttpProxy.RequestKind.SESSION);
-            }
-            if (activationStage
-                    == ActivationStage.WAITING_ACTIVATION_REQUEST) {
-                return onActivationRequest(
-                        eventGeneration,
-                        activationAttempt,
-                        MobileActivationHttpProxy.RequestKind.ACTIVATION);
-            }
-            return List.of();
-        }
-        MobileActivationHttpProxy.RequestKind kind;
-        if (activationStage
-                == ActivationStage.WAITING_SESSION_REQUEST) {
-            kind =
-                    MobileActivationHttpProxy.RequestKind.SESSION;
-        } else if (activationStage
-                == ActivationStage.WAITING_ACTIVATION_REQUEST) {
-            kind =
-                    MobileActivationHttpProxy.RequestKind.ACTIVATION;
-        } else {
-            return fail(
-                    Failure.UNEXPECTED_EVENT);
-        }
-        return onActivationRequest(
-                eventGeneration,
-                activationAttempt,
-                kind);
+        return activation.onActivationRequest(
+                eventGeneration);
     }
 
     synchronized List<Action> onActivationRequest(
             long eventGeneration,
             int eventActivationAttempt,
             MobileActivationHttpProxy.RequestKind kind) {
-        if ((!acceptsForward(eventGeneration)
-                        && !acceptsActivationService(eventGeneration))
-                || activationAttempt != eventActivationAttempt
-                || kind == null) {
-            return List.of();
-        }
-        if (kind == MobileActivationHttpProxy.RequestKind.SESSION) {
-            activationStage =
-                    ActivationStage.SESSION_PROXY_PENDING;
-            return List.of(
-                    Action.activation(
-                            generation,
-                            ActionType.EXECUTE_ACTIVATION_HTTPS,
-                            kind,
-                            activationAttempt));
-        }
-        if (kind == MobileActivationHttpProxy.RequestKind.ACTIVATION) {
-            activationStage =
-                    ActivationStage.ACTIVATION_PROXY_PENDING;
-            return List.of(
-                    Action.activation(
-                            generation,
-                            ActionType.EXECUTE_ACTIVATION_HTTPS,
-                            kind,
-                            activationAttempt));
-        }
-        return fail(
-                Failure.UNEXPECTED_EVENT);
+        return activation.onActivationRequest(
+                eventGeneration,
+                eventActivationAttempt,
+                kind);
     }
 
     synchronized List<Action> onActivationProxyResult(
@@ -497,48 +376,11 @@ final class AppleWatchPostCommitCoordinator {
             int eventActivationAttempt,
             MobileActivationHttpProxy.RequestKind kind,
             boolean success) {
-        if ((!acceptsForward(eventGeneration)
-                        && !acceptsActivationService(eventGeneration))
-                || activationAttempt != eventActivationAttempt
-                || kind == null) {
-            return List.of();
-        }
-        ActivationStage expected =
-                kind == MobileActivationHttpProxy.RequestKind.SESSION
-                        ? ActivationStage.SESSION_PROXY_PENDING
-                        : ActivationStage.ACTIVATION_PROXY_PENDING;
-        if (activationStage != expected) {
-            if (!acceptsForward(eventGeneration)) {
-                // Late drive: a stray result must not fail a finished
-                // pipeline.
-                return List.of();
-            }
-            return fail(
-                    Failure.UNEXPECTED_EVENT);
-        }
-        if (!success) {
-            if (!acceptsForward(eventGeneration)) {
-                // Late drive: re-arm so the Watch's next ProxyActivation is
-                // serviced instead of failing the completed pipeline.
-                activationStage =
-                        kind == MobileActivationHttpProxy.RequestKind.SESSION
-                                ? ActivationStage.WAITING_SESSION_REQUEST
-                                : ActivationStage.WAITING_ACTIVATION_REQUEST;
-                return List.of();
-            }
-            return fail(
-                    Failure.ACTIVATION_PROXY);
-        }
-        activationStage =
-                kind == MobileActivationHttpProxy.RequestKind.SESSION
-                        ? ActivationStage.SESSION_DATA_SEND_PENDING
-                        : ActivationStage.ACTIVATION_DATA_SEND_PENDING;
-        return List.of(
-                Action.activation(
-                        generation,
-                        ActionType.SEND_ACTIVATION_DATA,
-                        kind,
-                        activationAttempt));
+        return activation.onActivationProxyResult(
+                eventGeneration,
+                eventActivationAttempt,
+                kind,
+                success);
     }
 
     synchronized List<Action> onActivationDataSendResult(
@@ -546,274 +388,66 @@ final class AppleWatchPostCommitCoordinator {
             int eventActivationAttempt,
             MobileActivationHttpProxy.RequestKind kind,
             boolean success) {
-        if ((!acceptsForward(eventGeneration)
-                        && !acceptsActivationService(eventGeneration))
-                || activationAttempt != eventActivationAttempt
-                || kind == null) {
-            return List.of();
-        }
-        ActivationStage expected =
-                kind == MobileActivationHttpProxy.RequestKind.SESSION
-                        ? ActivationStage.SESSION_DATA_SEND_PENDING
-                        : ActivationStage.ACTIVATION_DATA_SEND_PENDING;
-        if (activationStage != expected) {
-            if (!acceptsForward(eventGeneration)) {
-                return List.of();
-            }
-            return fail(
-                    Failure.UNEXPECTED_EVENT);
-        }
-        if (!success) {
-            if (!acceptsForward(eventGeneration)) {
-                // Late drive: the Watch never got its data and will
-                // re-request; re-arm instead of failing the pipeline.
-                activationStage =
-                        kind == MobileActivationHttpProxy.RequestKind.SESSION
-                                ? ActivationStage.WAITING_SESSION_REQUEST
-                                : ActivationStage.WAITING_ACTIVATION_REQUEST;
-                return List.of();
-            }
-            return fail(
-                    Failure.TRANSPORT_SEND);
-        }
-        if (kind == MobileActivationHttpProxy.RequestKind.SESSION) {
-            activationStage =
-                    ActivationStage.WAITING_ACTIVATION_REQUEST;
-            // Live 0.2.302: on the Watch, beganAwaitingAbilityToActivate only
-            // parks PBBridge in state 2 — the ability gate (CanBeginActivation,
-            // message 11) is phone-side orchestration and must be re-asserted
-            // after the drmHandshake session data lands. Without it the Watch
-            // never proceeds to the deviceActivation ProxyActivation (live
-            // stalls 03:39/03:45). The send-result of this permit is ignored
-            // (stage is already past PERMIT_SEND_PENDING).
-            return List.of(
-                    Action.activation(
-                            generation,
-                            ActionType.SEND_ACTIVATION_PERMIT,
-                            null,
-                            activationAttempt));
-        }
-        activationStage =
-                ActivationStage.WAITING_OUTCOME;
-        return List.of();
+        return activation.onActivationDataSendResult(
+                eventGeneration,
+                eventActivationAttempt,
+                kind,
+                success);
     }
 
     /**
-     * Owner-driven activation redrive. The durable ACTIVATION_CONFIRMED
-     * checkpoint can be synthetic (owner-forced on a previous Watch erase
-     * cycle): the current Watch then sits unactivated while the pipeline
-     * parks and never re-asserts CanBeginActivation. The redrive downgrades
-     * the durable checkpoint to IS_PAIRED_COMMITTED (keys, bond and commit
-     * are preserved by the record) and, once persisted, replays the
-     * post-activation drive: a fresh permit followed by the NanoRegistry-
-     * normal and initial-sync preparation sends. Live 0.2.300: accepted in
-     * every live phase (VERIFYING_OPERATIONAL_HEALTH/COMPLETE included) —
-     * that is exactly where a synthetically-latched pipeline parks.
+     * Owner-driven activation redrive. Downgrades synthetic ACTIVATION_CONFIRMED
+     * checkpoints to IS_PAIRED_COMMITTED and replays forward setup.
      */
     synchronized List<Action> onActivationRedriveRequested(
             long eventGeneration) {
-        if (!acceptsActivationService(eventGeneration)
-                || activationRedrivePending) {
-            return List.of();
-        }
-        if (durableState.wireValue()
-                < PairingSessionRecord.DurableState
-                .ACTIVATION_CONFIRMED.wireValue()) {
-            // Nothing persisted to clear; just re-assert the permit when the
-            // activation drive has not started yet.
-            if (phase == Phase.FORWARD_SETUP
-                    && activationStage
-                    == ActivationStage.NOT_STARTED) {
-                activationAttempt++;
-                activationStage =
-                        ActivationStage.PERMIT_SEND_PENDING;
-                return List.of(
-                        Action.activation(
-                                generation,
-                                ActionType.SEND_ACTIVATION_PERMIT,
-                                null,
-                                activationAttempt));
-            }
-            return List.of();
-        }
-        activationRedrivePending =
-                true;
-        return List.of(
-                Action.redriveActivation(
-                        generation));
+        return activation.onActivationRedriveRequested(
+                eventGeneration);
     }
 
     synchronized List<Action> onActivationRedrivePersisted(
             long eventGeneration,
             boolean success) {
-        if (!acceptsActivationService(eventGeneration)
-                || !activationRedrivePending) {
-            return List.of();
-        }
-        activationRedrivePending =
-                false;
-        if (!success) {
-            if (!acceptsForward(eventGeneration)) {
-                // Late drive: a persist failure must not kick a finished
-                // pipeline into recovery.
-                return List.of();
-            }
-            return fail(
-                    Failure.LOCAL_CHECKPOINT);
-        }
-        durableState =
-                PairingSessionRecord.DurableState
-                        .IS_PAIRED_COMMITTED;
-        activationStage =
-                ActivationStage.NOT_STARTED;
-        activationOutcomeObserved =
-                false;
-        gizmoFinishedBeforeSession =
-                false;
-        // The earlier NanoRegistry-normal (36) and initial-sync preparation
-        // (21) crossed the wire while the Watch was still unactivated and
-        // could not act on them; replay both after the fresh activation
-        // confirms, exactly as the iPhone drive does.
-        pbBridgeNormalSent =
-                false;
-        pbBridgeNormalSendInFlight =
-                false;
-        initialSyncPrepared =
-                false;
-        initialSyncRequestInFlight =
-                false;
-        initialSyncRequestIdentifier =
-                null;
-        pairedSyncSent =
-                false;
-        pairedSyncSendInFlight =
-                false;
-        pairedSyncObserved =
-                false;
-        return resumeForwardSetup();
+        return activation.onActivationRedrivePersisted(
+                eventGeneration,
+                success);
     }
 
     /**
-     * Owner-driven PBBridge RetryActivation (message 15). watchOS 26.6
-     * -[ActivationController retryActivation:] performs _cleanup, forces the
-     * activation state machine back to Idle and re-runs _startActivation
-     * unconditionally — unlike CanBeginActivation (11), which only reaches
-     * the controller while the Setup UI is still observing the
-     * activation-ability notification. After the send we must be in
-     * WAITING_SESSION_REQUEST so the Watch-driven ProxyActivation fetch is
-     * accepted.
+     * Owner-driven PBBridge RetryActivation (message 15).
      */
     synchronized List<Action> onActivationRetryRequested(
             long eventGeneration) {
-        // Live 0.2.300: owner override — accepted in every live phase. The
-        // whole point of the override is to recover a Watch that stayed
-        // unactivated behind a synthetic ACTIVATION_CONFIRMED latch, so the
-        // durable-state and outcome gates must not block it.
-        if (!acceptsActivationService(eventGeneration)) {
-            return List.of();
-        }
-        activationAttempt++;
-        activationStage =
-                ActivationStage.WAITING_SESSION_REQUEST;
-        activationOutcomeObserved =
-                false;
-        return List.of(
-                Action.retryActivation(
-                        generation,
-                        activationAttempt));
+        return activation.onActivationRetryRequested(
+                eventGeneration);
     }
 
     synchronized List<Action> onActivationRetrySendResult(
             long eventGeneration,
             int eventActivationAttempt,
             boolean success) {
-        if (!acceptsForward(eventGeneration)
-                || activationAttempt != eventActivationAttempt) {
-            return List.of();
-        }
-        // The retry is opportunistic: a transport failure must not fail the
-        // pipeline; the Watch may still answer an earlier permit.
-        return List.of();
+        return activation.onActivationRetrySendResult(
+                eventGeneration,
+                eventActivationAttempt,
+                success);
     }
 
     synchronized List<Action> onActivationSucceeded(
             long eventGeneration) {
-        if (!acceptsForward(eventGeneration)
-                || activationOutcomeObserved
-                || durableState.wireValue()
-                >= PairingSessionRecord.DurableState
-                .ACTIVATION_CONFIRMED.wireValue()) {
-            return List.of();
-        }
-        if (activationStage == ActivationStage.NOT_STARTED) {
-            return fail(
-                    Failure.UNEXPECTED_EVENT);
-        }
-        // Live 0.2.197: the Watch emitted empty protobuf 4 about a second
-        // after CanBeginActivation, before any ProxyActivation. That message
-        // is gizmoDidFinishActivating, not an Albert result. Confirming
-        // activation from it skipped the real activation exchange.
-        if (activationStage != ActivationStage.WAITING_OUTCOME
-                && activationStage
-                != ActivationStage.WAITING_ACTIVATION_REQUEST) {
-            return List.of();
-        }
-        // Live 0.2.303: an already-activated Watch driven through
-        // RetryActivation answers the re-asserted CanBeginActivation with
-        // protobuf 4 right after the drmHandshake session data lands — it
-        // never opens the deviceActivation ProxyActivation, so the stage is
-        // WAITING_ACTIVATION_REQUEST rather than WAITING_OUTCOME. Unlike
-        // 0.2.197 the full authenticated SESSION exchange did happen in
-        // this session, so the finished report is a real activation verdict
-        // and the ACTIVATION_CONFIRMED checkpoint must latch; otherwise the
-        // pipeline parks here forever with the Watch waiting in Buddy.
-        activationOutcomeObserved = true;
-        activationStage =
-                ActivationStage.CONFIRMED;
-        return requestCheckpoint(
-                PairingSessionRecord.DurableState
-                        .ACTIVATION_CONFIRMED);
+        return activation.onActivationSucceeded(
+                eventGeneration);
     }
 
     synchronized List<Action> onActivationFailed(
             long eventGeneration) {
-        if (!acceptsForward(eventGeneration)) {
-            return List.of();
-        }
-        return fail(
-                Failure.ACTIVATION_REJECTED);
+        return activation.onActivationFailed(
+                eventGeneration);
     }
 
-    /**
-     * Watch-reported activation failure after our activation data went out.
-     * Live 0.2.167: tearing the link down here strands the Watch in a
-     * bonded-but-unactivated limbo where it never re-requests activation
-     * (verified live: reconnect sessions got no ProxyActivation within 20 s
-     * even after a full NanoRegistry initial-setup replay). iOS keeps the
-     * link and lets the Watch retry ProxyActivation in-session, so a
-     * WAITING_OUTCOME failure rewinds to WAITING_SESSION_REQUEST instead of
-     * failing the session. Failures at any other stage remain terminal.
-     */
     synchronized List<Action> onActivationFailedRetryable(
             long eventGeneration) {
-        if ((!acceptsForward(eventGeneration)
-                        && !acceptsActivationService(eventGeneration))
-                || activationOutcomeObserved) {
-            return List.of();
-        }
-        if (activationStage
-                != ActivationStage.WAITING_OUTCOME) {
-            if (!acceptsForward(eventGeneration)) {
-                // Late drive: ignore strays, never fail a finished pipeline.
-                return List.of();
-            }
-            return fail(
-                    Failure.ACTIVATION_REJECTED);
-        }
-        activationAttempt++;
-        activationStage =
-                ActivationStage.WAITING_SESSION_REQUEST;
-        return List.of();
+        return activation.onActivationFailedRetryable(
+                eventGeneration);
     }
 
     synchronized List<Action> onPrepareInitialSyncSent(
@@ -991,82 +625,14 @@ final class AppleWatchPostCommitCoordinator {
 
     /** PBBridge type 4 reports activation only, even if received after sync publication. */
     synchronized List<Action> onGizmoDidFinishActivating(long eventGeneration) {
-        // Live 0.2.303: the durable record can claim SETUP_COMPLETE or
-        // beyond while the physical Watch was erased afterwards and just
-        // re-ran a fresh authenticated activation in THIS session (the
-        // stage only reaches WAITING_ACTIVATION_REQUEST/WAITING_OUTCOME by
-        // delivering real Albert session/activation data now). Resuming at
-        // the stale terminal state parks the coordinator in COMPLETE and
-        // the Buddy chain (language, NanoRegistry-normal 36, initial-sync
-        // 21, paired-sync completion) never crosses the wire again — the
-        // Watch sits in Setup forever (live 2026-10-05 04:19). Reuse the
-        // proven activation-redrive: it downgrades the persisted record to
-        // IS_PAIRED_COMMITTED and replays the full forward setup, exactly
-        // what an erased-then-reactivated Watch needs.
-        if (generation == eventGeneration
-                && !activationOutcomeObserved
-                && (activationStage
-                        == ActivationStage.WAITING_ACTIVATION_REQUEST
-                || activationStage
-                        == ActivationStage.WAITING_OUTCOME)
-                && durableState.wireValue()
-                >= PairingSessionRecord.DurableState
-                .SETUP_COMPLETE.wireValue()
-                && !activationRedrivePending) {
-            activationRedrivePending =
-                    true;
-            return List.of(
-                    Action.redriveActivation(
-                            generation));
-        }
-        if (!acceptsForward(eventGeneration)) {
-            return List.of();
-        }
-        if (!activationOutcomeObserved
-                && durableState.wireValue()
-                < PairingSessionRecord.DurableState
-                .ACTIVATION_CONFIRMED.wireValue()) {
-            // Live 0.2.208: each flushed CanBeginActivation was answered in
-            // ~120 ms by empty protobuf 4 and no ProxyActivation. That is
-            // setCanBeginActivating:'s already-activated finished report.
-            // Latch it and keep waiting: a real session still wins if it
-            // arrives inside the permit grace (live 0.2.197).
-            gizmoFinishedBeforeSession = true;
-            return List.of();
-        }
-        // Setup::finishedActivating and setCanBeginActivating's already-activated
-        // branch send this message before Buddy/PSY completes (watchOS 26.6).
-        // Only a real NanoRegistry IsSetup report and peer PSY state can advance
-        // those barriers; neither a type 4 nor our send receipt proves them.
-        return List.of();
+        return activation.onGizmoDidFinishActivating(
+                eventGeneration);
     }
 
-    /**
-     * The flushed CanBeginActivation grace ended with no ProxyActivation,
-     * and the only activation message was empty protobuf 4.
-     *
-     * <p>This records that the Watch already finished activation and will
-     * not open another Albert session. It does not claim a new Albert
-     * exchange and does not confirm Buddy, PairedSync or a visible Clock.</p>
-     */
     synchronized List<Action> onAlreadyActivatedWatchAccepted(
             long eventGeneration) {
-        if (!acceptsForward(eventGeneration)
-                || !gizmoFinishedBeforeSession
-                || activationOutcomeObserved
-                || activationStage
-                != ActivationStage.WAITING_SESSION_REQUEST
-                || durableState.wireValue()
-                >= PairingSessionRecord.DurableState
-                .ACTIVATION_CONFIRMED.wireValue()) {
-            return List.of();
-        }
-        activationOutcomeObserved = true;
-        activationStage =
-                ActivationStage.CONFIRMED;
-        return requestCheckpoint(
-                PairingSessionRecord.DurableState
-                        .ACTIVATION_CONFIRMED);
+        return activation.onAlreadyActivatedWatchAccepted(
+                eventGeneration);
     }
 
     synchronized List<Action> onIdsSetupCompletedDispatchResult(
@@ -1139,8 +705,8 @@ final class AppleWatchPostCommitCoordinator {
                         == PairingSessionRecord.DurableState
                         .READY_TO_COMMIT_IS_PAIRED,
                 pairingModeNormalSent,
-                activationAttempt,
-                activationOutcomeObserved,
+                activation.attempt(),
+                activation.outcomeObserved(),
                 languageAndLocaleComplete,
                 initialSyncPrepared,
                 pbBridgeNormalSent,
@@ -1149,7 +715,46 @@ final class AppleWatchPostCommitCoordinator {
                 pairedSyncCapability,
                 pairedSyncSent,
                 pairedSyncObserved,
-                gizmoFinishedBeforeSession);
+                activation.gizmoFinishedBeforeSession());
+    }
+
+    long generation() {
+        return generation;
+    }
+
+    Phase phase() {
+        return phase;
+    }
+
+    PairingSessionRecord.DurableState durableState() {
+        return durableState;
+    }
+
+    List<Action> resetPostActivationForRedriveAndResume() {
+        durableState =
+                PairingSessionRecord.DurableState
+                        .IS_PAIRED_COMMITTED;
+        // The earlier NanoRegistry-normal (36) and initial-sync preparation
+        // (21) crossed the wire while the Watch was still unactivated and
+        // could not act on them; replay both after the fresh activation
+        // confirms, exactly as the iPhone drive does.
+        pbBridgeNormalSent =
+                false;
+        pbBridgeNormalSendInFlight =
+                false;
+        initialSyncPrepared =
+                false;
+        initialSyncRequestInFlight =
+                false;
+        initialSyncRequestIdentifier =
+                null;
+        pairedSyncSent =
+                false;
+        pairedSyncSendInFlight =
+                false;
+        pairedSyncObserved =
+                false;
+        return resumeForwardSetup();
     }
 
     private List<Action> resumeForwardSetup() {
@@ -1204,21 +809,8 @@ final class AppleWatchPostCommitCoordinator {
                             generation,
                             ActionType.SEND_LANGUAGE_AND_LOCALE));
         }
-        if (durableState.wireValue()
-                < PairingSessionRecord.DurableState
-                .ACTIVATION_CONFIRMED.wireValue()
-                && activationStage
-                == ActivationStage.NOT_STARTED) {
-            activationAttempt++;
-            activationStage =
-                    ActivationStage.PERMIT_SEND_PENDING;
-            actions.add(
-                    Action.activation(
-                            generation,
-                            ActionType.SEND_ACTIVATION_PERMIT,
-                            null,
-                            activationAttempt));
-        }
+        activation.appendInitialPermitIfNeeded(
+                actions);
         actions.addAll(
                 appendProgressActionsMutable());
         return immutable(
@@ -1368,7 +960,7 @@ final class AppleWatchPostCommitCoordinator {
         return actions;
     }
 
-    private List<Action> requestCheckpoint(
+    List<Action> requestCheckpoint(
             PairingSessionRecord.DurableState next) {
         return immutable(
                 requestCheckpointMutable(
@@ -1396,7 +988,7 @@ final class AppleWatchPostCommitCoordinator {
                         next));
     }
 
-    private List<Action> fail(
+    List<Action> fail(
             Failure failure) {
         return immutable(
                 failMutable(
@@ -1417,9 +1009,7 @@ final class AppleWatchPostCommitCoordinator {
         if (durableState.wireValue()
                 >= PairingSessionRecord.DurableState
                 .ACTIVATION_CONFIRMED.wireValue()) {
-            activationOutcomeObserved = true;
-            activationStage =
-                    ActivationStage.CONFIRMED;
+            activation.markDurablyConfirmed();
         }
         if (durableState.wireValue()
                 >= PairingSessionRecord.DurableState
@@ -1440,7 +1030,7 @@ final class AppleWatchPostCommitCoordinator {
     }
 
     private boolean activationDurableOrPending() {
-        return activationOutcomeObserved
+        return activation.outcomeObserved()
                 || durableState.wireValue()
                 >= PairingSessionRecord.DurableState
                 .ACTIVATION_CONFIRMED.wireValue()
@@ -1457,7 +1047,7 @@ final class AppleWatchPostCommitCoordinator {
                 && generation == eventGeneration;
     }
 
-    private boolean acceptsForward(
+    boolean acceptsForward(
             long eventGeneration) {
         return accepts(eventGeneration)
                 && (phase == Phase.FORWARD_SETUP
@@ -1474,7 +1064,7 @@ final class AppleWatchPostCommitCoordinator {
      * phases stranded the Watch unactivated with no way back. Accepted in
      * every live phase, COMPLETE included; the generation must still match.
      */
-    private boolean acceptsActivationService(
+    boolean acceptsActivationService(
             long eventGeneration) {
         return phase != Phase.IDLE
                 && phase != Phase.FORWARD_RECOVERY_REQUIRED
@@ -1511,15 +1101,7 @@ final class AppleWatchPostCommitCoordinator {
 
     private static void requireRuntimeWatchPairingVersion(
             int value) {
-        if (value
-                < NanoRegistryClassDCodec
-                .IOS_26_6_PHONE_MIN_VERSION
-                || value
-                > NanoRegistryClassDCodec
-                .IOS_26_6_PHONE_MAX_VERSION) {
-            throw new IllegalArgumentException(
-                    "Watch runtime pairing version is incompatible");
-        }
+        CompanionProtocolProfile.forPeerMaximum(value);
     }
 
     private static String canonicalUuid(
@@ -1687,16 +1269,20 @@ final class AppleWatchPostCommitCoordinator {
 
         NanoRegistryClassDCodec.PairingModeRequest
                 pairingModeNormalMessage() {
+            return pairingModeNormalMessage(runtimeWatchPairingVersion != null && runtimeWatchPairingVersion == 27
+                    ? CompanionProtocolProfile.IOS_27_0_1 : CompanionProtocolProfile.IOS_26_6);
+        }
+        NanoRegistryClassDCodec.PairingModeRequest pairingModeNormalMessage(CompanionProtocolProfile profile) {
             if (type != ActionType.SEND_PAIRING_MODE_NORMAL
                     || runtimeWatchPairingVersion == null) {
                 throw new IllegalStateException(
                         "Action is not a Class-D PairingMode Normal send");
             }
             return NanoRegistryClassDCodec.PairingModeRequest
-                    .modernIos26_6(
+                    .forProfile(
                             NanoRegistryClassDCodec
                                     .COMPATIBILITY_STATE_NORMAL,
-                            runtimeWatchPairingVersion);
+                            runtimeWatchPairingVersion, profile);
         }
 
         PairingSessionRecord createCheckpoint(

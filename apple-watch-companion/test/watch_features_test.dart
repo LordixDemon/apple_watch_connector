@@ -100,7 +100,7 @@ void main() {
       ),
     );
     expect(find.text('AVAILABLE FEATURES'), findsOneWidget);
-    expect(find.text('Not supported yet'), findsNWidgets(8));
+    expect(find.text('Not supported yet'), findsNWidgets(9));
     expect(find.text('Available'), findsNothing);
     expect(tester.takeException(), isNull);
   });

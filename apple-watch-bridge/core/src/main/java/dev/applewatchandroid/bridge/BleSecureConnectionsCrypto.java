@@ -324,6 +324,138 @@ final class BleSecureConnectionsCrypto {
         }
     }
 
+    /**
+     * Derives the 128-bit {@code ra}/{@code rb} value for Bluetooth Core LE SC Passkey Entry
+     * (Vol 3 Part H Section 2.3.5.6.3) in SMP little-endian wire order.
+     */
+    static byte[] passkeyToR128LittleEndian(int passkey) {
+        if (passkey < 0 || passkey > 999_999) {
+            throw new IllegalArgumentException("BLE SMP passkey must be in 0..999999");
+        }
+        byte[] r = new byte[AES_VALUE_LENGTH];
+        r[0] = (byte) (passkey & 0xff);
+        r[1] = (byte) ((passkey >>> 8) & 0xff);
+        r[2] = (byte) ((passkey >>> 16) & 0xff);
+        return r;
+    }
+
+    /**
+     * Returns the single-byte round parameter {@code z = 0x80 | bit_i(passkey)} for round
+     * {@code 0 <= round < 20} of Bluetooth Core LE SC Passkey Entry.
+     */
+    static int passkeyRoundZ(int passkey, int round) {
+        if (passkey < 0 || passkey > 999_999) {
+            throw new IllegalArgumentException("BLE SMP passkey must be in 0..999999");
+        }
+        if (round < 0 || round >= 20) {
+            throw new IllegalArgumentException("BLE SMP passkey round must be in 0..19");
+        }
+        return 0x80 | ((passkey >>> round) & 1);
+    }
+
+    /**
+     * Bluetooth Core Vol 3 Part H Section 2.2.3 confirm value generation function {@code c1(k, r, preq, pres, iat, ia, rat, ra)}
+     * for LE Legacy Pairing (SC = 0), with all multi-octet inputs and output in SMP little-endian order.
+     */
+    static byte[] legacyC1(
+            byte[] tkLittleEndian,
+            byte[] rLittleEndian,
+            byte[] preqLittleEndian,
+            byte[] presLittleEndian,
+            int iat,
+            byte[] iaLittleEndian,
+            int rat,
+            byte[] raLittleEndian) {
+        requireLength("c1 TK", tkLittleEndian, AES_VALUE_LENGTH);
+        requireLength("c1 r", rLittleEndian, AES_VALUE_LENGTH);
+        requireLength("c1 preq", preqLittleEndian, 7);
+        requireLength("c1 pres", presLittleEndian, 7);
+        requireLength("c1 ia", iaLittleEndian, 6);
+        requireLength("c1 ra", raLittleEndian, 6);
+        if ((iat != 0 && iat != 1) || (rat != 0 && rat != 1)) {
+            throw new IllegalArgumentException("c1 address types must be 0 or 1");
+        }
+
+        byte[] kBe = reverseCopy(tkLittleEndian);
+        byte[] rBe = reverseCopy(rLittleEndian);
+        byte[] preqBe = reverseCopy(preqLittleEndian);
+        byte[] presBe = reverseCopy(presLittleEndian);
+        byte[] iaBe = reverseCopy(iaLittleEndian);
+        byte[] raBe = reverseCopy(raLittleEndian);
+        byte[] p1Be = new byte[AES_VALUE_LENGTH];
+        byte[] p2Be = new byte[AES_VALUE_LENGTH];
+        byte[] x1Be = new byte[AES_VALUE_LENGTH];
+        byte[] c1Be = new byte[AES_VALUE_LENGTH];
+        try {
+            // Core Spec Vol 3 Part H §2.2.3: p1 = pres || preq || rat' || iat' (MSB first)
+            System.arraycopy(presBe, 0, p1Be, 0, 7);
+            System.arraycopy(preqBe, 0, p1Be, 7, 7);
+            p1Be[14] = (byte) rat;
+            p1Be[15] = (byte) iat;
+
+            // Core Spec Vol 3 Part H §2.2.3: p2 = padding(4B 0) || ia || ra (MSB first)
+            System.arraycopy(iaBe, 0, p2Be, 4, 6);
+            System.arraycopy(raBe, 0, p2Be, 10, 6);
+
+            for (int i = 0; i < AES_VALUE_LENGTH; i++) {
+                x1Be[i] = (byte) (rBe[i] ^ p1Be[i]);
+            }
+            AESEngine aes = new AESEngine();
+            aes.init(true, new KeyParameter(kBe));
+            aes.processBlock(x1Be, 0, x1Be, 0);
+            for (int i = 0; i < AES_VALUE_LENGTH; i++) {
+                x1Be[i] ^= p2Be[i];
+            }
+            aes.processBlock(x1Be, 0, c1Be, 0);
+            return reverseCopy(c1Be);
+        } finally {
+            wipe(kBe);
+            wipe(rBe);
+            wipe(preqBe);
+            wipe(presBe);
+            wipe(iaBe);
+            wipe(raBe);
+            wipe(p1Be);
+            wipe(p2Be);
+            wipe(x1Be);
+            wipe(c1Be);
+        }
+    }
+
+    /**
+     * Bluetooth Core Vol 3 Part H Section 2.2.4 key generation function {@code s1(k, r1, r2)}
+     * for LE Legacy Pairing STK derivation, with all multi-octet inputs and output in SMP little-endian order.
+     */
+    static byte[] legacyS1(
+            byte[] tkLittleEndian,
+            byte[] r1LittleEndian,
+            byte[] r2LittleEndian) {
+        requireLength("s1 TK", tkLittleEndian, AES_VALUE_LENGTH);
+        requireLength("s1 r1", r1LittleEndian, AES_VALUE_LENGTH);
+        requireLength("s1 r2", r2LittleEndian, AES_VALUE_LENGTH);
+
+        byte[] kBe = reverseCopy(tkLittleEndian);
+        byte[] r1LowBe = reverseCopy(Arrays.copyOfRange(r1LittleEndian, 0, 8));
+        byte[] r2LowBe = reverseCopy(Arrays.copyOfRange(r2LittleEndian, 0, 8));
+        byte[] rPrimeBe = new byte[AES_VALUE_LENGTH];
+        byte[] stkBe = new byte[AES_VALUE_LENGTH];
+        try {
+            // Core Spec Vol 3 Part H §2.2.4: r' = r1' || r2' where r1' = lower 64 bits of r1 MSB-first
+            System.arraycopy(r1LowBe, 0, rPrimeBe, 0, 8);
+            System.arraycopy(r2LowBe, 0, rPrimeBe, 8, 8);
+            AESEngine aes = new AESEngine();
+            aes.init(true, new KeyParameter(kBe));
+            aes.processBlock(rPrimeBe, 0, stkBe, 0);
+            return reverseCopy(stkBe);
+        } finally {
+            wipe(kBe);
+            wipe(r1LowBe);
+            wipe(r2LowBe);
+            wipe(rPrimeBe);
+            wipe(stkBe);
+        }
+    }
+
     static LocalOobMaterial generateLocalOob(
             SecureRandom random) {
         if (random == null) {
@@ -455,6 +587,11 @@ final class BleSecureConnectionsCrypto {
                     P256_VALUE_LENGTH,
                     P256_VALUE_LENGTH);
             return output;
+        }
+
+        byte[] publicXLittleEndian() {
+            requireLive();
+            return publicX.clone();
         }
 
         byte[] appleOobData() {

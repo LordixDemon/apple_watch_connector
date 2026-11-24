@@ -9,6 +9,8 @@ import '../models/watch_device.dart';
 import '../models/watch_telemetry.dart';
 import '../models/watch_connection_state.dart';
 import '../models/watch_model_catalog.dart';
+import '../models/notification_relay_state.dart';
+import '../models/software_update_state.dart';
 
 /// One connection publication decoded before any of its projections are emitted.
 final class BridgeObservation {
@@ -20,6 +22,8 @@ final class BridgeObservation {
   final NativeMonogramPreferences monogram;
   final NativeMonogramMirror? monogramMirror;
   final PhoneFindState phoneFind;
+  final NotificationRelayState notifications;
+  final SoftwareUpdateState softwareUpdate;
 
   const BridgeObservation(
     this.device,
@@ -30,6 +34,8 @@ final class BridgeObservation {
     this.pigmentMirror,
     this.monogram = const NativeMonogramPreferences.unknown(),
     this.monogramMirror,
+    this.notifications = const NotificationRelayState(),
+    this.softwareUpdate = const SoftwareUpdateState(),
   ]);
 
   factory BridgeObservation.decode(Map data, {NativeFaceCollection? faces}) {
@@ -61,6 +67,8 @@ final class BridgeObservation {
       NativePigmentMirror.fromBridge(data),
       NativeMonogramPreferences.fromBridge(data),
       NativeMonogramMirror.fromBridge(data),
+      NotificationRelayState.fromBridge(data),
+      SoftwareUpdateState.fromBridge(data),
     );
   }
 }

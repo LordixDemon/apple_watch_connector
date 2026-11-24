@@ -31,22 +31,18 @@ final class AppleWatchPostCommitIdsAdapter
             new HashSet<>();
 
     private Transport transport;
-    private String expectedPairedSyncAppAckTopic;
-    private String expectedPairedSyncAppAckIdentifier;
-    private boolean pairedSyncAppAckObserved;
-    private String pairingModeNormalRequestIdentifier;
-    /** Watch ProxyActivation message UUID when that fetch expects an IDS reply. */
-    private String activationFetchReplyTo;
-    private final PairedSyncPeerProgress peerSyncProgress = new PairedSyncPeerProgress();
+    private final PostCommitIdsInboundHandler inbound;
     private boolean closed;
+    private CompanionProtocolProfile profile = CompanionProtocolProfile.IOS_26_6;
 
     AppleWatchPostCommitIdsAdapter(
             AppleWatchPostCommitCoordinator coordinator,
             NormalLinkIdsSessionBridge bridge) {
         this(
                 coordinator,
-                new LiveTransport(
+                PostCommitIdsLiveTransport.liveTransport(
                         bridge));
+        profile = bridge.ids().profile();
     }
 
     AppleWatchPostCommitIdsAdapter(
@@ -71,6 +67,10 @@ final class AppleWatchPostCommitIdsAdapter
                 transport;
         generation =
                 snapshot.generation;
+        this.inbound =
+                new PostCommitIdsInboundHandler(
+                        coordinator,
+                        generation);
     }
 
     synchronized PreparedSend prepareSimple(
@@ -83,7 +83,7 @@ final class AppleWatchPostCommitIdsAdapter
                 == AppleWatchPostCommitCoordinator.ActionType
                 .SEND_PAIRING_MODE_NORMAL) {
             NanoRegistryClassDCodec.PairingModeRequest message =
-                    checked.pairingModeNormalMessage();
+                    checked.pairingModeNormalMessage(profile);
             try {
                 return dispatchClassD(
                         checked,
@@ -198,9 +198,7 @@ final class AppleWatchPostCommitIdsAdapter
             AppleWatchPostCommitCoordinator.Action action,
             PbBridgeCodec.ActivationData message) {
         String replyTo =
-                activationFetchReplyTo;
-        activationFetchReplyTo =
-                null;
+                inbound.consumeActivationFetchReplyTo();
         if (replyTo == null) {
             return dispatchPbBridge(
                     action,
@@ -269,7 +267,7 @@ final class AppleWatchPostCommitIdsAdapter
             // it after PSY completion can lose the notification: 23S303's PSY
             // observer refreshes before installing its delegate, and the progress
             // controller's addObserver does not replay the cached state.
-            return new CompletionDispatchOutput(primary, initialSync);
+            return PostCommitIdsLiveTransport.completionOutput(primary, initialSync);
         } catch (RuntimeException failure) {
             closeQuietly(primary);
             closeQuietly(initialSync);
@@ -362,56 +360,9 @@ final class AppleWatchPostCommitIdsAdapter
     synchronized InboundResult accept(
             IdsModernSessionCoordinator.SessionEvent event) {
         requireUsable();
-        if (event == null) {
-            return new InboundResult(
-                    List.of(),
-                    null,
-                    0,
-                    null);
-        }
-        if (event.type != IdsModernSessionCoordinator.EventType.PROTOBUF_RECEIVED
-                && event.type != IdsModernSessionCoordinator.EventType.DATA_RECEIVED) {
-            return new InboundResult(
-                    List.of(),
-                    null,
-                    0,
-                    null);
-        }
-        byte[] payload =
-                event.payload();
-        if (event.type == IdsModernSessionCoordinator.EventType.PROTOBUF_RECEIVED
-                && (NanoRegistryPropertyCodec.CLASS_C_SERVICE.equals(event.topic)
-                || NanoRegistryPropertyCodec.CLASS_D_SERVICE.equals(event.topic)
-                || PairedSyncCodec.isService(event.topic))) {
-            try {
-                return new InboundResult(consumeSetupObservation(event, payload), null, 0, null);
-            } finally {
-                wipe(payload);
-            }
-        }
-        try (InboundMessage incoming =
-                     new InboundMessage(
-                             event.sequence,
-                             event.streamId,
-                             event.flags,
-                             event.peerResponseIdentifier,
-                             event.messageUuid,
-                             event.topic,
-                             event.protobufType,
-                             event.response,
-                             payload)) {
-            return acceptPbBridge(
-                    incoming);
-        } catch (RuntimeException ignored) {
-            return new InboundResult(
-                    List.of(),
-                    null,
-                    0,
-                    null);
-        } finally {
-            wipe(
-                    payload);
-        }
+        return inbound.accept(
+                event,
+                transport);
     }
 
     /**
@@ -423,158 +374,14 @@ final class AppleWatchPostCommitIdsAdapter
             IdsModernSessionCoordinator.SessionEvent event) {
         requireUsable();
         requireCurrentGeneration();
-        if (event == null
-                || event.type
-                != IdsModernSessionCoordinator.EventType.APP_ACK_RECEIVED) {
-            throw new IllegalArgumentException(
-                    "Incoming IDS event is not an AppAck receipt");
-        }
-        if (expectedPairedSyncAppAckTopic == null
-                || expectedPairedSyncAppAckIdentifier == null
-                || !expectedPairedSyncAppAckTopic.equals(
-                event.topic)
-                || !expectedPairedSyncAppAckIdentifier.equals(
-                event.peerResponseIdentifier)) {
-            return AppAckReceipt.UNRELATED;
-        }
-        if (pairedSyncAppAckObserved) {
-            return AppAckReceipt.PAIRED_SYNC_DUPLICATE;
-        }
-        pairedSyncAppAckObserved =
-                true;
-        return AppAckReceipt.PAIRED_SYNC_MATCHED;
+        return inbound.acceptAppAck(
+                event);
     }
 
     synchronized boolean pairedSyncAppAckObserved() {
         requireUsable();
         requireCurrentGeneration();
-        return pairedSyncAppAckObserved;
-    }
-
-    private List<AppleWatchPostCommitCoordinator.Action> consumeSetupObservation(
-            IdsModernSessionCoordinator.SessionEvent event, byte[] payload) {
-        List<AppleWatchPostCommitCoordinator.Action> actions = new ArrayList<>();
-        if (NanoRegistryPropertyCodec.CLASS_D_SERVICE.equals(event.topic)
-                && event.protobufType == NanoRegistryClassDCodec.TYPE_PAIRING_MODE
-                && event.response
-                && pairingModeNormalRequestIdentifier != null
-                && pairingModeNormalRequestIdentifier.equals(event.peerResponseIdentifier)) {
-            IdsSocketPairCodec.ProtobufMessage envelope = new IdsSocketPairCodec.ProtobufMessage(
-                    event.sequence, event.streamId, event.flags, event.peerResponseIdentifier,
-                    event.messageUuid, (event.flags & IdsSocketPairCodec.FLAG_HAS_TOPIC) != 0
-                    ? event.topic : null, event.protobufType, true, payload, null);
-            try {
-                NanoRegistryClassDCodec.ApplicationMessage decoded = NanoRegistryClassDCodec.decode(envelope);
-                try {
-                    if (decoded instanceof NanoRegistryClassDCodec.PairingModeResponse response
-                            && response.success) {
-                        actions.addAll(coordinator.onCompatibilityStateObserved(generation,
-                                AppleWatchPostCommitCoordinator.COMPATIBILITY_STATE_NORMAL));
-                    }
-                } finally {
-                    decoded.destroy();
-                }
-            } finally {
-                envelope.destroy();
-            }
-        } else if ((NanoRegistryPropertyCodec.CLASS_C_SERVICE.equals(event.topic)
-                || NanoRegistryPropertyCodec.CLASS_D_SERVICE.equals(event.topic))
-                && (event.protobufType == NanoRegistryPropertyCodec.TYPE_PROPERTIES_CHANGED
-                || (event.protobufType == NanoRegistryPropertyCodec.TYPE_PROPERTY_REQUEST
-                && event.response))) {
-            NanoRegistryPropertyCodec.ApplicationMessage decoded =
-                    event.protobufType == NanoRegistryPropertyCodec.TYPE_PROPERTIES_CHANGED
-                            ? NanoRegistryPropertyCodec.decodePropertiesChanged(payload)
-                            : NanoRegistryPropertyCodec.decodePropertyResponse(payload);
-            try {
-                List<NanoRegistryPropertyCodec.Property> properties =
-                        decoded instanceof NanoRegistryPropertyCodec.PropertiesChanged changed
-                                ? changed.properties
-                                : ((NanoRegistryPropertyCodec.PropertyResponse) decoded).properties;
-                for (NanoRegistryPropertyCodec.Property property : properties) {
-                    // _NRDevicePropertyIsSetup in NanoRegistry 23G71 resolves to
-                    // the CFString "isSetup", not "IsSetup".
-                    if ("isSetup".equals(property.name) && property.value != null
-                            && !property.value.isError
-                            && (!property.value.hasIsSet || property.value.isSet)
-                            && property.value.numberValue != null
-                            && Boolean.TRUE.equals(property.value.numberValue.boolValue)) {
-                        actions.addAll(coordinator.onIsSetupObserved(generation, true));
-                    }
-                }
-            } finally {
-                decoded.destroy();
-            }
-        } else if (PairedSyncCodec.isService(event.topic)
-                && PairedSyncCodec.isInboundUserDefaults(event.protobufType)
-                && !event.response) {
-            // An inbound message that fails our schema check is telemetry,
-            // not a reason to drop the whole link: log its shape and skip
-            // it. Live 0.2.164: the first real Watch user-defaults frame did
-            // not match the completion schema and killed the session at
-            // "IDS normal-link validation failed". Live 0.2.167: inbound
-            // decode is lax — any domain/keys are accepted and tracked; only
-            // completion-domain keys advance peerSyncProgress.
-            PairedSyncCodec.UserDefaultsMessage message = null;
-            try {
-                message = PairedSyncCodec.decodeInbound(payload);
-            } catch (IllegalArgumentException rejected) {
-                java.util.function.Consumer<String> logger =
-                        PairedSyncCodec.diagnosticLogger;
-                if (logger != null) {
-                    logger.accept(
-                            "PAIREDSYNC RX REJECTED: "
-                                    + rejected.getMessage()
-                                    + "; "
-                                    + PairedSyncCodec.summarizeForLog(
-                                            payload));
-                }
-            }
-            if (message != null) {
-                java.util.function.Consumer<String> logger =
-                        PairedSyncCodec.diagnosticLogger;
-                if (logger != null) {
-                    // Completion-domain traffic must stay visible too: it is the
-                    // only in-band proof of what the Watch believes about the
-                    // PairedSync state machine.
-                    logger.accept(
-                            "PAIREDSYNC RX: "
-                                    + PairedSyncCodec.summarizeForLog(
-                                            payload));
-                }
-                try {
-                    peerSyncProgress.accept(message);
-                    if (peerSyncProgress.complete()) {
-                        actions.addAll(coordinator.onPeerPairedSyncCompletionObserved(generation));
-                    }
-                    try {
-                        PairedSyncPreferenceStore.Result stored =
-                                PairedSyncPreferenceStore.merge(message);
-                        if (logger != null) {
-                            logger.accept(
-                                    "PAIREDSYNC STORED: domain="
-                                            + message.domain
-                                            + " keys="
-                                            + stored.accepted
-                                            + " entries="
-                                            + stored.entries
-                                            + " domains="
-                                            + stored.domainCount);
-                        }
-                    } catch (RuntimeException storeFailed) {
-                        if (logger != null) {
-                            logger.accept(
-                                    "PAIREDSYNC STORE FAILED: "
-                                            + storeFailed.getMessage());
-                        }
-                    }
-                } finally {
-                    message.destroy();
-                }
-            }
-        }
-        actions.addAll(observePairedSyncCapability());
-        return actions;
+        return inbound.pairedSyncAppAckObserved();
     }
 
     /** Package-visible typed entry point used by deterministic offline tests. */
@@ -582,49 +389,8 @@ final class AppleWatchPostCommitIdsAdapter
             InboundMessage incoming) {
         requireUsable();
         requireCurrentGeneration();
-        boolean matchesTopic = incoming != null
-                && PbBridgeCodec.SERVICE.equals(incoming.topic);
-        if (!matchesTopic) {
-            return new InboundResult(
-                    List.of(),
-                    null,
-                    0,
-                    null);
-        }
-
-        String wireTopic =
-                (incoming.flags
-                        & IdsSocketPairCodec.FLAG_HAS_TOPIC) != 0
-                        ? incoming.topic
-                        : null;
-        IdsSocketPairCodec.ProtobufMessage envelope =
-                new IdsSocketPairCodec.ProtobufMessage(
-                        incoming.sequence,
-                        incoming.streamId,
-                        incoming.flags,
-                        incoming.peerResponseIdentifier,
-                        incoming.messageUuid,
-                        wireTopic,
-                        incoming.protobufType,
-                        incoming.response,
-                        incoming.payload,
-                        null);
-        try {
-            try {
-                PbBridgeCodec.validateEnvelope(
-                        envelope);
-                return consumePbBridge(
-                        incoming);
-            } catch (RuntimeException unhandled) {
-                return new InboundResult(
-                        List.of(),
-                        null,
-                        0,
-                        null);
-            }
-        } finally {
-            envelope.destroy();
-        }
+        return inbound.acceptPbBridge(
+                incoming);
     }
 
     synchronized List<AppleWatchPostCommitCoordinator.Action>
@@ -649,130 +415,8 @@ final class AppleWatchPostCommitIdsAdapter
     synchronized List<AppleWatchPostCommitCoordinator.Action>
             observePairedSyncCapability() {
         requireUsable();
-        PairedSyncCapabilityState.Status status =
-                transport.pairedSyncCapabilityStatus();
-        List<AppleWatchPostCommitCoordinator.Action> result =
-                coordinator.onPairedSyncCapabilityObserved(
-                        generation,
-                        status);
-        java.util.function.Consumer<String> logger =
-                PairedSyncCodec.diagnosticLogger;
-        if (logger != null) {
-            AppleWatchPostCommitCoordinator.Snapshot snapshot =
-                    coordinator.snapshot();
-            if (snapshot.durableState.wireValue()
-                    >= PairingSessionRecord.DurableState
-                    .ACTIVATION_CONFIRMED.wireValue()) {
-                logger.accept(
-                        "PAIREDSYNC GATE: capability="
-                                + status
-                                + " phase="
-                                + snapshot.phase
-                                + " durable="
-                                + snapshot.durableState
-                                + " checkpointPending="
-                                + snapshot.checkpointPending
-                                + " langComplete="
-                                + snapshot.languageAndLocaleComplete
-                                + " initialSyncPrepared="
-                                + snapshot.initialSyncPrepared
-                                + " pbBridgeNormalSent="
-                                + snapshot.pbBridgeNormalSent
-                                + " isSetupObserved="
-                                + snapshot.isSetupObserved
-                                + " pairedSyncObserved="
-                                + snapshot.pairedSyncObserved
-                                + " actions="
-                                + result.size());
-            }
-        }
-        return result;
-    }
-
-    private InboundResult consumePbBridge(
-            InboundMessage incoming) {
-        List<AppleWatchPostCommitCoordinator.Action> actions;
-        byte[] archivedActivationRequest =
-                null;
-        MobileActivationHttpProxy.RequestKind activationKind =
-                null;
-        int activationAttempt =
-                0;
-        switch (incoming.protobufType) {
-            case PbBridgeCodec.TYPE_PROXY_ACTIVATION -> {
-                if ((incoming.flags
-                        & IdsSocketPairCodec.FLAG_EXPECTS_PEER_RESPONSE) != 0
-                        && incoming.messageUuid != null
-                        && !incoming.messageUuid.isEmpty()) {
-                    activationFetchReplyTo =
-                            incoming.messageUuid;
-                } else {
-                    activationFetchReplyTo =
-                            null;
-                }
-                PbBridgeCodec.ActivationFetchRequest request =
-                        PbBridgeCodec.decodeActivationFetch(
-                                incoming.payload);
-                try {
-                    actions =
-                            coordinator.onActivationRequest(
-                                    generation);
-                    AppleWatchPostCommitCoordinator.Action execute =
-                            findAction(
-                                    actions,
-                                    AppleWatchPostCommitCoordinator.ActionType
-                                            .EXECUTE_ACTIVATION_HTTPS);
-                    if (execute != null) {
-                        archivedActivationRequest =
-                                request.archivedRequest();
-                        activationKind =
-                                execute.activationKind;
-                        activationAttempt =
-                                execute.activationAttempt;
-                    }
-                } finally {
-                    request.destroy();
-                }
-            }
-            case PbBridgeCodec.TYPE_BEGAN_ACTIVATING ->
-                    actions =
-                            List.of();
-            case PbBridgeCodec.TYPE_ACTIVATION_SUCCEEDED -> {
-                actions = new ArrayList<>(
-                        coordinator.onActivationSucceeded(
-                                generation));
-                // Type 4 is activation evidence. It does not report Buddy or Clock.
-                actions.addAll(
-                        coordinator.onGizmoDidFinishActivating(
-                                generation));
-            }
-            case PbBridgeCodec.TYPE_ACTIVATION_FAILED ->
-                    actions =
-                            coordinator.onActivationFailedRetryable(
-                                    generation);
-            case PbBridgeCodec.TYPE_LANGUAGE_AND_LOCALE_STATUS -> {
-                PbBridgeCodec.LanguageAndLocaleStatus status =
-                        PbBridgeCodec.decodeLanguageAndLocaleStatus(
-                                incoming.payload);
-                actions =
-                        coordinator.onLanguageAndLocaleStatus(
-                                generation,
-                                status);
-            }
-            case PbBridgeCodec.TYPE_PREPARE_INITIAL_SYNC_RESPONSE -> {
-                actions = new ArrayList<>(coordinator.onPrepareInitialSyncResponse(
-                        generation, incoming.peerResponseIdentifier));
-                actions.addAll(coordinator.onNormalTransitionPrerequisitesSatisfied(generation));
-            }
-            default ->
-                    actions =
-                            List.of();
-        }
-        return new InboundResult(
-                actions,
-                activationKind,
-                activationAttempt,
-                archivedActivationRequest);
+        return inbound.observePairedSyncCapability(
+                transport);
     }
 
     private PreparedSend dispatchPbBridge(
@@ -794,7 +438,7 @@ final class AppleWatchPostCommitIdsAdapter
                     buddy = transport.sendPbBridge(new PbBridgeCodec.PushBuddyFinished());
                     start = transport.sendPairedSync(started);
                     prepare = transport.sendPbBridge(message);
-                    output = new InitialSyncDispatchOutput(buddy, start, prepare);
+                    output = PostCommitIdsLiveTransport.initialSyncOutput(buddy, start, prepare);
                 } catch (RuntimeException failure) {
                     closeQuietly(buddy);
                     closeQuietly(start);
@@ -968,7 +612,7 @@ final class AppleWatchPostCommitIdsAdapter
         return switch (action.type) {
             case SEND_PAIRING_MODE_NORMAL -> {
                 if (success && sent != null) {
-                    pairingModeNormalRequestIdentifier = sent.messageUuid;
+                    inbound.recordPairingModeNormalSent(sent.messageUuid);
                 }
                 yield coordinator.onPairingModeNormalSendResult(generation, success);
             }
@@ -1018,16 +662,13 @@ final class AppleWatchPostCommitIdsAdapter
                         throw new IllegalStateException(
                                 "Successful PairedSync send has no metadata");
                     }
-                    expectedPairedSyncAppAckTopic =
-                            sent.topic;
-                    expectedPairedSyncAppAckIdentifier =
-                            sent.messageUuid;
-                    pairedSyncAppAckObserved =
-                            false;
+                    inbound.recordPairedSyncSent(
+                            sent.topic,
+                            sent.messageUuid);
                 }
                 List<AppleWatchPostCommitCoordinator.Action> actions = new ArrayList<>(
                         coordinator.onPairedSyncSendResult(generation, success));
-                if (success && peerSyncProgress.complete()) {
+                if (success && inbound.peerSyncComplete()) {
                     actions.addAll(coordinator.onPeerPairedSyncCompletionObserved(generation));
                 }
                 yield actions;
@@ -1101,18 +742,6 @@ final class AppleWatchPostCommitIdsAdapter
         }
     }
 
-    private static AppleWatchPostCommitCoordinator.Action findAction(
-            List<AppleWatchPostCommitCoordinator.Action> actions,
-            AppleWatchPostCommitCoordinator.ActionType type) {
-        for (AppleWatchPostCommitCoordinator.Action action :
-                actions) {
-            if (action.type == type) {
-                return action;
-            }
-        }
-        return null;
-    }
-
     @Override
     public synchronized void close() {
         if (closed) {
@@ -1129,19 +758,14 @@ final class AppleWatchPostCommitIdsAdapter
         }
         pending.clear();
         dispatched.clear();
-        expectedPairedSyncAppAckTopic =
-                null;
-        expectedPairedSyncAppAckIdentifier =
-                null;
-        pairedSyncAppAckObserved =
-                false;
+        inbound.resetOnClose();
         if (transport != null) {
             transport.close();
             transport = null;
         }
     }
 
-    private static void closeQuietly(
+    static void closeQuietly(
             AutoCloseable value) {
         if (value == null) {
             return;
@@ -1153,7 +777,7 @@ final class AppleWatchPostCommitIdsAdapter
         }
     }
 
-    private static void wipe(
+    static void wipe(
             byte[] value) {
         if (value != null) {
             Arrays.fill(
@@ -1245,85 +869,6 @@ final class AppleWatchPostCommitIdsAdapter
 
         @Override
         void close();
-    }
-
-    /** Open Buddy before PSY changes, retaining PB prepare reply correlation. */
-    private static final class InitialSyncDispatchOutput implements DispatchOutput {
-        private DispatchOutput buddy;
-        private DispatchOutput start;
-        private DispatchOutput prepare;
-
-        InitialSyncDispatchOutput(DispatchOutput buddy, DispatchOutput start, DispatchOutput prepare) {
-            this.buddy = Objects.requireNonNull(buddy);
-            this.start = Objects.requireNonNull(start);
-            this.prepare = Objects.requireNonNull(prepare);
-        }
-
-        @Override
-        public List<byte[]> outboundFrames() {
-            requireOpen();
-            List<byte[]> frames = new ArrayList<>(buddy.outboundFrames());
-            frames.addAll(start.outboundFrames());
-            frames.addAll(prepare.outboundFrames());
-            return Collections.unmodifiableList(frames);
-        }
-
-        @Override
-        public SentMessage sentMessage() {
-            requireOpen();
-            return prepare.sentMessage();
-        }
-
-        private void requireOpen() {
-            if (prepare == null) throw new IllegalStateException("Initial sync output is closed");
-        }
-
-        @Override
-        public void close() {
-            closeQuietly(buddy);
-            closeQuietly(start);
-            closeQuietly(prepare);
-            buddy = null;
-            start = null;
-            prepare = null;
-        }
-    }
-
-    /** Own both completion domains until the HAL submits every frame. */
-    private static final class CompletionDispatchOutput implements DispatchOutput {
-        private DispatchOutput primary;
-        private DispatchOutput initialSync;
-
-        CompletionDispatchOutput(DispatchOutput primary, DispatchOutput initialSync) {
-            this.primary = Objects.requireNonNull(primary);
-            this.initialSync = Objects.requireNonNull(initialSync);
-        }
-
-        @Override
-        public List<byte[]> outboundFrames() {
-            requireOpen();
-            List<byte[]> frames = new ArrayList<>(primary.outboundFrames());
-            frames.addAll(initialSync.outboundFrames());
-            return Collections.unmodifiableList(frames);
-        }
-
-        @Override
-        public SentMessage sentMessage() {
-            requireOpen();
-            return primary.sentMessage();
-        }
-
-        private void requireOpen() {
-            if (primary == null) throw new IllegalStateException("Completion output is closed");
-        }
-
-        @Override
-        public void close() {
-            closeQuietly(primary);
-            closeQuietly(initialSync);
-            primary = null;
-            initialSync = null;
-        }
     }
 
     static final class SentMessage {
@@ -1442,7 +987,7 @@ final class AppleWatchPostCommitIdsAdapter
         final String topic;
         final int protobufType;
         final boolean response;
-        private byte[] payload;
+        byte[] payload;
         private boolean closed;
 
         InboundMessage(
@@ -1498,7 +1043,7 @@ final class AppleWatchPostCommitIdsAdapter
         private byte[] archivedActivationRequest;
         private boolean closed;
 
-        private InboundResult(
+        InboundResult(
                 List<AppleWatchPostCommitCoordinator.Action> actions,
                 MobileActivationHttpProxy.RequestKind activationKind,
                 int activationAttempt,
@@ -1629,162 +1174,4 @@ final class AppleWatchPostCommitIdsAdapter
         }
     }
 
-    private static final class LiveTransport
-            implements Transport {
-        private NormalLinkIdsSessionBridge bridge;
-
-        private LiveTransport(
-                NormalLinkIdsSessionBridge bridge) {
-            if (bridge == null) {
-                throw new IllegalArgumentException(
-                        "Normal-link IDS bridge is absent");
-            }
-            this.bridge =
-                    bridge;
-        }
-
-        @Override
-        public DispatchOutput sendClassD(
-                NanoRegistryClassDCodec.ApplicationMessage message) {
-            requireOpen();
-            return new LiveDispatchOutput(
-                    bridge.sendClassD(
-                            message));
-        }
-
-        @Override
-        public DispatchOutput sendPbBridge(
-                PbBridgeCodec.ApplicationMessage message) {
-            requireOpen();
-            return new LiveDispatchOutput(
-                    bridge.sendPbBridge(
-                            message));
-        }
-
-        @Override
-        public DispatchOutput sendPbBridgeReplyToFetch(
-                PbBridgeCodec.ApplicationMessage message,
-                String watchMessageUuid) {
-            requireOpen();
-            return new LiveDispatchOutput(
-                    bridge.sendPbBridgeReplyToFetch(
-                            message,
-                            watchMessageUuid));
-        }
-
-        @Override
-        public DispatchOutput sendPairedSync(
-                PairedSyncCodec.UserDefaultsMessage message) {
-            requireOpen();
-            return new LiveDispatchOutput(
-                    bridge.sendPairedSync(
-                            message));
-        }
-
-        @Override
-        public PairedSyncCapabilityState.Status
-                pairedSyncCapabilityStatus() {
-            requireOpen();
-            return bridge.idsSnapshot()
-                    .pairedSyncCapabilityStatus;
-        }
-
-        private void requireOpen() {
-            if (bridge == null) {
-                throw new IllegalStateException(
-                        "Live post-commit IDS transport is closed");
-            }
-        }
-
-        @Override
-        public void close() {
-            if (bridge == null) {
-                return;
-            }
-            NormalLinkIdsSessionBridge owned =
-                    bridge;
-            bridge =
-                    null;
-            owned.close();
-        }
-    }
-
-    private static final class LiveDispatchOutput
-            implements DispatchOutput {
-        private NormalLinkIdsSessionBridge.Output output;
-        private final SentMessage sent;
-
-        private LiveDispatchOutput(
-                NormalLinkIdsSessionBridge.Output output) {
-            if (output == null) {
-                throw new IllegalArgumentException(
-                        "Normal-link IDS output is absent");
-            }
-            this.output =
-                    output;
-            SentMessage found =
-                    null;
-            for (IdsModernSessionCoordinator.SessionEvent event :
-                    output.idsEvents()) {
-                if (event.type
-                        != IdsModernSessionCoordinator.EventType
-                        .PROTOBUF_SENT) {
-                    continue;
-                }
-                if (found != null) {
-                    output.close();
-                    this.output =
-                            null;
-                    throw new IllegalStateException(
-                            "One IDS action emitted multiple protobufs");
-                }
-                found =
-                        new SentMessage(
-                                event.sequence,
-                                event.messageUuid,
-                                event.topic,
-                                event.flags,
-                                event.protobufType,
-                                event.response);
-            }
-            if (found == null) {
-                output.close();
-                this.output =
-                        null;
-                throw new IllegalStateException(
-                        "IDS action emitted no protobuf event");
-            }
-            sent =
-                    found;
-        }
-
-        @Override
-        public List<byte[]> outboundFrames() {
-            requireOpen();
-            return output.ertmFrames();
-        }
-
-        @Override
-        public SentMessage sentMessage() {
-            requireOpen();
-            return sent;
-        }
-
-        private void requireOpen() {
-            if (output == null) {
-                throw new IllegalStateException(
-                        "Live IDS dispatch output is closed");
-            }
-        }
-
-        @Override
-        public void close() {
-            if (output == null) {
-                return;
-            }
-            output.close();
-            output =
-                    null;
-        }
-    }
 }

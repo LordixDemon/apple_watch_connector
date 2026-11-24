@@ -7,6 +7,7 @@ final class OperationalCommandPolicy {
         if (command == null || command.length() > MAX_COMMAND) return false;
         String line = command.stripTrailing();
         if (line.indexOf('\n') >= 0 || line.indexOf('\r') >= 0 || line.indexOf('\0') >= 0) return false;
+        if (SoftwareUpdateSession.allows(line)) return true;
         if (line.equals("PING_WATCH")) return true;
         if (line.equals("REQUEST_REGISTRY")) return true;
         if (line.equals("REQUEST_DEVICE_ABOUT")) return true;
