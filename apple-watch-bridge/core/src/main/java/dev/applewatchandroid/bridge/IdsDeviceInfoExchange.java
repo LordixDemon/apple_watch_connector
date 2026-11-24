@@ -23,6 +23,12 @@ final class IdsDeviceInfoExchange implements AutoCloseable {
     private boolean peerInfoReceived;
     private boolean localInfoDelivered;
     private boolean closed;
+    private CompanionProtocolProfile profile = CompanionProtocolProfile.IOS_26_6;
+    void useProfile(CompanionProtocolProfile selected) {
+        requireOpen();
+        if (selected == null || started || !peerRequests.isEmpty()) throw new IllegalStateException("IDS device-info profile is frozen");
+        profile = selected;
+    }
 
     IdsDeviceInfoExchange(byte[] publicBundle, String localIdentifier,
                          String expectedPeerIdentifier, boolean previouslyExchanged) {
@@ -67,7 +73,7 @@ final class IdsDeviceInfoExchange implements AutoCloseable {
                 reply.put("encryption-class-a-key", localKeys.get("A"));
                 reply.put("encryption-class-c-key", localKeys.get("C"));
                 reply.put("success", true);
-                reply.put("private-device-data", IosCompanionProfile26_6.idsPrivateDeviceData(localIdentifier));
+                reply.put("private-device-data", profile.idsPrivateDeviceData(localIdentifier));
                 reply.put("device-name", IosCompanionProfile26_6.DEVICE_NAME);
                 reply.put("hardware-version", IosCompanionProfile26_6.MODEL);
                 return AppleBinaryPropertyList.encode(reply);

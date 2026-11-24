@@ -35,26 +35,13 @@ final class IdsIpv6TcpRouter
     private final byte[] remoteClassD;
     private final byte[] localClassC;
     private final byte[] remoteClassC;
-    /** Paired quartet from the first session, when this IKE assignment flipped. */
-    private byte[] staleLocalClassD;
-    private byte[] staleRemoteClassD;
+    private final IdsStaleFlowTracker staleFlows =
+            new IdsStaleFlowTracker();
     private final Set<ListenerKey> listeners =
             new LinkedHashSet<>();
     private final Map<ConnectionKey, Endpoint> byTuple =
             new LinkedHashMap<>();
     private final Map<Long, Endpoint> byId =
-            new LinkedHashMap<>();
-    /** Tuples the Watch kernel already rejected with a no-connection RST. */
-    private final Set<ConnectionKey> kernelRejectedTuples =
-            new LinkedHashSet<>();
-    /**
-     * Every Watch flow observed on the wire, newest segment wins. The host
-     * persists these so a restarted process can proactively reset the Watch
-     * TCBs that outlived the previous session; without the reset the Watch
-     * identityservicesd keeps its control connection ESTABLISHED and never
-     * opens the new connector (watchOS 26.2 zombie gate, live 0.2.304).
-     */
-    private final Map<String, IdsStaleFlowRecord> observedFlows =
             new LinkedHashMap<>();
 
     private long nextConnectionId = 1;
@@ -203,134 +190,35 @@ final class IdsIpv6TcpRouter
             byte[] localClassD,
             byte[] remoteClassD) {
         requireUsable();
-        if (localClassD == null || remoteClassD == null
-                || localClassD.length != ADDRESS_LENGTH
-                || remoteClassD.length != ADDRESS_LENGTH) {
-            throw new IllegalArgumentException("Stale flow addresses are absent");
-        }
-        wipe(staleLocalClassD);
-        wipe(staleRemoteClassD);
-        staleLocalClassD = localClassD.clone();
-        staleRemoteClassD = remoteClassD.clone();
-    }
-
-    private void noteFlowObservation(
-            OrdinaryIkeAuth.DataClass dataClass,
-            Ipv6TcpPacketCodec.Packet packet) {
-        try {
-            IdsStaleFlowRecord record =
-                    IdsStaleFlowRecord.fromInbound(
-                            dataClass,
-                            packet,
-                            System.currentTimeMillis());
-            observedFlows.put(
-                    record.key(),
-                    record);
-        } catch (RuntimeException malformed) {
-            // Observation is best-effort; routing must never fail on it.
-        }
+        staleFlows.setStaleFlowAddresses(
+                localClassD,
+                remoteClassD);
     }
 
     /**
      * Seeds flows observed by a previous process so the host can reset
      * them right after the link comes up, instead of waiting for the
-     * Watch to retransmit (it has nothing to retransmit when the previous
-     * session acknowledged everything — live 0.2.305 15:10 silence).
+     * Watch to retransmit.
      */
     synchronized void seedStaleFlows(
             List<IdsStaleFlowRecord> seeds) {
         requireUsable();
-        if (seeds == null) {
-            return;
-        }
-        for (IdsStaleFlowRecord seed : seeds) {
-            if (seed != null) {
-                observedFlows.put(
-                        seed.key(),
-                        seed);
-            }
-        }
+        staleFlows.seedStaleFlows(
+                seeds);
     }
 
     synchronized List<IdsStaleFlowRecord> staleFlowObservations() {
         requireUsable();
-        return new ArrayList<>(
-                observedFlows.values());
+        return staleFlows.staleFlowObservations();
     }
 
     /**
      * Builds a proactive RFC 5961 reset for every remembered Watch flow.
-     * The reset sequence is the peer's last acknowledgement — exactly the
-     * Watch's RCV.NXT, so validation passes at once; when the flow moved
-     * on by a few bytes the value still lands inside the window and the
-     * Watch answers with a challenge ACK, which the reactive stale path
-     * then resets precisely. The timestamp echo is extrapolated at the
-     * peer's ~1000 Hz tick (future echoes are not PAWS-checked on RST).
-     * Records younger than {@value #MIN_RESET_AGE_MS} ms are skipped so a
-     * mid-session call can never kill a live flow.
      */
     synchronized List<ProactiveReset> buildProactiveStaleResets() {
         requireUsable();
-        List<ProactiveReset> resets =
-                new ArrayList<>();
-        long now = System.currentTimeMillis();
-        for (IdsStaleFlowRecord record : observedFlows.values()) {
-            if (now - record.lastSeenEpochMs < MIN_RESET_AGE_MS) {
-                continue;
-            }
-            byte[] options = null;
-            byte[] reset = null;
-            try {
-                options =
-                        record.peerTimestamp >= 0
-                                ? Ipv6TcpPacketCodec.encodeTimestampOption(
-                                        (record.peerTimestamp
-                                                + (now - record.lastSeenEpochMs))
-                                                & 0xffff_ffffL)
-                                : new byte[0];
-                reset =
-                        Ipv6TcpPacketCodec.encode(
-                                record.localAddress,
-                                record.remoteAddress,
-                                record.localPort,
-                                record.remotePort,
-                                record.peerAck,
-                                0,
-                                Ipv6TcpPacketCodec.FLAG_RST,
-                                0,
-                                0,
-                                options,
-                                new byte[0]);
-                options = null;
-                java.util.function.Consumer<String> logger = diagnosticLogger;
-                if (logger != null) {
-                    logger.accept(String.format(
-                            java.util.Locale.US,
-                            "[TCP Router] proactive stale RST: dc=%s %d->%d seq=%d ageMs=%d",
-                            record.dataClass,
-                            record.remotePort,
-                            record.localPort,
-                            record.peerAck,
-                            now - record.lastSeenEpochMs));
-                }
-                resets.add(
-                        new ProactiveReset(
-                                record.dataClass,
-                                reset));
-                reset = null;
-            } finally {
-                if (options != null) {
-                    wipe(options);
-                }
-                if (reset != null) {
-                    wipe(reset);
-                }
-            }
-        }
-        return resets;
+        return staleFlows.buildProactiveStaleResets();
     }
-
-    private static final long MIN_RESET_AGE_MS = 10_000L;
 
     /** Ownership of the packet passes to the caller. */
     static final class ProactiveReset {
@@ -439,7 +327,7 @@ final class IdsIpv6TcpRouter
                     packet);
             if (packet.hasFlag(
                     Ipv6TcpPacketCodec.FLAG_ACK)) {
-                noteFlowObservation(
+                staleFlows.noteFlowObservation(
                         dataClass,
                         packet);
             }
@@ -506,31 +394,11 @@ final class IdsIpv6TcpRouter
                         formatIpv6(remoteClassD)));
             }
             if (endpoint == null) {
-                boolean peerAbort = packet.hasFlag(Ipv6TcpPacketCodec.FLAG_RST)
-                        && packet.hasFlag(Ipv6TcpPacketCodec.FLAG_ACK);
-                boolean newSyn = packet.hasFlag(Ipv6TcpPacketCodec.FLAG_SYN)
-                        && !packet.hasFlag(Ipv6TcpPacketCodec.FLAG_ACK);
-                if (kernelRejectedTuples.contains(key) && !peerAbort && !newSyn) {
-                    if (logger != null) {
-                        logger.accept(String.format(
-                                java.util.Locale.US,
-                                "[TCP Router] stale replay dropped after kernel RST: dc=%s %d->%d",
-                                dataClass,
-                                packet.sourcePort,
-                                packet.destinationPort));
-                    }
+                if (staleFlows.shouldDropKernelRejectedAndClearIfFresh(
+                        key,
+                        dataClass,
+                        packet)) {
                     return new InboundResult(dataClass, List.of(), List.of());
-                }
-                if (peerAbort || newSyn) {
-                    kernelRejectedTuples.remove(key);
-                    kernelRejectedTuples.remove(new ConnectionKey(
-                            OrdinaryIkeAuth.DataClass.CLASS_D,
-                            key.localPort,
-                            key.remotePort));
-                    kernelRejectedTuples.remove(new ConnectionKey(
-                            OrdinaryIkeAuth.DataClass.CLASS_C,
-                            key.localPort,
-                            key.remotePort));
                 }
                 return acceptNewPassive(
                         dataClass,
@@ -543,10 +411,7 @@ final class IdsIpv6TcpRouter
                     && !packet.hasFlag(Ipv6TcpPacketCodec.FLAG_ACK)) {
                 int localPort = packet.destinationPort;
                 int remotePort = packet.sourcePort;
-                kernelRejectedTuples.add(new ConnectionKey(
-                        OrdinaryIkeAuth.DataClass.CLASS_D, localPort, remotePort));
-                kernelRejectedTuples.add(new ConnectionKey(
-                        OrdinaryIkeAuth.DataClass.CLASS_C, localPort, remotePort));
+                staleFlows.markKernelRejectedBothClasses(localPort, remotePort);
                 byId.remove(endpoint.id);
                 byTuple.remove(endpoint.key);
                 endpoint.close();
@@ -783,40 +648,6 @@ final class IdsIpv6TcpRouter
         return listeners.size();
     }
 
-    /** Standard RFC 793 reset for a segment that matches no live tuple. */
-    private static byte[] encodeReset(
-            Ipv6TcpPacketCodec.Packet packet) {
-        boolean hasAck = packet.hasFlag(Ipv6TcpPacketCodec.FLAG_ACK);
-        long acknowledgement = hasAck ? 0 : (packet.sequence + packet.payload.length
-                + (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_SYN) ? 1 : 0)
-                + (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_FIN) ? 1 : 0)) & 0xffff_ffffL;
-        return Ipv6TcpPacketCodec.encode(packet.destinationAddress, packet.sourceAddress,
-                packet.destinationPort, packet.sourcePort, hasAck ? packet.acknowledgement : 0,
-                acknowledgement, Ipv6TcpPacketCodec.FLAG_RST | (hasAck ? 0 : Ipv6TcpPacketCodec.FLAG_ACK),
-                0, 0, new byte[0], new byte[0]);
-    }
-
-    /** ACK a FIN after the local TCB is already gone, without RST. */
-    private static byte[] encodeClosingAck(
-            Ipv6TcpPacketCodec.Packet packet) {
-        long acknowledgement =
-                (packet.sequence
-                        + packet.payload.length
-                        + 1L) & 0xffff_ffffL;
-        return Ipv6TcpPacketCodec.encode(
-                packet.destinationAddress,
-                packet.sourceAddress,
-                packet.destinationPort,
-                packet.sourcePort,
-                packet.acknowledgement,
-                acknowledgement,
-                Ipv6TcpPacketCodec.FLAG_ACK,
-                0,
-                0,
-                new byte[0],
-                new byte[0]);
-    }
-
     private InboundResult acceptNewPassive(
             OrdinaryIkeAuth.DataClass dataClass,
             ConnectionKey key,
@@ -832,67 +663,19 @@ final class IdsIpv6TcpRouter
                         dataClass,
                         packet.destinationPort);
         if (!ownedDestination) {
-            java.util.function.Consumer<String> logger = diagnosticLogger;
-            if (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_RST)) {
-                return new InboundResult(dataClass, List.of(), List.of());
-            }
-            if (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_FIN)
-                    && !packet.hasFlag(Ipv6TcpPacketCodec.FLAG_SYN)
-                    && packet.payload.length == 0) {
-                if (logger != null) {
-                    logger.accept(String.format(
-                            java.util.Locale.US,
-                            "[TCP Router] stale FIN ACK: dc=%s %d->%d",
-                            dataClass,
-                            packet.sourcePort,
-                            packet.destinationPort));
-                }
-                byte[] ack = encodeClosingAck(packet);
-                try {
-                    return new InboundResult(dataClass, List.of(ack), List.of());
-                } finally {
-                    wipe(ack);
-                }
-            }
-            if (logger != null) {
-                logger.accept(String.format(
-                        java.util.Locale.US,
-                        "[TCP Router] stale tuple -> RST: dc=%s %d->%d syn=%b ack=%b fin=%b rst=%b payloadLen=%d",
-                        dataClass,
-                        packet.sourcePort,
-                        packet.destinationPort,
-                        packet.hasFlag(Ipv6TcpPacketCodec.FLAG_SYN),
-                        packet.hasFlag(Ipv6TcpPacketCodec.FLAG_ACK),
-                        packet.hasFlag(Ipv6TcpPacketCodec.FLAG_FIN),
-                        packet.hasFlag(Ipv6TcpPacketCodec.FLAG_RST),
-                        packet.payload.length));
-            }
-            byte[] reset = encodeReset(packet);
-            try { return new InboundResult(dataClass, List.of(reset), List.of()); }
-            finally { wipe(reset); }
+            return staleFlows.handleUnownedDestination(
+                    dataClass,
+                    packet);
         }
         if (!packet.hasFlag(Ipv6TcpPacketCodec.FLAG_SYN)
                 || packet.hasFlag(Ipv6TcpPacketCodec.FLAG_ACK)
                 || packet.hasFlag(Ipv6TcpPacketCodec.FLAG_FIN)
                 || packet.hasFlag(Ipv6TcpPacketCodec.FLAG_RST)) {
-            if (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_RST)) {
-                return new InboundResult(dataClass, List.of(), List.of());
-            }
-            if (packet.hasFlag(Ipv6TcpPacketCodec.FLAG_ACK)
-                    && !packet.hasFlag(Ipv6TcpPacketCodec.FLAG_SYN)) {
-                // Live 20:42: the Watch retransmits the previous session's
-                // established segment (49156→61314, same seq/ack as 20:14)
-                // and ignores a bare RST, so the new control SYN is
-                // REJECTED_BY_POLICY. Acknowledge the bytes and FIN. Do not
-                // deliver the payload: it is the middle of an old IDS stream.
-                return acknowledgeAndFinishStale(
-                        dataClass,
-                        key,
-                        clearIpv6Packet);
-            }
-            byte[] reset = encodeReset(packet);
-            try { return new InboundResult(dataClass, List.of(reset), List.of()); }
-            finally { wipe(reset); }
+            return staleFlows.handleNonSynOwnedPort(
+                    dataClass,
+                    key,
+                    clearIpv6Packet,
+                    packet);
         }
         requireConnectionRoom();
 
@@ -941,90 +724,6 @@ final class IdsIpv6TcpRouter
     }
 
     /**
-     * Stale established segments belong to the quartet saved with the pair,
-     * so any reply must carry those addresses — a reply on the packet header
-     * reaches a Watch kernel with no TCB (live 00:07). Answering with a
-     * forged ACK only teaches the Watch its dead flows are alive, and it
-     * then never opens the new control connector (live 0.2.304 14:35: flows
-     * went quiet, connector never came). A reset with seq = the segment's
-     * ack number is exactly the Watch's RCV.NXT, so RFC 5961 validation
-     * passes and the Watch aborts the stale flow at once — its session
-     * layer then opens the new connector without waiting out the ~8.6-min
-     * RTO. The reset carries the timestamp echo when the peer negotiated
-     * TS, and goes out on the segment's own data class so the Watch's
-     * SA-bound TCB accepts it.
-     */
-    private InboundResult resetStaleFlow(
-            OrdinaryIkeAuth.DataClass dataClass,
-            ConnectionKey key,
-            byte[] clearIpv6Packet,
-            java.util.function.Consumer<String> logger) {
-        if (staleLocalClassD == null || staleRemoteClassD == null) {
-            if (logger != null) {
-                logger.accept(String.format(
-                        java.util.Locale.US,
-                        "[TCP Router] stale flow withheld (no quartet): dc=%s %d->%d bytes=%d",
-                        dataClass,
-                        key.remotePort,
-                        key.localPort,
-                        packetPayloadLength(clearIpv6Packet)));
-            }
-            return new InboundResult(dataClass, List.of(), List.of());
-        }
-        Ipv6TcpPacketCodec.Packet packet =
-                Ipv6TcpPacketCodec.decode(clearIpv6Packet);
-        byte[] options = null;
-        byte[] reset = null;
-        try {
-            Ipv6TcpPacketCodec.PeerOptions peer =
-                    Ipv6TcpPacketCodec.parsePeerOptions(packet.options);
-            options =
-                    peer.timestampValue >= 0
-                            ? Ipv6TcpPacketCodec.encodeTimestampOption(
-                                    peer.timestampValue)
-                            : new byte[0];
-            reset =
-                    Ipv6TcpPacketCodec.encode(
-                            staleLocalClassD,
-                            staleRemoteClassD,
-                            packet.destinationPort,
-                            packet.sourcePort,
-                            packet.acknowledgement,
-                            0,
-                            Ipv6TcpPacketCodec.FLAG_RST,
-                            0,
-                            0,
-                            options,
-                            new byte[0]);
-            options = null;
-            if (logger != null) {
-                logger.accept(String.format(
-                        java.util.Locale.US,
-                        "[TCP Router] stale RST on stored quartet: %s->%s port=%d->%d seq=%d",
-                        hostSuffix(staleLocalClassD),
-                        hostSuffix(staleRemoteClassD),
-                        key.remotePort,
-                        key.localPort,
-                        packet.acknowledgement & 0xffff_ffffL));
-            }
-            byte[] outbound = reset;
-            reset = null;
-            return new InboundResult(
-                    dataClass,
-                    List.of(outbound),
-                    List.of());
-        } finally {
-            packet.close();
-            if (options != null) {
-                wipe(options);
-            }
-            if (reset != null) {
-                wipe(reset);
-            }
-        }
-    }
-
-    /**
      * Class-D sockets are reached through the Class-D SA in the
      * phone-to-watch direction. A reply built from the parsed header
      * after the source-first decode goes the other way and the SA drops it.
@@ -1042,43 +741,6 @@ final class IdsIpv6TcpRouter
                 && packet.length >= 40
                 && packet[17] == AppleNetworkRelayInnerAddresses.CLASS_D_MARKER
                 && packet[33] == AppleNetworkRelayInnerAddresses.CLASS_D_MARKER;
-    }
-
-    private static String hostSuffix(byte[] address) {
-        if (address == null || address.length < 12) {
-            return "absent";
-        }
-        return String.format(
-                java.util.Locale.US,
-                "%02x%02x",
-                address[10] & 0xff,
-                address[11] & 0xff);
-    }
-
-    private static int packetPayloadLength(byte[] clearIpv6Packet) {
-        try {
-            Ipv6TcpPacketCodec.Packet packet =
-                    Ipv6TcpPacketCodec.decode(clearIpv6Packet);
-            try {
-                return packet.payload.length;
-            } finally {
-                packet.close();
-            }
-        } catch (RuntimeException ignored) {
-            return 0;
-        }
-    }
-
-    private InboundResult acknowledgeAndFinishStale(
-            OrdinaryIkeAuth.DataClass dataClass,
-            ConnectionKey key,
-            byte[] clearIpv6Packet) {
-        java.util.function.Consumer<String> logger = diagnosticLogger;
-        // Live 0.2.304: kill every leftover flow with a valid reset on the
-        // stored quartet. Forged ACKs only made the Watch keep its dead
-        // flows alive and never open the new control connector (14:35); the
-        // reset aborts them at once (RFC 5961 seq == Watch RCV.NXT).
-        return resetStaleFlow(dataClass, key, clearIpv6Packet, logger);
     }
 
     private InboundResult acceptExisting(
@@ -1141,7 +803,7 @@ final class IdsIpv6TcpRouter
                     || after == Ipv6TcpStream.State.CLOSED) {
                 if (endpoint.drainOnly
                         && after == Ipv6TcpStream.State.RESET) {
-                    kernelRejectedTuples.add(endpoint.key);
+                    staleFlows.markKernelRejected(endpoint.key);
                 }
                 byId.remove(
                         endpoint.id);
@@ -1282,8 +944,7 @@ final class IdsIpv6TcpRouter
                 localClassC);
         wipe(
                 remoteClassC);
-        wipe(staleLocalClassD);
-        wipe(staleRemoteClassD);
+        staleFlows.close();
     }
 
     private boolean ownsLocalPort(
@@ -1443,7 +1104,7 @@ final class IdsIpv6TcpRouter
         private final List<StreamEvent> events;
         private boolean closed;
 
-        private InboundResult(
+        InboundResult(
                 OrdinaryIkeAuth.DataClass dataClass,
                 List<byte[]> outboundPackets,
                 List<StreamEvent> events) {
@@ -1695,12 +1356,12 @@ final class IdsIpv6TcpRouter
         }
     }
 
-    private static final class ConnectionKey {
+    static final class ConnectionKey {
         final OrdinaryIkeAuth.DataClass dataClass;
         final int localPort;
         final int remotePort;
 
-        private ConnectionKey(
+        ConnectionKey(
                 OrdinaryIkeAuth.DataClass dataClass,
                 int localPort,
                 int remotePort) {

@@ -77,6 +77,7 @@ final class IdsApplicationRoute {
                 || TIMESYNC_SERVICE.equals(topic)
                 || TIMEZONESYNC_SERVICE.equals(topic)
                 || CLOCKFACE_SYNC_SERVICE.equals(topic)
+                || SoftwareUpdateCodec.TOPIC.equals(topic)
                 || FIND_MY_LOCAL_SERVICE.equals(topic)) {
             return new IdsApplicationRoute(
                     topic,

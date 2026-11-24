@@ -1504,6 +1504,7 @@ dependencies = [
  "libc",
  "rusb",
  "serde_json",
+ "watch-core",
  "windows",
 ]
 

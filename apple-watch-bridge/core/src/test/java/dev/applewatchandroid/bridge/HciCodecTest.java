@@ -464,4 +464,103 @@ public final class HciCodecTest {
         // Version <=7 uses the native two-byte header.
         assertEquals(18, HciCodec.buildTimeSyncCorrection(7, 0L, 123L).length);
     }
+
+    @Test
+    public void buildsLeEventMasksAndPhyDataLengthCommands() {
+        assertArrayEquals(new byte[]{0x03, 0, 0, 0, 0, 0, 0, 0}, HciCodec.leEventMask());
+        assertArrayEquals(new byte[]{0x4B, 0x08, 0, 0, 0, 0, 0, 0}, HciCodec.leEventMask(true, true));
+        assertArrayEquals(new byte[]{0x4B, 0x00, 0, 0, 0, 0, 0, 0}, HciCodec.leEventMask(true, false));
+        assertArrayEquals(new byte[]{0x0B, 0x08, 0, 0, 0, 0, 0, 0}, HciCodec.leEventMask(false, true));
+
+        assertEquals(2120, HciCodec.recommendedUncodedTxTimeUs(251));
+        assertEquals(328, HciCodec.recommendedUncodedTxTimeUs(27));
+        assertArrayEquals(
+                new byte[]{(byte) 251, 0x00, 0x48, 0x08},
+                HciCodec.buildLeWriteSuggestedDefaultDataLengthParameters(251, 2120));
+        assertArrayEquals(
+                new byte[]{0x42, 0x00, (byte) 251, 0x00, 0x48, 0x08},
+                HciCodec.buildLeSetDataLengthParameters(0x0042, 251, 2120));
+        assertArrayEquals(
+                new byte[]{0x00, 0x02, 0x02},
+                HciCodec.buildLeSetDefaultPhyParameters(0, HciCodec.LE_PHY_2M_BIT, HciCodec.LE_PHY_2M_BIT));
+        assertArrayEquals(
+                new byte[]{0x42, 0x00, 0x00, 0x02, 0x02, 0x00, 0x00},
+                HciCodec.buildLeSetPhyParameters(
+                        0x0042, 0, HciCodec.LE_PHY_2M_BIT, HciCodec.LE_PHY_2M_BIT, 0));
+
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+                () -> HciCodec.buildLeSetDataLengthParameters(0x0042, 26, 328));
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+                () -> HciCodec.buildLeSetPhyParameters(0x0042, 0, 0x08, 0x02, 0));
+    }
+
+    @Test
+    public void parsesLeLocalFeaturesMaxDataLengthAndLinkMetaEvents() {
+        HciCodec.LeLocalFeatures both = HciCodec.parseLeLocalSupportedFeatures(
+                HciCodec.parseCommandComplete(new byte[]{
+                        0x0E, 0x0C, 0x01, 0x03, 0x20, 0x00,
+                        0x20, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
+        assertTrue(both.dataLengthExtension);
+        assertTrue(both.phy2m);
+
+        HciCodec.LeLocalFeatures edlOnly = HciCodec.parseLeLocalSupportedFeatures(
+                HciCodec.parseCommandComplete(new byte[]{
+                        0x0E, 0x0C, 0x01, 0x03, 0x20, 0x00,
+                        0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
+        assertTrue(edlOnly.dataLengthExtension);
+        assertFalse(edlOnly.phy2m);
+
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+                () -> HciCodec.parseLeLocalSupportedFeatures(
+                        HciCodec.parseCommandComplete(new byte[]{
+                                0x0E, 0x04, 0x01, 0x03, 0x20, 0x01})));
+
+        // Coded-PHY max time (17040 us) must clamp to uncoded 2120 us; smaller controller max clamps too.
+        HciCodec.LeMaximumDataLength maxCoded = HciCodec.parseLeMaximumDataLength(
+                HciCodec.parseCommandComplete(new byte[]{
+                        0x0E, 0x0C, 0x01, 0x2F, 0x20, 0x00,
+                        (byte) 0xFB, 0x00, (byte) 0x90, 0x42,
+                        (byte) 0xFB, 0x00, (byte) 0x90, 0x42}));
+        assertEquals(251, maxCoded.suggestedTxOctets());
+        assertEquals(2120, maxCoded.suggestedTxTimeUs());
+
+        HciCodec.LeMaximumDataLength maxSmaller = HciCodec.parseLeMaximumDataLength(
+                HciCodec.parseCommandComplete(new byte[]{
+                        0x0E, 0x0C, 0x01, 0x2F, 0x20, 0x00,
+                        (byte) 0x80, 0x00, 0x28, 0x04,
+                        (byte) 0x80, 0x00, 0x28, 0x04}));
+        assertEquals(128, maxSmaller.suggestedTxOctets());
+        assertEquals(1064, maxSmaller.suggestedTxTimeUs());
+
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+                () -> HciCodec.parseLeMaximumDataLength(
+                        HciCodec.parseCommandComplete(new byte[]{
+                                0x0E, 0x0C, 0x01, 0x2F, 0x20, 0x00,
+                                26, 0x00, 0x48, 0x01, 27, 0x00, 0x48, 0x01})));
+
+        HciCodec.LeReadRemoteFeaturesComplete remote = HciCodec.parseLeReadRemoteFeaturesComplete(new byte[]{
+                0x3E, 12, 0x04, 0x00, 0x42, 0x00, 0x20, 0x01, 0, 0, 0, 0, 0, 0});
+        assertEquals(0, remote.status);
+        assertEquals(0x0042, remote.connectionHandle);
+        assertTrue(remote.dataLengthExtension);
+        assertTrue(remote.phy2m);
+
+        HciCodec.LeDataLengthChange dle = HciCodec.parseLeDataLengthChange(new byte[]{
+                0x3E, 11, 0x07, 0x42, 0x00, (byte) 251, 0x00, 0x48, 0x08, (byte) 251, 0x00, 0x48, 0x08});
+        assertEquals(0x0042, dle.connectionHandle);
+        assertEquals(251, dle.maxTxOctets);
+        assertEquals(2120, dle.maxTxTimeUs);
+        assertEquals(251, dle.maxRxOctets);
+        assertEquals(2120, dle.maxRxTimeUs);
+
+        HciCodec.LePhyUpdateComplete phy = HciCodec.parseLePhyUpdateComplete(new byte[]{
+                0x3E, 6, 0x0C, 0x00, 0x42, 0x00, 0x02, 0x02});
+        assertEquals(0, phy.status);
+        assertEquals(0x0042, phy.connectionHandle);
+        assertEquals(2, phy.txPhy);
+        assertEquals(2, phy.rxPhy);
+
+        assertNull(HciCodec.parseLePhyUpdateComplete(new byte[]{0x3E, 5, 0x0C, 0x00, 0x42, 0x00, 0x02}));
+        assertNull(HciCodec.parseLeDataLengthChange(new byte[]{0x3E, 10, 0x07, 0x42, 0x00}));
+    }
 }

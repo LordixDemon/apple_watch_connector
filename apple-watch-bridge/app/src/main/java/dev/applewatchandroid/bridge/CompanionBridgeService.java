@@ -95,6 +95,15 @@ public final class CompanionBridgeService extends Service implements BridgeIpcDi
                 reply(message.replyTo, RESPONSE, result);
             } else if (message.what == COMMAND) {
                 String method = data.getString("method");
+                if ("setNotificationRelay".equals(method)) {
+                    if (!(data.get("value") instanceof Boolean)) throw new IllegalArgumentException("Missing forwarding value");
+                    String pkg = data.getString("packageName");
+                    boolean stored = new NotificationRelaySettings(this).update(pkg, data.getBoolean("value"));
+                    if (stored) AppleWatchNotificationListenerService.settingsChanged();
+                    reply(message.replyTo, RESPONSE, response(requestId, stored ? "STORED" : "REJECTED"));
+                    publishState();
+                    return;
+                }
                 if (handleConnectionCommand(method, data, requestId, message.replyTo)) return;
                 Bundle transfer = faceTransfers.handle(method, data, requestId);
                 if (transfer != null) { reply(message.replyTo, RESPONSE, transfer); return; }
@@ -110,6 +119,19 @@ public final class CompanionBridgeService extends Service implements BridgeIpcDi
                 else if ("refreshWatchState".equals(method)) command = "REQUEST_DEVICE_ABOUT";
                 else if ("refreshFaceCollection".equals(method)) command = "REQUEST_FACE_COLLECTION";
                 else if ("syncWifi".equals(method)) command = WifiNetworkSyncCodec.COMMAND;
+                else if (java.util.Set.of("querySoftwareUpdate", "checkSoftwareUpdate", "downloadSoftwareUpdate", "installSoftwareUpdate").contains(method)) {
+                    String pair = text(data, "pairId", 36);
+                    expectedCommandEpoch = UUID.fromString(text(data, "epoch", 36));
+                    if (!pair.equals(OperationalWatchService.currentPairing())
+                            || !expectedCommandEpoch.equals(OperationalWatchService.readyEpoch()))
+                        throw new IllegalArgumentException("Update session changed");
+                    command = switch (method) {
+                        case "querySoftwareUpdate" -> SoftwareUpdateSession.QUERY_COMMAND;
+                        case "checkSoftwareUpdate" -> SoftwareUpdateSession.SCAN_COMMAND;
+                        case "downloadSoftwareUpdate" -> SoftwareUpdateSession.DOWNLOAD_COMMAND + text(data, "build", 32);
+                        default -> SoftwareUpdateSession.INSTALL_COMMAND + text(data, "build", 32);
+                    };
+                }
                 else if ("setActiveFace".equals(method)) {
                     nativeFaceTarget = NtkFacePayloadCodec.uuid(text(data, "faceId", 36));
                     requireNativeFace(nativeFaceTarget, false);
@@ -254,6 +276,7 @@ public final class CompanionBridgeService extends Service implements BridgeIpcDi
         Bundle state = new Bundle();
         state.putInt("version", 1);
         state.putBoolean("connected", dispatcher.isConnected());
+        new NotificationRelaySettings(this).appendState(state);
         state.putString("deviceName", "Apple Watch");
         state.putAll(CompanionSessionState.snapshot());
         state.putBoolean("bluetoothPermission", checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT)

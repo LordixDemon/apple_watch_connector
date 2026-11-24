@@ -1,19 +1,6 @@
 package dev.applewatchandroid.bridge;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -28,18 +15,18 @@ final class PairingSessionRecord {
     static final int FORMAT_VERSION = 2;
     static final int MAX_SERIALIZED_LENGTH = 16 * 1024;
 
-    private static final byte[] MAGIC =
+    static final byte[] MAGIC =
             new byte[]{'A', 'W', 'P', '2'};
-    private static final int HEADER_LENGTH = 26;
-    private static final int DIGEST_LENGTH = 32;
+    static final int HEADER_LENGTH = 26;
+    static final int DIGEST_LENGTH = 32;
 
-    private static final int FLAG_MODERN_PAIRING = 1;
-    private static final int FLAG_ADDRESSES_CONFIRMED = 1 << 1;
-    private static final int FLAG_IDS_AUTH_CONSUMED = 1 << 2;
-    private static final int FLAG_IS_PAIRED_COMMIT_INTENT = 1 << 3;
-    private static final int FLAG_OBSERVED_SETUP_EVIDENCE = 1 << 4;
-    private static final int FLAG_IDS_DEVICE_INFO_EXCHANGED = 1 << 5;
-    private static final int KNOWN_FLAGS =
+    static final int FLAG_MODERN_PAIRING = 1;
+    static final int FLAG_ADDRESSES_CONFIRMED = 1 << 1;
+    static final int FLAG_IDS_AUTH_CONSUMED = 1 << 2;
+    static final int FLAG_IS_PAIRED_COMMIT_INTENT = 1 << 3;
+    static final int FLAG_OBSERVED_SETUP_EVIDENCE = 1 << 4;
+    static final int FLAG_IDS_DEVICE_INFO_EXCHANGED = 1 << 5;
+    static final int KNOWN_FLAGS =
             FLAG_MODERN_PAIRING
                     | FLAG_ADDRESSES_CONFIRMED
                     | FLAG_IDS_AUTH_CONSUMED
@@ -47,34 +34,36 @@ final class PairingSessionRecord {
                     | FLAG_OBSERVED_SETUP_EVIDENCE
                     | FLAG_IDS_DEVICE_INFO_EXCHANGED;
 
-    private static final int FIELD_GENERATION_UUID = 1;
-    private static final int FIELD_BLUETOOTH_BOND = 2;
-    private static final int FIELD_PENDING_LOCAL_C547 = 3;
-    private static final int FIELD_PENDING_REMOTE_C547 = 4;
-    private static final int FIELD_PENDING_IDS_AUTH_DATA = 5;
-    private static final int FIELD_LOCAL_NETWORK_MATERIAL = 10;
-    private static final int FIELD_REMOTE_IDENTITY = 11;
-    private static final int FIELD_REMOTE_CLASS_D = 12;
-    private static final int FIELD_REMOTE_CLASS_C = 13;
-    private static final int FIELD_INITIATOR_CLASS_D_ADDRESS = 20;
-    private static final int FIELD_RESPONDER_CLASS_D_ADDRESS = 21;
-    private static final int FIELD_INITIATOR_CLASS_C_ADDRESS = 22;
-    private static final int FIELD_RESPONDER_CLASS_C_ADDRESS = 23;
-    private static final int FIELD_NETWORK_RELAY_VERSION = 30;
-    private static final int FIELD_DEVICE_TYPE = 31;
-    private static final int FIELD_ALWAYS_ON_WIFI = 32;
-    private static final int FIELD_DEVICE_NAME = 33;
-    private static final int FIELD_BUILD_VERSION = 34;
-    private static final int FIELD_IDS_DEVICE_ID = 35;
-    private static final int FIELD_PRODUCT_TYPE = 36;
-    private static final int FIELD_BOARD_ID = 37;
-    private static final int FIELD_BLUETOOTH_CB_UUID = 38;
-    private static final int FIELD_NR_UUID = 39;
-    private static final int FIELD_REMOTE_INSTANCE_UUID = 40;
-    private static final int FIELD_LOCAL_IDS_DEVICE_UUID = 41;
-    private static final int FIELD_PEER_SPS_METADATA = 42;
+    static final int FIELD_GENERATION_UUID = 1;
+    static final int FIELD_BLUETOOTH_BOND = 2;
+    static final int FIELD_PENDING_LOCAL_C547 = 3;
+    static final int FIELD_PENDING_REMOTE_C547 = 4;
+    static final int FIELD_PENDING_IDS_AUTH_DATA = 5;
+    static final int FIELD_LOCAL_NETWORK_MATERIAL = 10;
+    static final int FIELD_REMOTE_IDENTITY = 11;
+    static final int FIELD_REMOTE_CLASS_D = 12;
+    static final int FIELD_REMOTE_CLASS_C = 13;
+    static final int FIELD_INITIATOR_CLASS_D_ADDRESS = 20;
+    static final int FIELD_RESPONDER_CLASS_D_ADDRESS = 21;
+    static final int FIELD_INITIATOR_CLASS_C_ADDRESS = 22;
+    static final int FIELD_RESPONDER_CLASS_C_ADDRESS = 23;
+    static final int FIELD_NETWORK_RELAY_VERSION = 30;
+    static final int FIELD_DEVICE_TYPE = 31;
+    static final int FIELD_ALWAYS_ON_WIFI = 32;
+    static final int FIELD_DEVICE_NAME = 33;
+    static final int FIELD_BUILD_VERSION = 34;
+    static final int FIELD_IDS_DEVICE_ID = 35;
+    static final int FIELD_PRODUCT_TYPE = 36;
+    static final int FIELD_BOARD_ID = 37;
+    static final int FIELD_BLUETOOTH_CB_UUID = 38;
+    static final int FIELD_NR_UUID = 39;
+    static final int FIELD_REMOTE_INSTANCE_UUID = 40;
+    static final int FIELD_LOCAL_IDS_DEVICE_UUID = 41;
+    static final int FIELD_PEER_SPS_METADATA = 42;
+    static final int FIELD_OBSERVED_PEER_MAXIMUM = 43;
+    static final int FIELD_OBSERVED_PEER_BUILD = 44;
 
-    private static final int MAX_TEXT_BYTES = 1024;
+    static final int MAX_TEXT_BYTES = 1024;
 
     enum DurableState {
         PAIRING_MATERIAL_PERSISTED(1),
@@ -117,59 +106,61 @@ final class PairingSessionRecord {
         }
     }
 
-    private final byte[] generationUuid;
-    private final DurableState state;
-    private final long transitionCounter;
-    private final boolean modernPairing;
-    private final boolean addressesConfirmed;
-    private final boolean idsAuthConsumed;
-    private final boolean isPairedCommitIntentPersisted;
-    private final NrLinkBluetoothPrelude.LocalRole localRole;
+    final byte[] generationUuid;
+    final DurableState state;
+    final long transitionCounter;
+    final boolean modernPairing;
+    final boolean addressesConfirmed;
+    final boolean idsAuthConsumed;
+    final boolean isPairedCommitIntentPersisted;
+    final NrLinkBluetoothPrelude.LocalRole localRole;
 
-    private final byte[] bluetoothBond;
-    private final byte[] pendingLocalC547;
-    private final byte[] pendingRemoteC547;
-    private final byte[] pendingIdsAuthData;
+    final byte[] bluetoothBond;
+    final byte[] pendingLocalC547;
+    final byte[] pendingRemoteC547;
+    final byte[] pendingIdsAuthData;
 
-    private final byte[] localNetworkMaterial;
-    private final byte[] remoteIdentity;
-    private final byte[] remoteClassD;
-    private final byte[] remoteClassC;
+    final byte[] localNetworkMaterial;
+    final byte[] remoteIdentity;
+    final byte[] remoteClassD;
+    final byte[] remoteClassC;
 
-    private final byte[] initiatorClassDAddress;
-    private final byte[] responderClassDAddress;
-    private final byte[] initiatorClassCAddress;
-    private final byte[] responderClassCAddress;
+    final byte[] initiatorClassDAddress;
+    final byte[] responderClassDAddress;
+    final byte[] initiatorClassCAddress;
+    final byte[] responderClassCAddress;
 
-    private final int networkRelayVersion;
-    private final int deviceType;
-    private final boolean alwaysOnWifi;
-    private final String deviceName;
-    private final String buildVersion;
-    private final String idsDeviceId;
-    private final String productType;
-    private final String boardId;
-    private final String bluetoothCbUuid;
-    private final String nrUuid;
+    final int networkRelayVersion;
+    final int deviceType;
+    final boolean alwaysOnWifi;
+    final String deviceName;
+    final String buildVersion;
+    final String idsDeviceId;
+    final String productType;
+    final String boardId;
+    final String bluetoothCbUuid;
+    final String nrUuid;
     /**
      * Android's installation-stable IDSCurrentDevice equivalent. This is
      * advertised as Hello.deviceUniqueID and, when available, as BDDF. It is
      * independent from the local CoreBluetooth and NetworkRelay database
      * identifiers.
      */
-    private final String localIdsDeviceUuid;
+    final String localIdsDeviceUuid;
     /**
      * Reserved only for rejecting stale version-2 records. An IDS remote
      * instance UUID is generated per live connection and must remain in
      * {@link IdsServiceMapState}, not in durable pairing state.
      */
-    private final String remoteInstanceUuid;
-    private boolean destroyed;
-    private boolean observedSetupEvidence;
-    private boolean idsDeviceInfoExchanged;
-    private byte[] peerSpsMetadata;
+    final String remoteInstanceUuid;
+    boolean destroyed;
+    boolean observedSetupEvidence;
+    boolean idsDeviceInfoExchanged;
+    byte[] peerSpsMetadata;
+    Integer observedPeerMaximum;
+    String observedPeerBuild;
 
-    private PairingSessionRecord(
+    PairingSessionRecord(
             byte[] generationUuid,
             DurableState state,
             long transitionCounter,
@@ -202,7 +193,7 @@ final class PairingSessionRecord {
             String nrUuid,
             String localIdsDeviceUuid,
             String remoteInstanceUuid) {
-        this.generationUuid = cloneOrNull(generationUuid);
+        this.generationUuid = PairingSessionRecordCodec.cloneOrNull(generationUuid);
         this.state = state;
         this.transitionCounter = transitionCounter;
         this.modernPairing = modernPairing;
@@ -211,24 +202,24 @@ final class PairingSessionRecord {
         this.isPairedCommitIntentPersisted =
                 isPairedCommitIntentPersisted;
         this.localRole = localRole;
-        this.bluetoothBond = cloneOrNull(bluetoothBond);
-        this.pendingLocalC547 = cloneOrNull(pendingLocalC547);
-        this.pendingRemoteC547 = cloneOrNull(pendingRemoteC547);
+        this.bluetoothBond = PairingSessionRecordCodec.cloneOrNull(bluetoothBond);
+        this.pendingLocalC547 = PairingSessionRecordCodec.cloneOrNull(pendingLocalC547);
+        this.pendingRemoteC547 = PairingSessionRecordCodec.cloneOrNull(pendingRemoteC547);
         this.pendingIdsAuthData =
-                cloneOrNull(pendingIdsAuthData);
+                PairingSessionRecordCodec.cloneOrNull(pendingIdsAuthData);
         this.localNetworkMaterial =
-                cloneOrNull(localNetworkMaterial);
-        this.remoteIdentity = cloneOrNull(remoteIdentity);
-        this.remoteClassD = cloneOrNull(remoteClassD);
-        this.remoteClassC = cloneOrNull(remoteClassC);
+                PairingSessionRecordCodec.cloneOrNull(localNetworkMaterial);
+        this.remoteIdentity = PairingSessionRecordCodec.cloneOrNull(remoteIdentity);
+        this.remoteClassD = PairingSessionRecordCodec.cloneOrNull(remoteClassD);
+        this.remoteClassC = PairingSessionRecordCodec.cloneOrNull(remoteClassC);
         this.initiatorClassDAddress =
-                cloneOrNull(initiatorClassDAddress);
+                PairingSessionRecordCodec.cloneOrNull(initiatorClassDAddress);
         this.responderClassDAddress =
-                cloneOrNull(responderClassDAddress);
+                PairingSessionRecordCodec.cloneOrNull(responderClassDAddress);
         this.initiatorClassCAddress =
-                cloneOrNull(initiatorClassCAddress);
+                PairingSessionRecordCodec.cloneOrNull(initiatorClassCAddress);
         this.responderClassCAddress =
-                cloneOrNull(responderClassCAddress);
+                PairingSessionRecordCodec.cloneOrNull(responderClassCAddress);
         this.networkRelayVersion = networkRelayVersion;
         this.deviceType = deviceType;
         this.alwaysOnWifi = alwaysOnWifi;
@@ -263,7 +254,7 @@ final class PairingSessionRecord {
             throw new IllegalArgumentException(
                     "Complete pairing material is required");
         }
-        validateCanonicalUuid(
+        PairingSessionRecordCodec.validateCanonicalUuid(
                 "local IDS device UUID",
                 localIdsDeviceUuid,
                 true);
@@ -326,279 +317,39 @@ final class PairingSessionRecord {
                     localIdsDeviceUuid,
                     null);
         } finally {
-            wipe(localC547);
-            wipe(remoteC547);
-            wipe(localSnapshot);
-            wipe(remoteIdentity);
-            wipe(remoteClassD);
-            wipe(remoteClassC);
-            wipe(initiatorD);
-            wipe(responderD);
-            wipe(initiatorC);
-            wipe(responderC);
+            PairingSessionRecordCodec.wipe(localC547);
+            PairingSessionRecordCodec.wipe(remoteC547);
+            PairingSessionRecordCodec.wipe(localSnapshot);
+            PairingSessionRecordCodec.wipe(remoteIdentity);
+            PairingSessionRecordCodec.wipe(remoteClassD);
+            PairingSessionRecordCodec.wipe(remoteClassC);
+            PairingSessionRecordCodec.wipe(initiatorD);
+            PairingSessionRecordCodec.wipe(responderD);
+            PairingSessionRecordCodec.wipe(initiatorC);
+            PairingSessionRecordCodec.wipe(responderC);
         }
     }
 
     static PairingSessionRecord parse(byte[] serialized) {
-        if (serialized == null
-                || serialized.length
-                < HEADER_LENGTH + DIGEST_LENGTH
-                || serialized.length > MAX_SERIALIZED_LENGTH) {
-            throw new IllegalArgumentException(
-                    "Pairing session record size is invalid");
-        }
-        int digestOffset =
-                serialized.length - DIGEST_LENGTH;
-        byte[] expectedDigest = Arrays.copyOfRange(
-                serialized,
-                digestOffset,
-                serialized.length);
-        byte[] actualDigest = sha256(
-                serialized,
-                0,
-                digestOffset);
-        try {
-            if (!MessageDigest.isEqual(
-                    expectedDigest,
-                    actualDigest)) {
-                throw new IllegalArgumentException(
-                        "Pairing session record digest is invalid");
-            }
-        } finally {
-            wipe(expectedDigest);
-            wipe(actualDigest);
-        }
-
-        ByteBuffer header = ByteBuffer.wrap(
-                        serialized,
-                        0,
-                        digestOffset)
-                .order(ByteOrder.BIG_ENDIAN);
-        for (byte expected : MAGIC) {
-            if (header.get() != expected) {
-                throw new IllegalArgumentException(
-                        "Pairing session record magic is invalid");
-            }
-        }
-        int version = header.getShort() & 0xffff;
-        if (version != FORMAT_VERSION) {
-            throw new IllegalArgumentException(
-                    "Pairing session record version is unsupported");
-        }
-        int headerLength = header.getShort() & 0xffff;
-        if (headerLength != HEADER_LENGTH) {
-            throw new IllegalArgumentException(
-                    "Pairing session record header is invalid");
-        }
-        DurableState state =
-                DurableState.fromWireValue(
-                        header.getShort() & 0xffff);
-        int roleCode = header.get() & 0xff;
-        NrLinkBluetoothPrelude.LocalRole role =
-                roleFromCode(roleCode);
-        int flags = header.get() & 0xff;
-        if ((flags & ~KNOWN_FLAGS) != 0) {
-            throw new IllegalArgumentException(
-                    "Pairing session record flags are invalid");
-        }
-        long transitionCounter = header.getLong();
-        int fieldCount = header.getShort() & 0xffff;
-        int payloadLength = header.getInt();
-        if (payloadLength < 0
-                || HEADER_LENGTH + payloadLength
-                != digestOffset) {
-            throw new IllegalArgumentException(
-                    "Pairing session record payload length is invalid");
-        }
-
-        Map<Integer, byte[]> fields = new HashMap<>();
-        int previousType = -1;
-        try {
-            for (int index = 0; index < fieldCount; index++) {
-                if (header.remaining() < 6) {
-                    throw new IllegalArgumentException(
-                            "Pairing session field header is truncated");
-                }
-                int type = header.getShort() & 0xffff;
-                int length = header.getInt();
-                if (type <= previousType
-                        || !isKnownField(type)
-                        || length < 0
-                        || length > header.remaining()) {
-                    throw new IllegalArgumentException(
-                            "Pairing session field layout is invalid");
-                }
-                byte[] value = new byte[length];
-                header.get(value);
-                fields.put(type, value);
-                previousType = type;
-            }
-            if (header.position() != digestOffset) {
-                throw new IllegalArgumentException(
-                        "Pairing session record has trailing payload bytes");
-            }
-
-            PairingSessionRecord decoded = new PairingSessionRecord(
-                    required(fields, FIELD_GENERATION_UUID),
-                    state,
-                    transitionCounter,
-                    (flags & FLAG_MODERN_PAIRING) != 0,
-                    (flags & FLAG_ADDRESSES_CONFIRMED) != 0,
-                    (flags & FLAG_IDS_AUTH_CONSUMED) != 0,
-                    (flags & FLAG_IS_PAIRED_COMMIT_INTENT) != 0,
-                    role,
-                    fields.get(FIELD_BLUETOOTH_BOND),
-                    fields.get(FIELD_PENDING_LOCAL_C547),
-                    fields.get(FIELD_PENDING_REMOTE_C547),
-                    fields.get(FIELD_PENDING_IDS_AUTH_DATA),
-                    required(
-                            fields,
-                            FIELD_LOCAL_NETWORK_MATERIAL),
-                    required(fields, FIELD_REMOTE_IDENTITY),
-                    required(fields, FIELD_REMOTE_CLASS_D),
-                    required(fields, FIELD_REMOTE_CLASS_C),
-                    required(
-                            fields,
-                            FIELD_INITIATOR_CLASS_D_ADDRESS),
-                    required(
-                            fields,
-                            FIELD_RESPONDER_CLASS_D_ADDRESS),
-                    required(
-                            fields,
-                            FIELD_INITIATOR_CLASS_C_ADDRESS),
-                    required(
-                            fields,
-                            FIELD_RESPONDER_CLASS_C_ADDRESS),
-                    parseU16(
-                            required(
-                                    fields,
-                                    FIELD_NETWORK_RELAY_VERSION),
-                            "NetworkRelay version"),
-                    parseU8(
-                            required(
-                                    fields,
-                                    FIELD_DEVICE_TYPE),
-                            "device type"),
-                    parseBoolean(
-                            required(
-                                    fields,
-                                    FIELD_ALWAYS_ON_WIFI),
-                            "always-on Wi-Fi"),
-                    decodeRequiredText(
-                            fields,
-                            FIELD_DEVICE_NAME,
-                            "device name"),
-                    decodeRequiredText(
-                            fields,
-                            FIELD_BUILD_VERSION,
-                            "build version"),
-                    decodeOptionalText(
-                            fields,
-                            FIELD_IDS_DEVICE_ID,
-                            "IDS device ID"),
-                    decodeOptionalText(
-                            fields,
-                            FIELD_PRODUCT_TYPE,
-                            "product type"),
-                    decodeOptionalText(
-                            fields,
-                            FIELD_BOARD_ID,
-                            "board ID"),
-                    decodeOptionalText(
-                            fields,
-                            FIELD_BLUETOOTH_CB_UUID,
-                            "Bluetooth CBUUID"),
-                    decodeOptionalText(
-                            fields,
-                            FIELD_NR_UUID,
-                            "NRUUID"),
-                    decodeOptionalText(
-                            fields,
-                            FIELD_LOCAL_IDS_DEVICE_UUID,
-                            "local IDS device UUID"),
-                    decodeOptionalText(
-                            fields,
-                            FIELD_REMOTE_INSTANCE_UUID,
-                            "remote instance UUID"));
-            try {
-                decoded.observedSetupEvidence = (flags & FLAG_OBSERVED_SETUP_EVIDENCE) != 0;
-                decoded.idsDeviceInfoExchanged = (flags & FLAG_IDS_DEVICE_INFO_EXCHANGED) != 0;
-                decoded.peerSpsMetadata = cloneOrNull(fields.get(FIELD_PEER_SPS_METADATA));
-                decoded.validate();
-                return decoded;
-            } catch (RuntimeException error) {
-                decoded.destroy();
-                throw error;
-            }
-
-        } finally {
-            for (byte[] value : fields.values()) {
-                wipe(value);
-            }
-        }
+        return PairingSessionRecordCodec.parse(serialized);
     }
 
     byte[] serialize() {
         requireLive();
-        validate();
-        List<Field> fields = buildFields();
-        try {
-            int payloadLength = 0;
-            for (Field field : fields) {
-                payloadLength += 6 + field.value.length;
-            }
-            ByteArrayOutputStream bytes =
-                    new ByteArrayOutputStream(
-                            HEADER_LENGTH
-                                    + payloadLength
-                                    + DIGEST_LENGTH);
-            try (DataOutputStream output =
-                         new DataOutputStream(bytes)) {
-                output.write(MAGIC);
-                output.writeShort(FORMAT_VERSION);
-                output.writeShort(HEADER_LENGTH);
-                output.writeShort(state.wireValue());
-                output.writeByte(roleCode(localRole));
-                output.writeByte(flags());
-                output.writeLong(transitionCounter);
-                output.writeShort(fields.size());
-                output.writeInt(payloadLength);
-                for (Field field : fields) {
-                    output.writeShort(field.type);
-                    output.writeInt(field.value.length);
-                    output.write(field.value);
-                }
-                output.flush();
-                byte[] withoutDigest = bytes.toByteArray();
-                byte[] digest = sha256(
-                        withoutDigest,
-                        0,
-                        withoutDigest.length);
-                try {
-                    output.write(digest);
-                    output.flush();
-                } finally {
-                    wipe(withoutDigest);
-                    wipe(digest);
-                }
-            }
-            byte[] serialized = bytes.toByteArray();
-            if (serialized.length > MAX_SERIALIZED_LENGTH) {
-                wipe(serialized);
-                throw new IllegalStateException(
-                        "Pairing session record is too large");
-            }
-            return serialized;
-        } catch (IOException impossible) {
+        return PairingSessionRecordCodec.serialize(this);
+    }
+
+    void validate() {
+        PairingSessionRecordCodec.validate(this);
+    }
+
+    private void requireLive() {
+        if (destroyed) {
             throw new IllegalStateException(
-                    "Cannot serialize pairing session record",
-                    impossible);
-        } finally {
-            for (Field field : fields) {
-                field.destroy();
-            }
+                    "Pairing session record has been destroyed");
         }
     }
+
 
     PairingSessionRecord withBluetoothBond(
             byte[] bondRecord) {
@@ -777,10 +528,10 @@ final class PairingSessionRecord {
                     initiatorC,
                     responderC);
         } finally {
-            wipe(initiatorD);
-            wipe(responderD);
-            wipe(initiatorC);
-            wipe(responderC);
+            PairingSessionRecordCodec.wipe(initiatorD);
+            PairingSessionRecordCodec.wipe(responderD);
+            PairingSessionRecordCodec.wipe(initiatorC);
+            PairingSessionRecordCodec.wipe(responderC);
         }
     }
 
@@ -862,10 +613,10 @@ final class PairingSessionRecord {
                     initiatorC,
                     responderC);
         } finally {
-            wipe(initiatorD);
-            wipe(responderD);
-            wipe(initiatorC);
-            wipe(responderC);
+            PairingSessionRecordCodec.wipe(initiatorD);
+            PairingSessionRecordCodec.wipe(responderD);
+            PairingSessionRecordCodec.wipe(initiatorC);
+            PairingSessionRecordCodec.wipe(responderC);
         }
     }
 
@@ -1029,7 +780,22 @@ final class PairingSessionRecord {
     }
 
     String peerIdsDeviceId() { requireLive(); return idsDeviceId; }
-    String peerBuildVersion() { requireLive(); return buildVersion; }
+    String peerBuildVersion() { requireLive(); return observedPeerBuild == null ? buildVersion : observedPeerBuild; }
+    Integer observedPeerMaximum() { requireLive(); return observedPeerMaximum; }
+    PairingSessionRecord withObservedPeerSystem(String authenticatedIdsIdentifier, int maximum, String build) {
+        requireLive();
+        if (state.wireValue() < DurableState.IDS_CONTROL_READY.wireValue() || idsDeviceId == null
+                || !idsDeviceId.equalsIgnoreCase(authenticatedIdsIdentifier) || maximum < 1 || maximum > 0xffff
+                || build == null || !build.matches("[0-9]{1,3}[A-Za-z][0-9]{1,6}[a-z]?"))
+            throw new IllegalArgumentException("Observed Watch system has no authenticated owner");
+        var next = copy(state, Math.addExact(transitionCounter, 1), localRole, addressesConfirmed,
+                idsAuthConsumed, bluetoothBond, pendingLocalC547, pendingRemoteC547, pendingIdsAuthData,
+                initiatorClassDAddress, responderClassDAddress, initiatorClassCAddress, responderClassCAddress);
+        next.observedPeerMaximum = maximum;
+        next.observedPeerBuild = build;
+        next.validate();
+        return next;
+    }
     String peerProductType() { requireLive(); return productType; }
 
     String peerNetworkRelayIdentifier() {
@@ -1040,7 +806,7 @@ final class PairingSessionRecord {
     }
     boolean hasExchangedIdsDeviceInfo() { requireLive(); return idsDeviceInfoExchanged; }
 
-    byte[] peerSpsMetadata() { requireLive(); return cloneOrNull(peerSpsMetadata); }
+    byte[] peerSpsMetadata() { requireLive(); return PairingSessionRecordCodec.cloneOrNull(peerSpsMetadata); }
 
     PairingSessionRecord withPeerSpsMetadata(byte[] encoded) {
         requireLive();
@@ -1052,7 +818,7 @@ final class PairingSessionRecord {
                     addressesConfirmed, idsAuthConsumed, bluetoothBond, pendingLocalC547, pendingRemoteC547,
                     pendingIdsAuthData, initiatorClassDAddress, responderClassDAddress,
                     initiatorClassCAddress, responderClassCAddress);
-            wipe(next.peerSpsMetadata);
+            PairingSessionRecordCodec.wipe(next.peerSpsMetadata);
             next.peerSpsMetadata = info.serialize();
             next.validate();
             return next;
@@ -1205,12 +971,12 @@ final class PairingSessionRecord {
 
     byte[] pendingIdsAuthenticationData() {
         requireLive();
-        return cloneOrNull(pendingIdsAuthData);
+        return PairingSessionRecordCodec.cloneOrNull(pendingIdsAuthData);
     }
 
     byte[] bluetoothBond() {
         requireLive();
-        return cloneOrNull(bluetoothBond);
+        return PairingSessionRecordCodec.cloneOrNull(bluetoothBond);
     }
 
     AppleNetworkRelayPairingMaterial restoreLocalMaterial() {
@@ -1249,32 +1015,32 @@ final class PairingSessionRecord {
 
     byte[] remoteClassD() {
         requireLive();
-        return cloneOrNull(remoteClassD);
+        return PairingSessionRecordCodec.cloneOrNull(remoteClassD);
     }
 
     byte[] remoteClassC() {
         requireLive();
-        return cloneOrNull(remoteClassC);
+        return PairingSessionRecordCodec.cloneOrNull(remoteClassC);
     }
 
     void destroy() {
         if (destroyed) {
             return;
         }
-        wipe(generationUuid);
-        wipe(bluetoothBond);
-        wipe(pendingLocalC547);
-        wipe(pendingRemoteC547);
-        wipe(pendingIdsAuthData);
-        wipe(localNetworkMaterial);
-        wipe(remoteIdentity);
-        wipe(remoteClassD);
-        wipe(remoteClassC);
-        wipe(initiatorClassDAddress);
-        wipe(responderClassDAddress);
-        wipe(initiatorClassCAddress);
-        wipe(responderClassCAddress);
-        wipe(peerSpsMetadata);
+        PairingSessionRecordCodec.wipe(generationUuid);
+        PairingSessionRecordCodec.wipe(bluetoothBond);
+        PairingSessionRecordCodec.wipe(pendingLocalC547);
+        PairingSessionRecordCodec.wipe(pendingRemoteC547);
+        PairingSessionRecordCodec.wipe(pendingIdsAuthData);
+        PairingSessionRecordCodec.wipe(localNetworkMaterial);
+        PairingSessionRecordCodec.wipe(remoteIdentity);
+        PairingSessionRecordCodec.wipe(remoteClassD);
+        PairingSessionRecordCodec.wipe(remoteClassC);
+        PairingSessionRecordCodec.wipe(initiatorClassDAddress);
+        PairingSessionRecordCodec.wipe(responderClassDAddress);
+        PairingSessionRecordCodec.wipe(initiatorClassCAddress);
+        PairingSessionRecordCodec.wipe(responderClassCAddress);
+        PairingSessionRecordCodec.wipe(peerSpsMetadata);
         destroyed = true;
     }
 
@@ -1361,101 +1127,16 @@ final class PairingSessionRecord {
                 && newState.wireValue() >= DurableState.ACTIVATION_CONFIRMED.wireValue();
         copied.idsDeviceInfoExchanged = idsDeviceInfoExchanged
                 && newState.wireValue() >= DurableState.IDS_CONTROL_READY.wireValue();
-        copied.peerSpsMetadata = cloneOrNull(peerSpsMetadata);
+        copied.peerSpsMetadata = PairingSessionRecordCodec.cloneOrNull(peerSpsMetadata);
+        if (newState.wireValue() >= DurableState.IDS_CONTROL_READY.wireValue()) {
+            copied.observedPeerMaximum = observedPeerMaximum;
+            copied.observedPeerBuild = observedPeerBuild;
+        }
         return copied;
     }
 
-    private List<Field> buildFields() {
-        List<Field> fields = new ArrayList<>();
-        fields.add(new Field(
-                FIELD_GENERATION_UUID,
-                generationUuid));
-        addOptional(
-                fields,
-                FIELD_BLUETOOTH_BOND,
-                bluetoothBond);
-        addOptional(
-                fields,
-                FIELD_PENDING_LOCAL_C547,
-                pendingLocalC547);
-        addOptional(
-                fields,
-                FIELD_PENDING_REMOTE_C547,
-                pendingRemoteC547);
-        addOptional(
-                fields,
-                FIELD_PENDING_IDS_AUTH_DATA,
-                pendingIdsAuthData);
-        fields.add(new Field(
-                FIELD_LOCAL_NETWORK_MATERIAL,
-                localNetworkMaterial));
-        fields.add(new Field(
-                FIELD_REMOTE_IDENTITY,
-                remoteIdentity));
-        fields.add(new Field(
-                FIELD_REMOTE_CLASS_D,
-                remoteClassD));
-        fields.add(new Field(
-                FIELD_REMOTE_CLASS_C,
-                remoteClassC));
-        fields.add(new Field(
-                FIELD_INITIATOR_CLASS_D_ADDRESS,
-                initiatorClassDAddress));
-        fields.add(new Field(
-                FIELD_RESPONDER_CLASS_D_ADDRESS,
-                responderClassDAddress));
-        fields.add(new Field(
-                FIELD_INITIATOR_CLASS_C_ADDRESS,
-                initiatorClassCAddress));
-        fields.add(new Field(
-                FIELD_RESPONDER_CLASS_C_ADDRESS,
-                responderClassCAddress));
-        fields.add(new Field(
-                FIELD_NETWORK_RELAY_VERSION,
-                u16(networkRelayVersion)));
-        fields.add(new Field(
-                FIELD_DEVICE_TYPE,
-                new byte[]{(byte) deviceType}));
-        fields.add(new Field(
-                FIELD_ALWAYS_ON_WIFI,
-                new byte[]{alwaysOnWifi ? (byte) 1 : 0}));
-        addText(
-                fields,
-                FIELD_DEVICE_NAME,
-                deviceName);
-        addText(
-                fields,
-                FIELD_BUILD_VERSION,
-                buildVersion);
-        addText(
-                fields,
-                FIELD_IDS_DEVICE_ID,
-                idsDeviceId);
-        addText(
-                fields,
-                FIELD_PRODUCT_TYPE,
-                productType);
-        addText(
-                fields,
-                FIELD_BOARD_ID,
-                boardId);
-        addText(
-                fields,
-                FIELD_BLUETOOTH_CB_UUID,
-                bluetoothCbUuid);
-        addText(
-                fields,
-                FIELD_NR_UUID,
-                nrUuid);
-        addText(
-                fields,
-                FIELD_LOCAL_IDS_DEVICE_UUID,
-                localIdsDeviceUuid);
-        if (peerSpsMetadata != null) fields.add(new Field(FIELD_PEER_SPS_METADATA, peerSpsMetadata));
-        return fields;
-    }
 
-    private int flags() {
+    int flags() {
         int flags = 0;
         if (modernPairing) {
             flags |= FLAG_MODERN_PAIRING;
@@ -1474,510 +1155,28 @@ final class PairingSessionRecord {
         return flags;
     }
 
-    private void validate() {
-        if (peerSpsMetadata != null) {
-            if (state == null || state.wireValue() < DurableState.SMP_BONDED_RAW.wireValue()) {
-                throw new IllegalArgumentException("SPS metadata has no authenticated pairing owner");
-            }
-            try (IdsSpsCompanionInfo ignored = IdsSpsCompanionInfo.parse(peerSpsMetadata)) { }
-        }
-        if (idsDeviceInfoExchanged && state.wireValue() < DurableState.IDS_CONTROL_READY.wireValue()) {
-            throw new IllegalArgumentException("IDS device-info evidence precedes control registration");
-        }
-        if (observedSetupEvidence && state.wireValue() < DurableState.ACTIVATION_CONFIRMED.wireValue()) {
-            throw new IllegalArgumentException("Observed setup evidence predates activation");
-        }
-        requireLength(
-                "pairing generation UUID",
-                generationUuid,
-                16);
-        requireNonzero(
-                "pairing generation UUID",
-                generationUuid);
-        if (state == null
-                || transitionCounter < 1
-                || !modernPairing) {
-            throw new IllegalArgumentException(
-                    "Pairing session state metadata is invalid");
-        }
-        if (networkRelayVersion < 0
-                || networkRelayVersion > 0xffff
-                || deviceType < 0
-                || deviceType > 0xff) {
-            throw new IllegalArgumentException(
-                    "Pairing peer metadata is invalid");
-        }
 
-        validateText("device name", deviceName, true);
-        validateText("build version", buildVersion, true);
-        validateText("IDS device ID", idsDeviceId, false);
-        validateText("product type", productType, false);
-        validateText("board ID", boardId, false);
-        validateCanonicalUuid(
-                "local Bluetooth peer UUID",
-                bluetoothCbUuid,
-                true);
-        validateCanonicalUuid(
-                "local NRDevice UUID",
-                nrUuid,
-                true);
-        validateCanonicalUuid(
-                "local IDS device UUID",
-                localIdsDeviceUuid,
-                false);
-        if (remoteInstanceUuid != null) {
-            throw new IllegalArgumentException(
-                    "Remote IDS instance UUID is transient and "
-                            + "must not be persisted");
-        }
 
-        AppleNetworkRelayPairingMaterial local = null;
-        AppleNetworkRelayInnerAddresses addresses = null;
-        try {
-            local = AppleNetworkRelayPairingMaterial
-                    .restorePrivateSnapshot(
-                            localNetworkMaterial);
-            addresses =
-                    AppleNetworkRelayInnerAddresses
-                            .fromAuthoritative(
-                                    initiatorClassDAddress,
-                                    responderClassDAddress,
-                                    initiatorClassCAddress,
-                                    responderClassCAddress);
-        } finally {
-            if (local != null) {
-                local.destroy();
-            }
-            if (addresses != null) {
-                addresses.destroy();
-            }
-        }
-        requireLength(
-                "remote identity",
-                remoteIdentity,
-                AppleNetworkRelayPairingMaterial
-                        .IDENTITY_PAYLOAD_LENGTH);
-        requireNonzero(
-                "remote identity",
-                remoteIdentity);
-        requireModernPublicKeys(
-                "remote Class D",
-                remoteClassD);
-        requireModernPublicKeys(
-                "remote Class C",
-                remoteClassC);
 
-        if (state
-                == DurableState.PAIRING_MATERIAL_PERSISTED) {
-            if (bluetoothBond != null
-                    || pendingLocalC547 == null
-                    || pendingRemoteC547 == null) {
-                throw new IllegalArgumentException(
-                        "Pre-SMP session material is inconsistent");
-            }
-        } else {
-            if (bluetoothBond == null
-                    || pendingLocalC547 != null
-                    || pendingRemoteC547 != null) {
-                throw new IllegalArgumentException(
-                        "Post-SMP session material is inconsistent");
-            }
-            BluetoothBondSecretRecord
-                    .validateSerialized(
-                            bluetoothBond);
-        }
-        validateC547(
-                "local pending C547",
-                pendingLocalC547);
-        validateC547(
-                "remote pending C547",
-                pendingRemoteC547);
 
-        if (idsAuthConsumed) {
-            if (pendingIdsAuthData != null) {
-                throw new IllegalArgumentException(
-                        "Consumed IDS authentication data remains present");
-            }
-        } else if (pendingIdsAuthData == null
-                || (pendingIdsAuthData.length != 4
-                && pendingIdsAuthData.length != 32)) {
-            throw new IllegalArgumentException(
-                    "Pending IDS authentication data has "
-                            + "an invalid length");
-        }
-        if (state.wireValue()
-                >= DurableState.IDS_CONTROL_READY.wireValue()
-                && !idsAuthConsumed) {
-            throw new IllegalArgumentException(
-                    "IDS durable state lacks local paired-device "
-                            + "registration");
-        }
 
-        if (isPairedCommitIntentPersisted
-                && state
-                != DurableState.READY_TO_COMMIT_IS_PAIRED) {
-            throw new IllegalArgumentException(
-                    "IS_PAIRED commit intent is attached to the wrong state");
-        }
 
-        boolean stateRequiresRole =
-                state.wireValue()
-                        >= DurableState
-                                .NETWORK_RELAY_PRELUDE_NEGOTIATED
-                                .wireValue();
-        boolean stateRequiresConfirmedAddresses =
-                state.wireValue()
-                        >= DurableState
-                                .CLASS_D_ESTABLISHED
-                                .wireValue();
-        if ((localRole != null) != stateRequiresRole
-                || (stateRequiresConfirmedAddresses
-                && !addressesConfirmed)
-                || (!stateRequiresRole
-                && addressesConfirmed)
-                || (state
-                == DurableState
-                .NETWORK_RELAY_PRELUDE_NEGOTIATED
-                && localRole
-                == NrLinkBluetoothPrelude.LocalRole.RESPONDER
-                && !addressesConfirmed)) {
-            throw new IllegalArgumentException(
-                    "Pairing role/address authority is inconsistent");
-        }
-    }
 
-    private static void validateC547(
-            String label,
-            byte[] value) {
-        if (value == null) {
-            return;
-        }
-        if (value.length
-                != AppleLeScOobData.SERIALIZED_LENGTH) {
-            throw new IllegalArgumentException(
-                    label + " has an invalid length");
-        }
-        AppleLeScOobData parsed = null;
-        try {
-            parsed = AppleLeScOobData.parse(value);
-        } finally {
-            if (parsed != null) {
-                parsed.destroy();
-            }
-        }
-    }
 
-    private static void requireModernPublicKeys(
-            String label,
-            byte[] payload) {
-        if (payload == null
-                || payload.length
-                != AppleNetworkRelayPairingMaterial
-                        .MODERN_PUBLIC_KEYS_PAYLOAD_LENGTH
-                || payload[0] != 1
-                || payload[1] != 0
-                || payload[2] != 32
-                || payload[35] != 2
-                || payload[36] != 0
-                || payload[37] != 32) {
-            throw new IllegalArgumentException(
-                    label + " public keys have an invalid layout");
-        }
-    }
 
-    private static void addOptional(
-            List<Field> fields,
-            int type,
-            byte[] value) {
-        if (value != null) {
-            fields.add(new Field(type, value));
-        }
-    }
 
-    private static void addText(
-            List<Field> fields,
-            int type,
-            String value) {
-        if (value == null) {
-            return;
-        }
-        byte[] encoded =
-                value.getBytes(StandardCharsets.UTF_8);
-        try {
-            fields.add(new Field(type, encoded));
-        } finally {
-            wipe(encoded);
-        }
-    }
 
-    private static byte[] required(
-            Map<Integer, byte[]> fields,
-            int type) {
-        byte[] value = fields.get(type);
-        if (value == null) {
-            throw new IllegalArgumentException(
-                    "Pairing session record lacks a required field");
-        }
-        return value;
-    }
 
-    private static String decodeRequiredText(
-            Map<Integer, byte[]> fields,
-            int type,
-            String label) {
-        byte[] value = required(fields, type);
-        return decodeText(value, label, true);
-    }
 
-    private static String decodeOptionalText(
-            Map<Integer, byte[]> fields,
-            int type,
-            String label) {
-        byte[] value = fields.get(type);
-        return value == null
-                ? null
-                : decodeText(value, label, false);
-    }
 
-    private static String decodeText(
-            byte[] encoded,
-            String label,
-            boolean required) {
-        if (encoded.length > MAX_TEXT_BYTES
-                || (required && encoded.length == 0)) {
-            throw new IllegalArgumentException(
-                    "Pairing session " + label + " is invalid");
-        }
-        try {
-            String decoded = StandardCharsets.UTF_8
-                    .newDecoder()
-                    .onMalformedInput(
-                            CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(
-                            CodingErrorAction.REPORT)
-                    .decode(ByteBuffer.wrap(encoded))
-                    .toString();
-            validateText(label, decoded, required);
-            return decoded;
-        } catch (CharacterCodingException error) {
-            throw new IllegalArgumentException(
-                    "Pairing session " + label
-                            + " is not valid UTF-8",
-                    error);
-        }
-    }
 
-    private static void validateText(
-            String label,
-            String value,
-            boolean required) {
-        if (value == null) {
-            if (required) {
-                throw new IllegalArgumentException(
-                        "Pairing session " + label + " is required");
-            }
-            return;
-        }
-        byte[] encoded =
-                value.getBytes(StandardCharsets.UTF_8);
-        try {
-            if ((required && encoded.length == 0)
-                    || encoded.length > MAX_TEXT_BYTES
-                    || value.indexOf('\0') >= 0) {
-                throw new IllegalArgumentException(
-                        "Pairing session " + label + " is invalid");
-            }
-        } finally {
-            wipe(encoded);
-        }
-    }
 
-    private static void validateCanonicalUuid(
-            String label,
-            String value,
-            boolean required) {
-        validateText(
-                label,
-                value,
-                required);
-        if (value == null) {
-            return;
-        }
-        UUID parsed;
-        try {
-            parsed = UUID.fromString(value);
-        } catch (IllegalArgumentException error) {
-            throw new IllegalArgumentException(
-                    "Pairing session " + label
-                            + " is not a UUID",
-                    error);
-        }
-        if (value.length() != 36
-                || !parsed.toString().equalsIgnoreCase(value)) {
-            throw new IllegalArgumentException(
-                    "Pairing session " + label
-                            + " is not canonical");
-        }
-    }
 
-    private static int parseU16(
-            byte[] value,
-            String label) {
-        if (value.length != 2) {
-            throw new IllegalArgumentException(
-                    "Pairing session " + label + " is invalid");
-        }
-        return ((value[0] & 0xff) << 8)
-                | (value[1] & 0xff);
-    }
 
-    private static int parseU8(
-            byte[] value,
-            String label) {
-        if (value.length != 1) {
-            throw new IllegalArgumentException(
-                    "Pairing session " + label + " is invalid");
-        }
-        return value[0] & 0xff;
-    }
 
-    private static boolean parseBoolean(
-            byte[] value,
-            String label) {
-        int parsed = parseU8(value, label);
-        if (parsed > 1) {
-            throw new IllegalArgumentException(
-                    "Pairing session " + label + " is invalid");
-        }
-        return parsed != 0;
-    }
 
-    private static byte[] u16(int value) {
-        return new byte[]{
-                (byte) (value >>> 8),
-                (byte) value
-        };
-    }
 
-    private static boolean isKnownField(int type) {
-        return type == FIELD_GENERATION_UUID
-                || type == FIELD_BLUETOOTH_BOND
-                || type == FIELD_PENDING_LOCAL_C547
-                || type == FIELD_PENDING_REMOTE_C547
-                || type == FIELD_PENDING_IDS_AUTH_DATA
-                || type == FIELD_LOCAL_NETWORK_MATERIAL
-                || type == FIELD_REMOTE_IDENTITY
-                || type == FIELD_REMOTE_CLASS_D
-                || type == FIELD_REMOTE_CLASS_C
-                || type == FIELD_INITIATOR_CLASS_D_ADDRESS
-                || type == FIELD_RESPONDER_CLASS_D_ADDRESS
-                || type == FIELD_INITIATOR_CLASS_C_ADDRESS
-                || type == FIELD_RESPONDER_CLASS_C_ADDRESS
-                || type == FIELD_NETWORK_RELAY_VERSION
-                || type == FIELD_DEVICE_TYPE
-                || type == FIELD_ALWAYS_ON_WIFI
-                || type == FIELD_DEVICE_NAME
-                || type == FIELD_BUILD_VERSION
-                || type == FIELD_IDS_DEVICE_ID
-                || type == FIELD_PRODUCT_TYPE
-                || type == FIELD_BOARD_ID
-                || type == FIELD_BLUETOOTH_CB_UUID
-                || type == FIELD_NR_UUID
-                || type == FIELD_REMOTE_INSTANCE_UUID
-                || type == FIELD_LOCAL_IDS_DEVICE_UUID
-                || type == FIELD_PEER_SPS_METADATA;
-    }
 
-    private static int roleCode(
-            NrLinkBluetoothPrelude.LocalRole role) {
-        if (role == null) {
-            return 0;
-        }
-        return role
-                == NrLinkBluetoothPrelude.LocalRole.INITIATOR
-                ? 1
-                : 2;
-    }
 
-    private static NrLinkBluetoothPrelude.LocalRole roleFromCode(
-            int code) {
-        return switch (code) {
-            case 0 -> null;
-            case 1 -> NrLinkBluetoothPrelude.LocalRole.INITIATOR;
-            case 2 -> NrLinkBluetoothPrelude.LocalRole.RESPONDER;
-            default -> throw new IllegalArgumentException(
-                    "Pairing session IKE role is invalid");
-        };
-    }
 
-    private static byte[] sha256(
-            byte[] bytes,
-            int offset,
-            int length) {
-        try {
-            MessageDigest digest =
-                    MessageDigest.getInstance("SHA-256");
-            digest.update(bytes, offset, length);
-            return digest.digest();
-        } catch (java.security.NoSuchAlgorithmException impossible) {
-            throw new IllegalStateException(
-                    "SHA-256 is unavailable",
-                    impossible);
-        }
-    }
-
-    private static byte[] cloneOrNull(
-            byte[] value) {
-        return value == null ? null : value.clone();
-    }
-
-    private static void requireLength(
-            String label,
-            byte[] value,
-            int expected) {
-        if (value == null || value.length != expected) {
-            throw new IllegalArgumentException(
-                    label + " must be " + expected + " bytes");
-        }
-    }
-
-    private static void requireNonzero(
-            String label,
-            byte[] value) {
-        int combined = 0;
-        for (byte item : value) {
-            combined |= item & 0xff;
-        }
-        if (combined == 0) {
-            throw new IllegalArgumentException(
-                    label + " must not be all zero");
-        }
-    }
-
-    private void requireLive() {
-        if (destroyed) {
-            throw new IllegalStateException(
-                    "Pairing session record has been destroyed");
-        }
-    }
-
-    private static void wipe(byte[] value) {
-        if (value != null) {
-            Arrays.fill(value, (byte) 0);
-        }
-    }
-
-    private static final class Field {
-        final int type;
-        final byte[] value;
-
-        Field(int type, byte[] value) {
-            this.type = type;
-            this.value = value.clone();
-        }
-
-        void destroy() {
-            wipe(value);
-        }
-    }
 }

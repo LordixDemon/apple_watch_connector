@@ -18,6 +18,7 @@ final class WatchFeatures {
   bool get telemetry => supports('telemetry');
   bool get phoneFind => supports('phoneFind');
   bool get notifications => supports('notificationRelay');
+  bool get softwareUpdates => supports('softwareUpdates');
   bool get health => supports('health');
   bool get appManagement => supports('appManagement');
 
@@ -37,8 +38,14 @@ final class WatchFeatures {
     'setNativePigmentVisibility' ||
     'setNativeMonogram' => 'nativeFaces',
     'setWatchSetting' => 'watchSettings',
+    'querySoftwareUpdate' ||
+    'checkSoftwareUpdate' ||
+    'downloadSoftwareUpdate' ||
+    'installSoftwareUpdate' => 'softwareUpdates',
     'stopPhonePing' || 'requestPhoneFlashPermission' => 'phoneFind',
-    'sendNotification' => 'notificationRelay',
+    'sendNotification' ||
+    'setNotificationRelay' ||
+    'requestNotificationAccess' => 'notificationRelay',
     _ => null,
   };
 }

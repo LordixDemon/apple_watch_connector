@@ -24,6 +24,7 @@ class WatchFeaturesPanel extends StatelessWidget {
           s.battery: features.telemetry,
           s.phoneFindFeature: features.phoneFind,
           s.notifications: features.notifications,
+          s.softwareUpdate: features.softwareUpdates,
           s.activityHealth: features.health,
           s.installedOnAppleWatch: features.appManagement,
           s.wiFi: state.wifiAvailable && features.known,

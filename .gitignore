@@ -1,6 +1,7 @@
 # Build products and dependency caches (all platforms).
 /target/
 **/build/
+apple-watch-bridge/*/bin/
 **/.gradle/
 **/.kotlin/
 **/.dart_tool/

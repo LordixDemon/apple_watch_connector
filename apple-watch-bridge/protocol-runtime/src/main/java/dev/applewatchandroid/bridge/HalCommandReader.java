@@ -37,9 +37,28 @@ final class HalCommandReader {
                             code = BridgeBase64.decode(encoded, BridgeBase64.NO_WRAP);
                             try (OpticalPairingCode ignored = OpticalPairingCode.parse(code)) {
                                 if (opticalCodes.offer(code)) code = null;
+                            } catch (IllegalArgumentException modernInvalid) {
+                                if (!EXPERIMENTAL_LEGACY_PAIRING.get()) {
+                                    throw modernInvalid;
+                                }
+                                try (LegacyWatchPairingCodec.LegacyOpticalCode ignored =
+                                             LegacyWatchPairingCodec.LegacyOpticalCode.parse(code)) {
+                                    if (opticalCodes.offer(code)) code = null;
+                                }
                             }
                         } catch (IllegalArgumentException invalid) { log("Optical input rejected; bytes logged=false."); }
                         finally { if (code != null) Arrays.fill(code, (byte) 0); }
+                        continue;
+                    }
+                    if ("EXPERIMENTAL_LEGACY_PAIRING_V1:1".equals(line.trim())) {
+                        EXPERIMENTAL_LEGACY_PAIRING.set(true);
+                        log("[EXPERIMENTAL] Legacy Watch pairing (watchOS 1-9, strategies 1-3) enabled; "
+                                + "modern Strategy 4 remains default priority.");
+                        continue;
+                    }
+                    if ("EXPERIMENTAL_LEGACY_PAIRING_V1:0".equals(line.trim())) {
+                        EXPERIMENTAL_LEGACY_PAIRING.set(false);
+                        log("[EXPERIMENTAL] Legacy Watch pairing disabled.");
                         continue;
                     }
                     if ("COMPANION_DISCOVERY_V1".equals(line)) {
@@ -84,6 +103,19 @@ final class HalCommandReader {
                         } catch (IllegalArgumentException invalid) {
                             log("FIND MY PHONE result rejected: malformed private IPC.");
                         } finally { if (frame != null) Arrays.fill(frame, (byte) 0); }
+                        continue;
+                    }
+                    if (line.startsWith("WATCH_UPDATE_COMMAND_V1:")) {
+                        try {
+                            String[] fields = line.substring("WATCH_UPDATE_COMMAND_V1:".length()).split(":", 2);
+                            if (fields.length != 2 || !SoftwareUpdateSession.allows(fields[1])) throw new IllegalArgumentException();
+                            java.util.UUID epoch = java.util.UUID.fromString(fields[0]);
+                            if (!epoch.toString().equals(fields[0])) throw new IllegalArgumentException();
+                            queueStructuredRequest(new BridgeCommandCodec.Request(java.util.UUID.randomUUID(), epoch,
+                                    BridgeClock.elapsedRealtime() + 20_000, fields[1]), outboundAppMessages);
+                        } catch (IllegalArgumentException invalid) {
+                            log("SOFTWARE UPDATE command rejected: invalid session envelope.");
+                        }
                         continue;
                     }
                     if (line.startsWith(BridgeCommandCodec.REQUEST_PREFIX)) {
@@ -200,6 +232,13 @@ final class HalCommandReader {
                                 Arrays.fill(serialized, (byte) 0);
                             }
                         }
+                        continue;
+                    }
+                    if (SoftwareUpdateSession.allows(line.trim())) {
+                        boolean queued = offerOutbound(outboundAppMessages, new OutboundAppMessage(
+                                SoftwareUpdateCodec.TOPIC, 0,
+                                line.trim().getBytes(java.nio.charset.StandardCharsets.US_ASCII), true));
+                        log("COMMAND INPUT: software update queued=" + queued);
                         continue;
                     }
                     if ("PING_WATCH".equals(line.trim())) {

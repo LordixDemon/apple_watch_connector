@@ -43,11 +43,15 @@ internal class CompanionFlutterBridge(private val activity: Activity, engine: Fl
             "discardOpticalCandidate" -> { optical.discard(call.argument<String>("opticalToken")); result.success(null); return }
         }
         if (call.method == "getState") { result.success(client.observedState); return }
-        if (call.method in setOf("requestPhoneFlashPermission", "requestConnectionPermissions")) {
+        if (call.method in setOf("requestPhoneFlashPermission", "requestConnectionPermissions", "requestNotificationAccess")) {
             try {
                 activity.startActivity(Intent().setComponent(ComponentName(client.bridgePackage,
                     "${client.bridgePackage}.BridgePermissionActivity"))
-                    .putExtra("scope", if (call.method == "requestPhoneFlashPermission") "flash" else "connection"))
+                    .putExtra("scope", when (call.method) {
+                        "requestPhoneFlashPermission" -> "flash"
+                        "requestNotificationAccess" -> "notifications"
+                        else -> "connection"
+                    }))
                 result.success(mapOf("status" to "OPENED"))
             } catch (_: SecurityException) { result.error("UNAVAILABLE", "Bridge permission screen denied", null) }
             catch (_: android.content.ActivityNotFoundException) { result.error("UNAVAILABLE", "Update Bridge first", null) }
@@ -56,7 +60,8 @@ internal class CompanionFlutterBridge(private val activity: Activity, engine: Fl
         if (call.method !in setOf("pingWatch", "setActiveFace", "duplicateNativeFace", "removeNativeFace",
                 "reorderNativeFaces", "updateNativeFace", "addNativeFace", "exportNativeFace",
                 "beginNativeFaceImport", "appendNativeFaceImport", "finishNativeFaceImport", "cancelNativeFaceImport", "sendNotification",
-                "refreshWatchState", "refreshFaceCollection", "stopPhonePing", "setWatchSetting", "setNativePigmentVisibility", "setNativeMonogram", "syncWifi",
+                "refreshWatchState", "refreshFaceCollection", "stopPhonePing", "setNotificationRelay", "setWatchSetting", "setNativePigmentVisibility", "setNativeMonogram", "syncWifi",
+                "querySoftwareUpdate", "checkSoftwareUpdate", "downloadSoftwareUpdate", "installSoftwareUpdate",
                 "connectWatch", "disconnectWatch", "beginPairing", "beginOpticalPairing", "replacePairOptically", "resumeSetup", "submitPin", "selectDiscoveredWatch", "activationResponse",
                 "confirmSetup", "auditStockBond", "importStockBond", "alignStockIdentity", "probeStockReconnect")) {
             result.error("UNIMPLEMENTED", "This Watch operation has no verified implementation yet", null)
@@ -91,7 +96,7 @@ internal class CompanionFlutterBridge(private val activity: Activity, engine: Fl
         val args = Bundle().apply {
             putString("method", call.method)
             for (key in listOf("faceId", "sourceFaceId", "title", "message", "sectionId", "sectionDisplayName",
-                    "setting", "pairId", "epoch", "uploadId", "sha256", "baselineHash", "pin", "action", "discoveryToken", "revision", "text")) {
+                    "setting", "packageName", "pairId", "epoch", "build", "uploadId", "sha256", "baselineHash", "pin", "action", "discoveryToken", "revision", "text")) {
                 call.argument<String>(key)?.let { putString(key, it) }
             }
             call.argument<Boolean>("value")?.let { putBoolean("value", it) }

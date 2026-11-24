@@ -79,6 +79,11 @@ public final class RootBluetoothHalHost extends ProtocolHost {
             validateInvocation(args);
             NativeFacePackageAccess.installPlatformPreparer(AndroidNativeFacePackageAccess::prepare);
             HalHostArguments invocation = HalHostArguments.parse(args);
+            EXPERIMENTAL_LEGACY_PAIRING.set(invocation.experimentalLegacyPairing);
+            if (invocation.experimentalLegacyPairing) {
+                log("[EXPERIMENTAL] Legacy Watch pairing (watchOS 1-9, strategies 1-3) enabled via CLI; "
+                        + "modern Strategy 4 remains default priority.");
+            }
             operationalMode = invocation.operationalPairing != null;
             ownershipFile = new java.io.RandomAccessFile("/data/local/tmp/apple-watch-bridge-hal.lock", "rw");
             ownershipLock = ownershipFile.getChannel().tryLock();

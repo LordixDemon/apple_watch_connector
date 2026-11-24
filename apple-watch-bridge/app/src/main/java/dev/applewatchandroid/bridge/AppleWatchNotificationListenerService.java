@@ -33,6 +33,7 @@ public final class AppleWatchNotificationListenerService
     private final Handler main = new Handler(Looper.getMainLooper());
     private NotificationMirrorQueue queue;
     private NotificationMirrorStore store;
+    private NotificationRelaySettings relaySettings;
     private String queuePairing;
     private boolean listenerReady;
     private boolean androidListenerConnected;
@@ -41,6 +42,22 @@ public final class AppleWatchNotificationListenerService
     private record Flight(UUID revision, UUID epoch) { }
     private final Map<UUID, Flight> flights = new HashMap<>();
     private final Set<UUID> attempted = new HashSet<>();
+
+    static boolean listenerConnected() { return active != null && active.androidListenerConnected; }
+    static boolean relayReady() {
+        var listener = active;
+        return listener != null && listener.androidListenerConnected && listener.listenerReady
+                && listener.epoch != null && listener.epoch.equals(OperationalWatchService.readyEpoch());
+    }
+    static int pendingCount() { return active == null || active.queue == null ? 0 : active.queue.pending().size(); }
+    static void settingsChanged() {
+        var listener = active;
+        if (listener != null) listener.main.post(() -> {
+            if (active != listener) return;
+            if (listener.androidListenerConnected) listener.onListenerConnected();
+        });
+        CompanionSessionState.notificationRelayChanged();
+    }
 
     static void transportState(UUID readyEpoch) {
         var listener = active;
@@ -76,6 +93,7 @@ public final class AppleWatchNotificationListenerService
             if (!change.apply(next)) return false;
             store.save(next);
             var old = queue; queue = next; next = null; old.destroy();
+            CompanionSessionState.notificationRelayChanged();
             android.util.Log.i("WatchNotification", "MIRROR_JOURNAL_COMMITTED entries=" + queue.entries().size()
                     + " pending=" + queue.pending().size() + "; contentLogged=false.");
             return true;
@@ -96,6 +114,7 @@ public final class AppleWatchNotificationListenerService
             } catch (Exception unavailable) { epoch = null; return; }
         }
         if (readyEpoch != null && androidListenerConnected && !listenerReady) onListenerConnected();
+        CompanionSessionState.notificationRelayChanged();
         flush();
     }
     private void flush() {
@@ -141,6 +160,7 @@ public final class AppleWatchNotificationListenerService
     public void onCreate() {
         super.onCreate();
         active = this;
+        relaySettings = new NotificationRelaySettings(this);
         initializeQueue();
         BridgeIpcDispatcher.getInstance().addNotificationListener(this);
     }
@@ -154,11 +174,13 @@ public final class AppleWatchNotificationListenerService
         main.removeCallbacksAndMessages(null);
         if (queue != null) queue.destroy();
         activeBulletins.clear();
+        CompanionSessionState.notificationRelayChanged();
     }
 
     @Override public void onListenerConnected() {
         super.onListenerConnected();
         androidListenerConnected = true;
+        CompanionSessionState.notificationRelayChanged();
         if (!initializeQueue()) return;
         StatusBarNotification[] snapshot;
         try { snapshot = getActiveNotifications(); }
@@ -185,25 +207,29 @@ public final class AppleWatchNotificationListenerService
     }
     @Override public void onListenerDisconnected() {
         androidListenerConnected = false; listenerReady = false; activeBulletins.clear(); flights.clear(); attempted.clear();
+        CompanionSessionState.notificationRelayChanged();
         super.onListenerDisconnected();
     }
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-        if (sbn == null || !shouldForwardNotification(sbn)) {
+        if (sbn == null) return;
+        if (eligibleSource(sbn)) relaySettings.remember(sbn.getPackageName(), resolveAppDisplayName(sbn.getPackageName()));
+        if (!shouldForwardNotification(sbn)) {
+            if (queue != null && queue.hasActive(sbn.getKey())) onNotificationRemoved(sbn);
             return;
         }
 
         Notification n = sbn.getNotification();
-        Bundle extras = n.extras;
-        if (extras == null) return;
-
-        CharSequence titleCs = extras.getCharSequence(Notification.EXTRA_TITLE);
-        CharSequence textCs = extras.getCharSequence(Notification.EXTRA_TEXT);
-        String title = limited(titleCs, 4096);
-        String text = limited(textCs, 16384);
-
-        if (title.isEmpty() && text.isEmpty()) {
+        NotificationTextContent content;
+        try { content = content(n); }
+        catch (RuntimeException malformed) {
+            if (queue != null && queue.hasActive(sbn.getKey())) onNotificationRemoved(sbn);
+            return;
+        }
+        String title = content.title(), text = content.body();
+        if (content.empty()) {
+            if (queue != null && queue.hasActive(sbn.getKey())) onNotificationRemoved(sbn);
             return;
         }
 
@@ -211,18 +237,23 @@ public final class AppleWatchNotificationListenerService
         String appName = resolveAppDisplayName(pkg);
         String bulletinKey = sbn.getKey();
         if (!initializeQueue()) return;
-        activeBulletins.put(bulletinKey, sbn);
         // One durable forwarding path. Current PendingIntent is held only by Android/in memory.
         try {
             boolean reply = uniqueReplyTarget(n) != null;
             boolean known = queue.hasActive(bulletinKey);
-            boolean sound = (!reconciling || !known) && ((n.flags & Notification.FLAG_ONLY_ALERT_ONCE) == 0 || !known);
+            boolean sound = !reconciling && ((n.flags & Notification.FLAG_ONLY_ALERT_ONCE) == 0 || !known);
             byte[] fingerprint = fingerprint(title, text, appName, reply, sbn.getPostTime(), n.flags & Notification.FLAG_ONLY_ALERT_ONCE);
             try {
-                commit(next -> next.upsert(bulletinKey, pkg, fingerprint, identity ->
+                boolean unchanged = queue.entries().stream().anyMatch(entry -> !entry.removal()
+                        && entry.identity().androidKey().equals(bulletinKey) && Arrays.equals(entry.fingerprint(), fingerprint));
+                boolean saved = commit(next -> next.upsert(bulletinKey, pkg, fingerprint, identity ->
                         BridgeIpcDispatcher.getInstance().createBulletinPayload(title.isEmpty() ? appName : title, text,
                                 pkg, appName, sound, identity.publisherId(), identity.recordId(), identity.replyToken(),
                                 reply ? NotificationMirrorQueue.replyIdentifier(identity) : null)));
+                // Never bind an older durable Watch action to a new Android
+                // PendingIntent when persistence of the new revision failed.
+                if (saved || unchanged) activeBulletins.put(bulletinKey, sbn);
+                else activeBulletins.remove(bulletinKey);
             } finally { Arrays.fill(fingerprint, (byte) 0); }
             flush();
         } catch (Exception invalid) { android.util.Log.w("WatchNotification", "MIRROR_POST_REJECTED; contentLogged=false."); }
@@ -313,6 +344,10 @@ public final class AppleWatchNotificationListenerService
     }
 
     private boolean shouldForwardNotification(StatusBarNotification sbn) {
+        return eligibleSource(sbn) && relaySettings.policy().allows(sbn.getPackageName());
+    }
+
+    private boolean eligibleSource(StatusBarNotification sbn) {
         if (sbn.isOngoing()) return false;
         Notification n = sbn.getNotification();
         if ((n.flags & Notification.FLAG_ONGOING_EVENT) != 0) return false;
@@ -325,12 +360,39 @@ public final class AppleWatchNotificationListenerService
         return true;
     }
 
-    private static String limited(CharSequence value, int max) {
-        if (value == null) return "";
-        String text = value.toString().trim();
-        int end = Math.min(max, text.length());
-        if (end < text.length() && end > 0 && Character.isHighSurrogate(text.charAt(end - 1))) end--;
-        return text.substring(0, end);
+    private static String string(CharSequence value) { return value == null ? null : value.toString(); }
+
+    private static NotificationTextContent content(Notification notification) {
+        Bundle extras = notification.extras;
+        if (extras == null) return new NotificationTextContent("", "");
+        String sender = null, message = null;
+        var messages = extras.getParcelableArray(Notification.EXTRA_MESSAGES);
+        if (messages != null) {
+            var decoded = Notification.MessagingStyle.Message.getMessagesFromBundleArray(messages);
+            for (int index = decoded.size() - 1; index >= 0; index--) {
+                var latest = decoded.get(index);
+                if (latest.getText() == null || latest.getText().toString().isBlank()) continue;
+                message = string(latest.getText());
+                sender = latest.getSenderPerson() == null ? null : string(latest.getSenderPerson().getName());
+                break;
+            }
+        }
+        String lines = null;
+        var textLines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
+        if (textLines != null) {
+            StringBuilder joined = new StringBuilder();
+            for (CharSequence line : textLines) {
+                if (line == null) continue;
+                if (joined.length() > 0) joined.append('\n');
+                joined.append(NotificationTextContent.limitUtf8(line.toString(), 16384));
+                if (joined.length() >= 16384) break;
+            }
+            lines = joined.toString();
+        }
+        return NotificationTextContent.select(string(extras.getCharSequence(Notification.EXTRA_TITLE)),
+                string(extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)),
+                string(extras.getCharSequence(Notification.EXTRA_BIG_TEXT)),
+                string(extras.getCharSequence(Notification.EXTRA_TEXT)), lines, sender, message);
     }
     private static byte[] fingerprint(String title, String text, String appName, boolean reply, long postTime, int alertFlags) throws Exception {
         var bytes = new java.io.ByteArrayOutputStream();
@@ -349,13 +411,8 @@ public final class AppleWatchNotificationListenerService
     }
 
     private String resolveAppDisplayName(String pkg) {
-        if (pkg == null) return "Notification";
-        if (pkg.contains("telegram")) return "Telegram";
-        if (pkg.contains("whatsapp")) return "WhatsApp";
-        if (pkg.contains("signal")) return "Signal";
-        if (pkg.contains("messaging") || pkg.contains("mms")) return "Messages";
-        if (pkg.contains("mail") || pkg.contains("gmail")) return "Mail";
-        if (pkg.contains("calendar")) return "Calendar";
-        return pkg;
+        try { return NotificationTextContent.limitUtf8(getPackageManager().getApplicationLabel(
+                getPackageManager().getApplicationInfo(pkg, 0)).toString(), 256); }
+        catch (android.content.pm.PackageManager.NameNotFoundException | RuntimeException unavailable) { return pkg; }
     }
 }

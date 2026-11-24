@@ -2176,4 +2176,186 @@ class AppLocalizationsEn extends AppLocalizations {
   String nativeFaceLibraryReorder(String face) {
     return 'Reorder $face';
   }
+
+  @override
+  String get notificationForwarding => 'Forward Phone Notifications';
+
+  @override
+  String get notificationForwardingDescription =>
+      'Forward notifications from Android apps to your Apple Watch. Existing notifications are restored silently after reconnecting.';
+
+  @override
+  String get notificationBridgeUnavailable =>
+      'Connect to an updated Android Bridge to configure forwarding.';
+
+  @override
+  String get notificationAccessRequired =>
+      'Allow notification access on your phone.';
+
+  @override
+  String get notificationForwardingPaused =>
+      'Notification forwarding is paused.';
+
+  @override
+  String get notificationListenerWaiting =>
+      'Waiting for Android notification access to connect.';
+
+  @override
+  String get notificationWatchWaiting =>
+      'Waiting for your Apple Watch to connect.';
+
+  @override
+  String get notificationForwardingReady =>
+      'Ready to forward phone notifications.';
+
+  @override
+  String get notificationAllowAccess => 'Allow Notification Access';
+
+  @override
+  String get notificationManageAccess => 'Manage Notification Access';
+
+  @override
+  String get notificationAccessDescription =>
+      'Enable Apple Watch Notification Mirror in Android settings.';
+
+  @override
+  String get notificationAccessFailed =>
+      'Could not open notification access settings.';
+
+  @override
+  String get notificationSettingsFailed =>
+      'Could not save notification settings. Try again.';
+
+  @override
+  String get notificationAppDiscovery =>
+      'Apps appear here after posting a notification. Forwarding is enabled by default; turn off any app you do not want on your watch.';
+
+  @override
+  String get notificationNoApps => 'No apps observed yet';
+
+  @override
+  String notificationPending(int count) {
+    return '$count notifications or removals are waiting for delivery.';
+  }
+
+  @override
+  String get notificationTestDescription =>
+      'Send a test alert when forwarding is ready.';
+
+  @override
+  String get notificationTestBody =>
+      'This is a test notification from Watch Companion.';
+
+  @override
+  String get notificationQueued => 'Notification Queued';
+
+  @override
+  String get notificationQueuedDetails =>
+      'The test alert is queued for your Apple Watch. Check the watch to confirm it appears.';
+
+  @override
+  String get notificationTestFailed => 'Notification Not Queued';
+
+  @override
+  String get notificationTestFailedDetails =>
+      'Could not queue the test alert. Check your watch connection and try again.';
+
+  @override
+  String get updateUnavailable =>
+      'Software updates are unavailable on this connection.';
+
+  @override
+  String get updateConnect => 'Connect your Apple Watch to check for updates.';
+
+  @override
+  String get updateUnknown => 'Waiting for the watch\'s update status.';
+
+  @override
+  String get updateIdle =>
+      'No update is currently selected. Check for updates to query Apple\'s catalog.';
+
+  @override
+  String get updateAvailable => 'Update available';
+
+  @override
+  String get updatePreparing => 'Downloading and preparing on your Apple Watch';
+
+  @override
+  String get updateWaitingPreparation => 'Waiting for preparation conditions';
+
+  @override
+  String get updatePrepared => 'Ready to install';
+
+  @override
+  String get updateWaitingInstallation => 'Waiting for installation conditions';
+
+  @override
+  String get updateInstalling => 'Installing on your Apple Watch';
+
+  @override
+  String get updateRestart =>
+      'Waiting for the watch to restart and confirm the new build';
+
+  @override
+  String get updateComplete => 'The watch has confirmed the installed build.';
+
+  @override
+  String get updateFailed =>
+      'The watch reported an update error. Refresh its status before continuing.';
+
+  @override
+  String get updateStalled => 'The watch reports that progress has stalled.';
+
+  @override
+  String updateStageProgress(String percent) {
+    return '$percent% of the current stage';
+  }
+
+  @override
+  String get updateRequirements =>
+      'Keep your watch on its charger with at least 50% battery and connected to Wi-Fi. Keep the companion nearby. Downloading, verification and installation are performed by the watch.';
+
+  @override
+  String get updateTerms =>
+      'Review and accept the update agreement in Settings → General → Software Update on your watch, then refresh here.';
+
+  @override
+  String get updateDownload => 'Download and Prepare';
+
+  @override
+  String get updateInstall => 'Install Update';
+
+  @override
+  String get updateRefresh => 'Refresh Status';
+
+  @override
+  String updateConfirm(String version, String build) {
+    return 'Install watchOS $version ($build)? The watch will restart. Keep it on the charger until installation finishes.';
+  }
+
+  @override
+  String get updateQueued =>
+      'Request queued. Waiting for confirmation from the watch.';
+
+  @override
+  String get updateNotQueued =>
+      'The request could not be queued. Refresh the watch\'s status and try again.';
+
+  @override
+  String get updateUnconfirmed =>
+      'Delivery is unconfirmed. Refresh status before issuing another command.';
+
+  @override
+  String get updateInstallUnconfirmed =>
+      'An installation request was already submitted. Refresh status or finish installation on the watch. The request will not be resent automatically.';
+
+  @override
+  String updateDownloadSize(String size) {
+    return 'Download: $size';
+  }
+
+  @override
+  String updateRequiredSpace(String size) {
+    return 'Required free space: $size';
+  }
 }

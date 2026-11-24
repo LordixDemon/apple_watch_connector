@@ -54,7 +54,7 @@ Linux now exposes Bluetooth adapter selection in All Watches, remembers the
 address across HCI index changes and requires reselection when saved hardware
 is missing. See [adapter selection](docs/LINUX_ADAPTER_SELECTION_94.md).
 
-> **Documentation snapshot: October 13, 2026.** The main verified hardware is Apple Watch Ultra 2, `Watch7,5`, watchOS `26.2 / 23S303`. Source versions: Bridge **0.2.429 / code 629**, Companion **1.0.86+87**, Rust workspace **0.1.1**. Source versions do not establish installed device versions. Android camera pairing, Linux pairing on Mint 22.3 and Windows pairing on Windows 10 / Realtek `0bda:b00e` have separate hardware verification.
+> **Documentation snapshot: October 14, 2026.** The main verified hardware is Apple Watch Ultra 2, `Watch7,5`, watchOS `26.2 / 23S303`. Source versions: Bridge **0.2.431 / code 631**, Companion **1.0.88+89**, Rust workspace **0.1.1**. Source versions do not establish installed device versions. Android camera pairing, Linux pairing on Mint 22.3 and Windows pairing on Windows 10 / Realtek `0bda:b00e` have separate hardware verification. The watchOS 27 profile and OTA implementation are source-verified and await device testing.
 
 Development is ongoing. The hardware journal confirms camera pairing, activation, and a visible Watch face. Full Watch.app parity, every iPhone feature, and compatibility with every Apple Watch model remain incomplete. macOS discovery is implemented; the complete physical pairing → activation → IDS path is unfinished.
 
@@ -90,7 +90,7 @@ Development is ongoing. The hardware journal confirms camera pairing, activation
 
 This table distinguishes source implementation from retained hardware evidence. Consult the [feature registry](docs/WATCH_FEATURE_REGISTRY.md) and the [acceptance plan](docs/WATCH_FEATURE_COVERAGE_PLAN.md) for details. Older entries can describe stages that have since been superseded.
 
-Release status: **experimental RC**. See the [platform support matrix and tested versions](docs/BUILD_AND_RELEASE.md#candidate-versions-and-support) and [changelog](CHANGELOG.md). Application services listed below apply to Android unless explicitly stated otherwise. Linux/Windows currently expose connection/setup controls; macOS exposes BLE discovery/link. The UI's Available Features panel reads declared backend support, independently of connection readiness.
+Release status: **experimental RC**. See the [platform support matrix and tested versions](docs/BUILD_AND_RELEASE.md#candidate-versions-and-support) and [changelog](CHANGELOG.md). Application services listed below apply to Android unless explicitly stated otherwise. Linux/Windows expose connection/setup controls and native OTA controls; macOS exposes BLE discovery/link. The UI's Available Features panel reads declared backend support, independently of connection readiness.
 
 | Area | Implemented path | Evidence and limits |
 | --- | --- | --- |
@@ -731,6 +731,13 @@ flowchart LR
 
 Old actions must not affect newer revisions or another chat. Duplicate claims survive restart. Notification access, per-app policy, and available Android actions require separate checks. Test bulletin delivery does not establish every app, icon, attachment, Focus, or haptic policy.
 
+In Companion, open **My Watch → Notifications → Allow Notification Access** and
+enable **Apple Watch Notification Mirror** in Android settings. The screen shows
+access, listener and Watch readiness separately. Apps appear after posting a
+notification; their exact package controls are persisted by Bridge. Reconnect
+restores existing alerts silently. **Notification Queued** confirms only phone
+queue acceptance; check the Watch to confirm display.
+
 ### Find Watch / Find Phone
 
 **Phone → Watch:** `pingWatch → PING_WATCH → FindMyLocalDeviceCodec → authenticated IDS → Watch sound request → correlated response`.
@@ -1323,6 +1330,29 @@ to that exact controller. This launcher has no restore-only switch.
 <a id="en-update"></a>
 ## Update, backup, and rollback
 
+### Watch software updates (Android / Linux / Windows)
+
+Open **My Watch → General → Software Update** with an active, authenticated pair.
+**Check Again** requests the Watch's native Apple catalog scan; **Refresh Status**
+queries its manager. Available versions are chosen by the Watch for its model,
+board and companion compatibility, rather than by a hardcoded firmware URL.
+Review any agreement and enter any required passcode on the Watch itself.
+**Download and Prepare** and **Install Update** send native commands using the
+current Watch descriptor; installation requires a separate confirmation.
+
+Keep the Watch on its charger (at least 50% battery), on Wi-Fi, and near the
+companion. The native updater owns signatures, admission checks, download resume
+and installation. Progress percentages refer to the current native stage.
+After reconnect, only an authenticated Hello reporting the target build confirms
+completion; an IDS ACK or pre-reboot `UpdateInstalled` state cannot do so. An
+ambiguous installation request is not automatically resent. Finish on the Watch
+if its status still shows prepared after such a request. The app never restores
+an IPSW over Bluetooth or bypasses Apple signing. Device acceptance remains pending;
+macOS OTA is not available. The 26.2 Watch protocol uses the legacy profile; a
+compatible intermediate update may be needed before watchOS 27 is offered.
+
+### Companion application updates
+
 First use **Disconnect / stop setup** in Companion, wait for HAL/HCI worker
 shutdown, and close the app. On Windows also wait for driver restoration before
 replacing the bundle. Keep pairing records; updating an app does not require
@@ -1624,7 +1654,7 @@ Rust-бэкенд Linux разделён на состояние, ввод/за�
 используют строгие lockfiles; Linux-архив проверяется по manifest schema 2 и
 получает воспроизводимые метаданные. См. [этап 93](docs/REFACTOR_RELEASE_93.md).
 
-> **Срез документации: 13 октября 2026.** Проверяемый основной стенд — Apple Watch Ultra 2, `Watch7,5`, watchOS `26.2 / 23S303`. Версии в исходниках: Bridge **0.2.429 / code 629**, Companion **1.0.86+87**, Rust workspace **0.1.1**. Версия исходников не доказывает установленную на устройстве версию. Camera pairing на Android, сопряжение на Linux Mint 22.3 и Windows 10 / Realtek `0bda:b00e` имеют отдельные физические проверки.
+> **Срез документации: 14 октября 2026.** Проверяемый основной стенд — Apple Watch Ultra 2, `Watch7,5`, watchOS `26.2 / 23S303`. Версии в исходниках: Bridge **0.2.431 / code 631**, Companion **1.0.88+89**, Rust workspace **0.1.1**. Версия исходников не доказывает установленную на устройстве версию. Camera pairing на Android, сопряжение на Linux Mint 22.3 и Windows 10 / Realtek `0bda:b00e` имеют отдельные физические проверки. Профиль watchOS 27 и OTA проверены по исходникам; проверка на устройствах ещё предстоит.
 
 Проект находится в разработке. Физическое сопряжение через камеру, активация и видимый циферблат подтверждены в журнале стенда; полная замена Watch.app, всех функций iPhone и всех моделей Apple Watch ещё не достигнута. Для macOS обнаружение реализовано, но полный физический путь pairing → activation → IDS остаётся незавершённым.
 
@@ -1660,7 +1690,7 @@ Rust-бэкенд Linux разделён на состояние, ввод/за�
 
 В таблице разделены реализация в исходниках и факты из сохранённых проверок. Подробности приведены в [реестре функций](docs/WATCH_FEATURE_REGISTRY.md) и [плане приёмки](docs/WATCH_FEATURE_COVERAGE_PLAN.md). Старые записи в этих документах могут описывать уже пройденные этапы.
 
-Статус выпуска: **experimental RC**. [Таблица платформ и проверенные версии](docs/BUILD_AND_RELEASE.md#candidate-versions-and-support), [список изменений](CHANGELOG.md). Перечисленные ниже сервисы относятся к Android, если не указано иначе. Linux/Windows пока предоставляют управление подключением и настройкой пары; macOS — обнаружение и BLE-соединение. Панель Available Features показывает заявленные возможности backend отдельно от готовности соединения.
+Статус выпуска: **experimental RC**. [Таблица платформ и проверенные версии](docs/BUILD_AND_RELEASE.md#candidate-versions-and-support), [список изменений](CHANGELOG.md). Перечисленные ниже сервисы относятся к Android, если не указано иначе. Linux/Windows предоставляют управление подключением, настройкой пары и нативным OTA; macOS — обнаружение и BLE-соединение. Панель Available Features показывает заявленные возможности backend отдельно от готовности соединения.
 
 | Область | Реализованный путь | Подтверждение и границы |
 | --- | --- | --- |
@@ -2301,6 +2331,14 @@ flowchart LR
 
 Старый action не должен применяться к новому revision или соседнему чату. Duplicate claims переживают restart. Notification access, per-app policy и доступные Android actions проверяются отдельно. Test bulletin sender не доказывает все реальные приложения, icons, attachments, Focus и haptic policy.
 
+В Companion открыть **My Watch → Notifications → Allow Notification Access** и
+включить **Apple Watch Notification Mirror** в настройках Android. Экран отдельно
+показывает доступ, подключение listener и готовность часов. Приложения появляются
+после первого уведомления; Bridge сохраняет выбор по точному Android package.
+После реконнекта существующие уведомления восстанавливаются без повторного звука.
+**Notification Queued** подтверждает только очередь телефона; показ проверяется
+на самих часах.
+
 ### Find Watch / Find Phone
 
 **Phone → Watch:** `pingWatch → PING_WATCH → FindMyLocalDeviceCodec → authenticated IDS → Watch sound request → correlated response`.
@@ -2860,6 +2898,30 @@ $watchRecoveryRecord = Read-Host 'Full path to the matching lease original.json'
 
 <a id="ru-update"></a>
 ## Обновление, резервная копия и откат
+
+### Обновление часов (Android / Linux / Windows)
+
+Откройте **My Watch → General → Software Update** с действующей парой.
+**Check Again** запускает штатную проверку каталога Apple на часах;
+**Refresh Status** запрашивает состояние менеджера. Часы сами выбирают прошивку
+для своей модели, платы и версии компаньона; URL прошивки не зашит в приложение.
+Лицензию и запрос кода подтвердите на самих часах. **Download and Prepare**
+и **Install Update** отправляют нативные команды с актуальным дескриптором;
+установка требует отдельного подтверждения.
+
+Оставьте часы на зарядке (не менее 50% батареи), подключёнными к Wi-Fi и рядом
+с компаньоном. Штатный updater проверяет подписи и условия установки, продолжает
+загрузку и устанавливает систему. Проценты относятся к текущему этапу.
+После реконнекта завершение подтверждает только аутентифицированный Hello с
+целевой сборкой: ACK и состояние `UpdateInstalled` перед перезагрузкой недостаточны.
+Неоднозначно отправленная установка автоматически не повторяется; если часы всё
+ещё показывают готовность к установке, завершите её на самих часах.
+IPSW по Bluetooth не восстанавливается, подписи Apple не обходятся.
+Проверка OTA на устройствах ещё предстоит; на macOS OTA недоступно.
+Протокол часов с 26.2 использует прежний профиль; перед предложением watchOS 27
+может понадобиться совместимое промежуточное обновление.
+
+### Обновление приложения-компаньона
 
 Сначала выберите **Disconnect / остановку настройки** в Companion, дождитесь
 завершения HAL/HCI worker и закройте приложение. На Windows также дождитесь

@@ -64,6 +64,10 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
     private final WatchSetupMetadataCodec.ExtendedMetadata metadata;
     private final int effectiveRemoteMaxPairingVersion;
     private final String restoredProductType;
+    void useProfile(CompanionProtocolProfile selected) {
+        if (started) throw new IllegalStateException("Initial setup profile is frozen");
+        coordinator.useProfile(selected);
+    }
 
     private boolean started;
     private boolean closed;
@@ -952,6 +956,10 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
 
         NanoRegistryClassDCodec.PairingModeRequest
                 compatibilityMessage() {
+            return compatibilityMessage(CompanionProtocolProfile.IOS_26_6);
+        }
+
+        NanoRegistryClassDCodec.PairingModeRequest compatibilityMessage(CompanionProtocolProfile profile) {
             if (type
                     != ActionType.SEND_COMPATIBILITY_STATE
                     || compatibilityState == null
@@ -961,14 +969,18 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
             }
             return NanoRegistryClassDCodec
                     .PairingModeRequest
-                    .modernIos26_6(
+                    .forProfile(
                             compatibilityState,
-                            runtimeWatchPairingVersion);
+                            runtimeWatchPairingVersion, profile);
         }
 
         NanoRegistryPropertyCodec.PropertiesChanged phoneFullSnapshot(
                 long unixMilliseconds,
                 byte[] bluetoothMacAddress) {
+            return phoneFullSnapshot(unixMilliseconds, bluetoothMacAddress, CompanionProtocolProfile.IOS_26_6);
+        }
+        NanoRegistryPropertyCodec.PropertiesChanged phoneFullSnapshot(long unixMilliseconds,
+                byte[] bluetoothMacAddress, CompanionProtocolProfile profile) {
             if (type
                     != ActionType.SEND_PHONE_FULL_SNAPSHOT) {
                 throw new IllegalStateException(
@@ -978,7 +990,7 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
                     bluetoothMacAddress);
             return PhonePropertySnapshot26_6.fullSnapshot(
                     companionPropertyValues(
-                            bluetoothMacAddress),
+                            bluetoothMacAddress, profile),
                     PhonePropertySnapshot26_6
                             .bornOnFromUnixMilliseconds(
                                     unixMilliseconds));
@@ -991,27 +1003,38 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
          */
         static NanoRegistryPropertyCodec.PropertyResponse livePhonePropertyResponse(
                 byte[] bluetoothMacAddress) {
+            return livePhonePropertyResponse(bluetoothMacAddress, CompanionProtocolProfile.IOS_26_6);
+        }
+        static NanoRegistryPropertyCodec.PropertyResponse livePhonePropertyResponse(
+                byte[] bluetoothMacAddress, CompanionProtocolProfile profile) {
             BluetoothLocalIdentity.requireStaticRandomAddress(
                     bluetoothMacAddress);
             return PhonePropertySnapshot26_6.propertyResponse(
                     companionPropertyValues(
-                            bluetoothMacAddress));
+                            bluetoothMacAddress, profile));
         }
 
         static NanoRegistryPropertyCodec.PropertiesChanged livePhoneFullSnapshot(
                 long unixMilliseconds,
                 byte[] bluetoothMacAddress) {
+            return livePhoneFullSnapshot(unixMilliseconds, bluetoothMacAddress, CompanionProtocolProfile.IOS_26_6);
+        }
+        static NanoRegistryPropertyCodec.PropertiesChanged livePhoneFullSnapshot(long unixMilliseconds,
+                byte[] bluetoothMacAddress, CompanionProtocolProfile profile) {
             BluetoothLocalIdentity.requireStaticRandomAddress(
                     bluetoothMacAddress);
             return PhonePropertySnapshot26_6.fullSnapshot(
                     companionPropertyValues(
-                            bluetoothMacAddress),
+                            bluetoothMacAddress, profile),
                     PhonePropertySnapshot26_6.bornOnFromUnixMilliseconds(
                             unixMilliseconds));
         }
 
         NanoRegistryPropertyCodec.PropertyResponse propertyResponse(
                 byte[] bluetoothMacAddress) {
+            return propertyResponse(bluetoothMacAddress, CompanionProtocolProfile.IOS_26_6);
+        }
+        NanoRegistryPropertyCodec.PropertyResponse propertyResponse(byte[] bluetoothMacAddress, CompanionProtocolProfile profile) {
             if (type
                     != ActionType.SEND_PHONE_PROPERTY_RESPONSE
                     || outgoingResponseIdentifier == null
@@ -1023,7 +1046,7 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
                     bluetoothMacAddress);
             return PhonePropertySnapshot26_6.propertyResponse(
                     companionPropertyValues(
-                            bluetoothMacAddress));
+                            bluetoothMacAddress, profile));
         }
 
         NanoRegistryPropertyCodec.PropertyRequest propertyRequest() {
@@ -1038,7 +1061,7 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
 
     private static Map<String, NanoRegistryPropertyCodec.PropertyValue>
             companionPropertyValues(
-                    byte[] bluetoothMacAddress) {
+                    byte[] bluetoothMacAddress, CompanionProtocolProfile profile) {
         Map<String, NanoRegistryPropertyCodec.PropertyValue> props =
                 new HashMap<>();
         props.put(
@@ -1072,7 +1095,7 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
         props.put(
                 "marketingVersion",
                 NanoRegistryPropertyCodec.PropertyValue.string(
-                        IosCompanionProfile26_6.PRODUCT_VERSION));
+                        profile.version));
         props.put(
                 "buildString",
                 NanoRegistryPropertyCodec.PropertyValue.number(
@@ -1159,7 +1182,7 @@ final class AppleWatchInitialSetupIdsAdapter implements AutoCloseable {
         props.put(
                 CAPABILITIES,
                 NanoRegistryUuidSetCodec.encode(
-                        IosCompanionProfile26_6.PHONE_CAPABILITY_UUIDS));
+                        profile.capabilities()));
         return props;
     }
 

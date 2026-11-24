@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,14 @@ public final class PairingSmpHandoffTest {
     @Before public void setUp() throws Exception {
         previousOutput = System.out;
         System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
+        initSession();
+    }
+
+    private void initSession() throws Exception {
+        controller.sent.clear();
+        controller.sentCommands.clear();
+        controller.commandHandler = null;
+        output.reset();
         session = new HalTransportSession(controller, stopped,
                 new LinkedBlockingQueue<>(), new LinkedBlockingQueue<>(),
                 new LinkedBlockingQueue<>(), new LinkedBlockingQueue<>(),
@@ -48,6 +57,7 @@ public final class PairingSmpHandoffTest {
         credits.connected(HANDLE);
         callbacks = (BluetoothController.Callbacks) field("callbacks").get(session);
         controller.callbacks = callbacks;
+        invoke("resetObservedLeLinkState");
     }
 
     @After public void tearDown() throws Exception {
@@ -278,6 +288,264 @@ public final class PairingSmpHandoffTest {
         assertTrue(failure.getMessage().contains("SMP deferred queue overflow"));
     }
 
+    @Test public void resendsCachedFinalAckOnByteIdenticalRetryWithEarlierReqSeq() throws Exception {
+        try (RetryFixture fixture = new RetryFixture(true)) {
+            peerWatchIFrame(23, 13, fixture.watchRequestPacket);
+            peerSupervisoryRr(14);
+            peerSupervisoryRr(15);
+
+            Object result = finalAckWithMatcher(13, 23, fixture.ackPackets, fixture.matcher);
+            assertEquals(15, fieldOf(result, "nextOutboundTxSequence"));
+            assertEquals(24, fieldOf(result, "nextExpectedWatchTxSequence"));
+
+            List<L2capErtmCodec.Frame> iFrames = controller.sentTerminusIFrames();
+            assertEquals(2, iFrames.size());
+            assertEquals(13, iFrames.get(0).txSequence);
+            assertEquals(23, iFrames.get(0).requestSequence);
+            assertEquals(14, iFrames.get(1).txSequence);
+            assertEquals(24, iFrames.get(1).requestSequence);
+            assertArrayEquals(iFrames.get(0).information, iFrames.get(1).information);
+            assertEquals(List.of(24), controller.sentTerminusRrReqSeqs());
+            assertTrue(logs().contains("WATCH REQUEST RETRY RX: authenticated byte-identical retry #1 TxSeq=23 ReqSeq=13"));
+            assertTrue(logs().contains("SMP HANDOFF: final IKE transport ACK received"));
+            assertFalse(logs().contains(HciCodec.toHex(fixture.watchRequestPacket)));
+            assertFalse(logs().contains(HciCodec.toHex(fixture.ackPackets.get(0))));
+        }
+    }
+
+    @Test public void resendsCachedFinalAckOnByteIdenticalRetryCarryingExpectedReqSeq() throws Exception {
+        try (RetryFixture fixture = new RetryFixture(true)) {
+            peerWatchIFrame(23, 14, fixture.watchRequestPacket);
+            peerSupervisoryRr(15);
+
+            Object result = finalAckWithMatcher(13, 23, fixture.ackPackets, fixture.matcher);
+            assertEquals(15, fieldOf(result, "nextOutboundTxSequence"));
+            assertEquals(24, fieldOf(result, "nextExpectedWatchTxSequence"));
+
+            List<L2capErtmCodec.Frame> iFrames = controller.sentTerminusIFrames();
+            assertEquals(2, iFrames.size());
+            assertEquals(13, iFrames.get(0).txSequence);
+            assertEquals(14, iFrames.get(1).txSequence);
+            assertEquals(24, iFrames.get(1).requestSequence);
+            assertArrayEquals(iFrames.get(0).information, iFrames.get(1).information);
+            assertEquals(List.of(24), controller.sentTerminusRrReqSeqs());
+            assertTrue(logs().contains("WATCH REQUEST RETRY RX: authenticated byte-identical retry #1 TxSeq=23 ReqSeq=14"));
+        }
+    }
+
+    @Test public void preservesEarlySmpTrafficAcrossWatchRetryAndResend() throws Exception {
+        try (RetryFixture fixture = new RetryFixture(false)) {
+            peer(BluetoothSmpCodec.FIXED_CID, SECURITY);
+            peerWatchIFrame(23, 13, fixture.watchRequestPacket);
+            peer(BluetoothSmpCodec.FIXED_CID, RESPONSE);
+            peerSupervisoryRr(15);
+
+            Object result = finalAckWithMatcher(13, 23, fixture.ackPackets, fixture.matcher);
+            assertEquals(15, fieldOf(result, "nextOutboundTxSequence"));
+            assertEquals(24, fieldOf(result, "nextExpectedWatchTxSequence"));
+            assertEquals(2, deferred().size());
+            sendRequest();
+            assertArrayEquals(RESPONSE, await(BluetoothSmpCodec.PAIRING_RESPONSE, 500));
+            assertEquals(0, deferred().size());
+        }
+    }
+
+    @Test public void handlesDuplicateErtmIFrameAndSequenceWraparound() throws Exception {
+        try (RetryFixture fixture = new RetryFixture(false)) {
+            peerWatchIFrame(62, 63, new byte[]{0x01, 0x02});
+            peerWatchIFrame(63, 63, fixture.watchRequestPacket);
+            peerSupervisoryRr(1);
+
+            Object result = finalAckWithMatcher(63, 63, fixture.ackPackets, fixture.matcher);
+            assertEquals(1, fieldOf(result, "nextOutboundTxSequence"));
+            assertEquals(0, fieldOf(result, "nextExpectedWatchTxSequence"));
+            List<L2capErtmCodec.Frame> iFrames = controller.sentTerminusIFrames();
+            assertEquals(2, iFrames.size());
+            assertEquals(63, iFrames.get(0).txSequence);
+            assertEquals(0, iFrames.get(1).txSequence);
+            assertEquals(0, iFrames.get(1).requestSequence);
+            assertEquals(List.of(63, 0), controller.sentTerminusRrReqSeqs());
+        }
+    }
+
+    @Test public void rejectsFreshEncryptionAndDifferentContentInBothReqSeqPositions() throws Exception {
+        for (int reqSeq : new int[]{13, 14}) {
+            initSession();
+            try (RetryFixture fixture = new RetryFixture(false)) {
+                byte[] freshSameBatch = IkeV2SessionCrypto.createPairingPrivateNotifyWatchRequestForTest(
+                        fixture.random, fixture.keys, fixture.watchNotifies).get(0);
+                peerWatchIFrame(23, reqSeq, freshSameBatch);
+                Exception failure = assertThrows(Exception.class,
+                        () -> finalAckWithMatcher(13, 23, fixture.ackPackets, fixture.matcher));
+                assertTrue(failure.getMessage().contains("Unexpected Watch I-frame"));
+                assertEquals(1, controller.sentTerminusIFrames().size());
+                assertTrue(controller.sentTerminusRrReqSeqs().isEmpty());
+            }
+
+            initSession();
+            try (RetryFixture fixture = new RetryFixture(false)) {
+                List<ApplePairingNotifyPayloads.PrivateNotify> differentNotifies =
+                        new ArrayList<>(fixture.watchNotifies.subList(0, 8));
+                byte[] differentContent = IkeV2SessionCrypto.createPairingPrivateNotifyWatchRequestForTest(
+                        fixture.random, fixture.keys, differentNotifies).get(0);
+                peerWatchIFrame(23, reqSeq, differentContent);
+                Exception failure = assertThrows(Exception.class,
+                        () -> finalAckWithMatcher(13, 23, fixture.ackPackets, fixture.matcher));
+                assertTrue(failure.getMessage().contains("Unexpected Watch I-frame"));
+                assertEquals(1, controller.sentTerminusIFrames().size());
+                assertTrue(controller.sentTerminusRrReqSeqs().isEmpty());
+            }
+        }
+    }
+
+    @Test public void ignoresOtherHandleAndBoundsRetryFloodAndRejectsStrictIFrameAndSupervisoryRej()
+            throws Exception {
+        try (RetryFixture fixture = new RetryFixture(false)) {
+            byte[] wrongHandleIFrame = L2capErtmCodec.encodeInformationFrame(
+                    HciCodec.TERMINUS_LOCAL_CID, 23, 13,
+                    IkeV2Codec.encodeUikeFrame(new byte[]{0x7f, 0x00}), false);
+            for (byte[] packet : HciCodec.buildLeAclL2capFragments(
+                    HANDLE + 1, HciCodec.TERMINUS_LOCAL_CID, wrongHandleIFrame, 256)) {
+                callbacks.aclDataReceived(packet);
+            }
+            peerSupervisoryRr(14);
+            Object result = finalAckWithMatcher(13, 23, fixture.ackPackets, fixture.matcher);
+            assertEquals(14, fieldOf(result, "nextOutboundTxSequence"));
+            assertEquals(1, controller.sentTerminusIFrames().size());
+        }
+
+        initSession();
+        try (RetryFixture fixture = new RetryFixture(false)) {
+            for (int i = 0; i < 5; i++) {
+                peerWatchIFrame(23 + i, 13 + i, fixture.watchRequestPacket);
+            }
+            Exception failure = assertThrows(Exception.class,
+                    () -> finalAckWithMatcher(13, 23, fixture.ackPackets, fixture.matcher));
+            assertTrue(failure.getMessage().contains("Too many Watch request retries"));
+            assertEquals(5, controller.sentTerminusIFrames().size());
+        }
+
+        initSession();
+        try (RetryFixture fixture = new RetryFixture(false)) {
+            peerWatchIFrame(23, 14, fixture.watchRequestPacket);
+            Exception failure = assertThrows(Exception.class, this::finalAck);
+            assertTrue(failure.getMessage().contains("Unexpected Watch I-frame"));
+        }
+
+        initSession();
+        try (RetryFixture fixture = new RetryFixture(false)) {
+            peer(HciCodec.TERMINUS_LOCAL_CID, L2capErtmCodec.encodeSupervisoryFrame(
+                    HciCodec.TERMINUS_LOCAL_CID, L2capErtmCodec.SUPERVISORY_REJ, 14, false, false, false));
+            Exception failure = assertThrows(Exception.class,
+                    () -> finalAckWithMatcher(13, 23, fixture.ackPackets, fixture.matcher));
+            assertTrue(failure.getMessage().contains("Watch rejected"));
+        }
+    }
+
+    private void peerWatchIFrame(int txSeq, int reqSeq, byte[] ikePacket) {
+        byte[] uike = IkeV2Codec.encodeUikeFrame(ikePacket);
+        byte[] ertm = L2capErtmCodec.encodeInformationFrame(
+                HciCodec.TERMINUS_LOCAL_CID, txSeq, reqSeq, uike, false);
+        peer(HciCodec.TERMINUS_LOCAL_CID, ertm);
+    }
+
+    private void peerSupervisoryRr(int reqSeq) {
+        peer(HciCodec.TERMINUS_LOCAL_CID,
+                L2capErtmCodec.encodeReceiverReady(HciCodec.TERMINUS_LOCAL_CID, reqSeq, false, false));
+    }
+
+    private Object finalAckWithMatcher(
+            int nextOutboundTx,
+            int nextWatchTx,
+            List<byte[]> packets,
+            IkeV2SessionCrypto.WatchRequestRetryMatcher matcher) throws Exception {
+        Class<?> type = Class.forName(HalTransportSession.class.getName() + "$PairingTransportCursor");
+        Constructor<?> constructor = type.getDeclaredConstructor(int.class, int.class);
+        constructor.setAccessible(true);
+        return invoke("sendPairingIkeOneWayAndAwaitAck",
+                0x0041,
+                constructor.newInstance(nextOutboundTx, nextWatchTx),
+                packets,
+                "PAIRING PRIVATE-NOTIFIES WATCH-REQUEST ACK",
+                500L,
+                matcher);
+    }
+
+    private int fieldOf(Object target, String name) throws Exception {
+        Field field = target.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        return field.getInt(target);
+    }
+
+    private static byte[] sequenceBytes(int first, int length) {
+        byte[] output = new byte[length];
+        for (int index = 0; index < output.length; index++) {
+            output[index] = (byte) (first + index);
+        }
+        return output;
+    }
+
+    private static final class RetryFixture implements AutoCloseable {
+        final SecureRandom random = new SecureRandom();
+        final IkeV2SessionCrypto.IkeSaKeys keys = new IkeV2SessionCrypto.IkeSaKeys(
+                sequenceBytes(0x00, 64),
+                sequenceBytes(0x20, 36),
+                sequenceBytes(0x50, 36),
+                sequenceBytes(0x40, 64),
+                sequenceBytes(0x80, 64),
+                sequenceBytes(0x10, 8),
+                sequenceBytes(0x30, 8),
+                sequenceBytes(0xa0, 32),
+                sequenceBytes(0xc0, 32));
+        final BleSecureConnectionsCrypto.LocalOobMaterial oob =
+                BleSecureConnectionsCrypto.generateLocalOob(random);
+        final AppleNetworkRelayPairingMaterial networkKeys =
+                AppleNetworkRelayPairingMaterial.generate(random);
+        final AppleNetworkRelayInnerAddresses addresses =
+                AppleNetworkRelayInnerAddresses.generate(random);
+        final ApplePairingNotifyPayloads.LocalBatch batch =
+                ApplePairingNotifyPayloads.createLocalBatch(
+                        oob, networkKeys, addresses, "Android", "test-build", null);
+        final List<ApplePairingNotifyPayloads.PrivateNotify> localNotifies = batch.notifies();
+        final List<ApplePairingNotifyPayloads.PrivateNotify> watchNotifies =
+                new ArrayList<>(localNotifies.subList(0, 9));
+        final byte[] watchRequestPacket =
+                IkeV2SessionCrypto.createPairingPrivateNotifyWatchRequestForTest(
+                        random, keys, watchNotifies).get(0);
+        final List<byte[]> ackPackets;
+        final IkeV2SessionCrypto.PairingPrivateNotifyResponseAccumulator accumulator =
+                new IkeV2SessionCrypto.PairingPrivateNotifyResponseAccumulator(keys);
+        final IkeV2SessionCrypto.PairingPrivateNotifyResponse response;
+        final IkeV2SessionCrypto.WatchRequestRetryMatcher matcher;
+
+        RetryFixture(boolean peerRequestBeforeLocalAck) {
+            byte[] emptyAck = IkeV2SessionCrypto.createPairingPrivateNotifyEmptyResponseForTest(
+                    random, keys).get(0);
+            if (peerRequestBeforeLocalAck) {
+                assertNull(accumulator.accept(watchRequestPacket));
+                response = accumulator.accept(emptyAck);
+            } else {
+                assertNull(accumulator.accept(emptyAck));
+                response = accumulator.accept(watchRequestPacket);
+            }
+            ackPackets = IkeV2SessionCrypto.createWatchInformationalAcknowledgement(
+                    random, keys, response.peerRequestMessageId);
+            matcher = response.createRetryMatcher();
+        }
+
+        @Override public void close() {
+            matcher.close();
+            accumulator.destroy();
+            response.destroy();
+            for (ApplePairingNotifyPayloads.PrivateNotify notify : localNotifies) notify.destroy();
+            for (ApplePairingNotifyPayloads.PrivateNotify notify : watchNotifies) notify.destroy();
+            batch.destroy();
+            addresses.destroy();
+            networkKeys.destroy();
+            oob.destroy();
+        }
+    }
+
     private void peer(int cid, byte[] pdu) {
         for (byte[] packet : HciCodec.buildLeAclL2capFragments(HANDLE, cid, pdu, 256)) {
             callbacks.aclDataReceived(packet);
@@ -335,19 +603,227 @@ public final class PairingSmpHandoffTest {
         throw new AssertionError("No method: " + name);
     }
 
+    @Test public void configuresLocalLeCapabilitiesWhenSupported() throws Exception {
+        controller.commandHandler = (opcode, cmd) -> {
+            switch (opcode) {
+                case HciCodec.OPCODE_LE_READ_LOCAL_SUPPORTED_FEATURES:
+                    callbacks.hciEventReceived(new byte[]{
+                            0x0E, 0x0C, 0x01, 0x03, 0x20, 0x00,
+                            0x20, 0x01, 0, 0, 0, 0, 0, 0});
+                    break;
+                case HciCodec.OPCODE_LE_SET_EVENT_MASK:
+                    assertArrayEquals(new byte[]{0x4B, 0x08, 0, 0, 0, 0, 0, 0},
+                            Arrays.copyOfRange(cmd, 3, cmd.length));
+                    callbacks.hciEventReceived(new byte[]{0x0E, 0x04, 0x01, 0x01, 0x20, 0x00});
+                    break;
+                case HciCodec.OPCODE_LE_READ_MAXIMUM_DATA_LENGTH:
+                    callbacks.hciEventReceived(new byte[]{
+                            0x0E, 0x0C, 0x01, 0x2F, 0x20, 0x00,
+                            (byte) 0xFB, 0x00, (byte) 0x90, 0x42,
+                            (byte) 0xFB, 0x00, (byte) 0x90, 0x42});
+                    break;
+                case HciCodec.OPCODE_LE_WRITE_SUGGESTED_DEFAULT_DATA_LENGTH:
+                    assertArrayEquals(new byte[]{(byte) 251, 0x00, 0x48, 0x08},
+                            Arrays.copyOfRange(cmd, 3, cmd.length));
+                    callbacks.hciEventReceived(new byte[]{0x0E, 0x04, 0x01, 0x24, 0x20, 0x00});
+                    break;
+                case HciCodec.OPCODE_LE_SET_DEFAULT_PHY:
+                    assertArrayEquals(new byte[]{0x00, 0x02, 0x02},
+                            Arrays.copyOfRange(cmd, 3, cmd.length));
+                    callbacks.hciEventReceived(new byte[]{0x0E, 0x04, 0x01, 0x31, 0x20, 0x00});
+                    break;
+                default:
+                    throw new AssertionError("Unexpected HCI opcode: 0x" + Integer.toHexString(opcode));
+            }
+        };
+
+        invoke("configureLocalLeCapabilities");
+        assertTrue(field("localLeDataLengthSupported").getBoolean(session));
+        assertTrue(field("localLe2mPhySupported").getBoolean(session));
+        assertEquals(List.of(
+                HciCodec.OPCODE_LE_READ_LOCAL_SUPPORTED_FEATURES,
+                HciCodec.OPCODE_LE_SET_EVENT_MASK,
+                HciCodec.OPCODE_LE_READ_MAXIMUM_DATA_LENGTH,
+                HciCodec.OPCODE_LE_WRITE_SUGGESTED_DEFAULT_DATA_LENGTH,
+                HciCodec.OPCODE_LE_SET_DEFAULT_PHY), controller.sentOpcodes());
+    }
+
+    @Test public void fallsBackCleanlyWhenLocalLeFeaturesCommandUnsupported() throws Exception {
+        controller.commandHandler = (opcode, cmd) -> {
+            if (opcode == HciCodec.OPCODE_LE_READ_LOCAL_SUPPORTED_FEATURES) {
+                callbacks.hciEventReceived(new byte[]{0x0E, 0x04, 0x01, 0x03, 0x20, 0x01});
+            } else if (opcode == HciCodec.OPCODE_LE_SET_EVENT_MASK) {
+                assertArrayEquals(new byte[]{0x0B, 0x00, 0, 0, 0, 0, 0, 0},
+                        Arrays.copyOfRange(cmd, 3, cmd.length));
+                callbacks.hciEventReceived(new byte[]{0x0E, 0x04, 0x01, 0x01, 0x20, 0x00});
+            } else {
+                throw new AssertionError("Unexpected HCI opcode: 0x" + Integer.toHexString(opcode));
+            }
+        };
+
+        invoke("configureLocalLeCapabilities");
+        assertFalse(field("localLeDataLengthSupported").getBoolean(session));
+        assertFalse(field("localLe2mPhySupported").getBoolean(session));
+        assertEquals(List.of(
+                HciCodec.OPCODE_LE_READ_LOCAL_SUPPORTED_FEATURES,
+                HciCodec.OPCODE_LE_SET_EVENT_MASK), controller.sentOpcodes());
+    }
+
+    @Test public void negotiatesLePhyAndDataLengthAndPreservesEarlyAclOrder() throws Exception {
+        field("localLeDataLengthSupported").setBoolean(session, true);
+        field("localLe2mPhySupported").setBoolean(session, true);
+        byte[] earlyBtCl1 = HciCodec.buildBtClVersionPdu();
+        byte[] earlyBtCl2 = HciCodec.buildRemoteServicesPdu(HciCodec.BT_CL_CURRENT_VERSION);
+
+        controller.commandHandler = (opcode, cmd) -> {
+            if (opcode == HciCodec.OPCODE_LE_SET_PHY) {
+                assertArrayEquals(new byte[]{HANDLE, 0x00, 0x00, 0x02, 0x02, 0x00, 0x00},
+                        Arrays.copyOfRange(cmd, 3, cmd.length));
+                callbacks.hciEventReceived(new byte[]{0x0F, 0x04, 0x00, 0x01, 0x32, 0x20});
+                peer(HciCodec.BT_CL_SIGNALING_CID, earlyBtCl1);
+                callbacks.hciEventReceived(new byte[]{0x3E, 0x06, 0x0C, 0x00, HANDLE, 0x00, 0x02, 0x02});
+            } else if (opcode == HciCodec.OPCODE_LE_SET_DATA_LENGTH) {
+                assertArrayEquals(new byte[]{HANDLE, 0x00, (byte) 251, 0x00, 0x48, 0x08},
+                        Arrays.copyOfRange(cmd, 3, cmd.length));
+                peer(HciCodec.BT_CL_SIGNALING_CID, earlyBtCl2);
+                callbacks.hciEventReceived(new byte[]{0x0E, 0x04, 0x01, 0x22, 0x20, 0x00});
+                callbacks.hciEventReceived(new byte[]{
+                        0x3E, 0x0B, 0x07, HANDLE, 0x00,
+                        (byte) 251, 0x00, 0x48, 0x08, (byte) 251, 0x00, 0x48, 0x08});
+            } else {
+                throw new AssertionError("Unexpected HCI opcode: 0x" + Integer.toHexString(opcode));
+            }
+        };
+
+        invoke("negotiateLeLinkParameters", HANDLE);
+
+        String diagnostics = (String) invoke("pairingSmpDiagnostics");
+        assertTrue(diagnostics.contains("lePhy={observed=true,status=0x00,tx=2,rx=2}"));
+        assertTrue(diagnostics.contains("leDle={observed=true,tx=251,rx=251}"));
+        assertTrue(logs().contains("LE LINK NEGOTIATION DONE"));
+
+        // Early ACL packets pushed during PHY & DLE wait must come out in exact FIFO order.
+        Method nextPacket = HalTransportSession.class.getDeclaredMethod("nextPacket", long.class);
+        nextPacket.setAccessible(true);
+        Field bytesField = Class.forName(HalTransportSession.class.getName() + "$Packet")
+                .getDeclaredField("bytes");
+        bytesField.setAccessible(true);
+        HciCodec.AclReassembler reassembler = new HciCodec.AclReassembler();
+        long deadline = BridgeClock.elapsedRealtime() + 500L;
+        HciCodec.L2capPdu first = reassembler.accept((byte[]) bytesField.get(nextPacket.invoke(session, deadline)));
+        HciCodec.L2capPdu second = reassembler.accept((byte[]) bytesField.get(nextPacket.invoke(session, deadline)));
+        assertEquals(HciCodec.BT_CL_SIGNALING_CID, first.destinationCid);
+        assertArrayEquals(earlyBtCl1, first.payload);
+        assertEquals(HciCodec.BT_CL_SIGNALING_CID, second.destinationCid);
+        assertArrayEquals(earlyBtCl2, second.payload);
+    }
+
+    @Test public void skipsRedundantNegotiationWhenControllerAlreadyUpdatedPhyAndDle() throws Exception {
+        field("localLeDataLengthSupported").setBoolean(session, true);
+        field("localLe2mPhySupported").setBoolean(session, true);
+        callbacks.hciEventReceived(new byte[]{0x3E, 0x06, 0x0C, 0x00, HANDLE, 0x00, 0x02, 0x02});
+        callbacks.hciEventReceived(new byte[]{
+                0x3E, 0x0B, 0x07, HANDLE, 0x00,
+                (byte) 251, 0x00, 0x48, 0x08, (byte) 251, 0x00, 0x48, 0x08});
+        // Pump both queued events through nextPacket via diagnostics before starting.
+        Method nextPacket = HalTransportSession.class.getDeclaredMethod("nextPacket", long.class);
+        nextPacket.setAccessible(true);
+        long deadline = BridgeClock.elapsedRealtime() + 500L;
+        nextPacket.invoke(session, deadline);
+        nextPacket.invoke(session, deadline);
+
+        invoke("negotiateLeLinkParameters", HANDLE);
+        assertTrue(controller.sentOpcodes().isEmpty());
+        assertTrue(((String) invoke("pairingSmpDiagnostics")).contains("lePhy={observed=true,status=0x00,tx=2,rx=2}"));
+    }
+
+    @Test public void continuesWithoutFailingOnCollisionOrUnsupportedPhyAndFailsFastOnDisconnect() throws Exception {
+        field("localLeDataLengthSupported").setBoolean(session, true);
+        field("localLe2mPhySupported").setBoolean(session, true);
+        controller.commandHandler = (opcode, cmd) -> {
+            if (opcode == HciCodec.OPCODE_LE_SET_PHY) {
+                callbacks.hciEventReceived(new byte[]{0x0F, 0x04, 0x00, 0x01, 0x32, 0x20});
+                callbacks.hciEventReceived(new byte[]{0x3E, 0x06, 0x0C, 0x2A, HANDLE, 0x00, 0x01, 0x01});
+            } else if (opcode == HciCodec.OPCODE_LE_SET_DATA_LENGTH) {
+                callbacks.hciEventReceived(new byte[]{0x0E, 0x04, 0x01, 0x22, 0x20, 0x01});
+            }
+        };
+
+        invoke("negotiateLeLinkParameters", HANDLE);
+        assertTrue(logs().contains("LE_Set_Data_Length status=0x01; continuing."));
+
+        initSession();
+        field("localLeDataLengthSupported").setBoolean(session, false);
+        field("localLe2mPhySupported").setBoolean(session, true);
+        controller.commandHandler = (opcode, cmd) -> {
+            if (opcode == HciCodec.OPCODE_LE_SET_PHY) {
+                callbacks.hciEventReceived(new byte[]{0x0F, 0x04, 0x00, 0x01, 0x32, 0x20});
+                disconnect();
+            }
+        };
+        Exception failed = assertThrows(Exception.class,
+                () -> invoke("negotiateLeLinkParameters", HANDLE));
+        assertTrue(failed.getMessage().contains("Watch disconnected during LE link negotiation"));
+    }
+
     private static final class FakeController implements BluetoothController {
         private final List<byte[]> sent = new ArrayList<>();
+        private final List<byte[]> sentCommands = new ArrayList<>();
         private Callbacks callbacks;
         private boolean failWrite;
         private Runnable afterWrite;
+        private java.util.function.BiConsumer<Integer, byte[]> commandHandler;
         @Override public void initialize(Callbacks callbacks) { this.callbacks = callbacks; }
-        @Override public void sendHciCommand(byte[] bytes) { }
+        @Override public void sendHciCommand(byte[] bytes) {
+            byte[] copy = bytes.clone();
+            sentCommands.add(copy);
+            if (commandHandler != null && copy.length >= 3) {
+                int opcode = (copy[0] & 0xFF) | ((copy[1] & 0xFF) << 8);
+                commandHandler.accept(opcode, copy);
+            }
+        }
+        private List<Integer> sentOpcodes() {
+            List<Integer> opcodes = new ArrayList<>();
+            for (byte[] cmd : sentCommands) {
+                if (cmd.length >= 2) {
+                    opcodes.add((cmd[0] & 0xFF) | ((cmd[1] & 0xFF) << 8));
+                }
+            }
+            return opcodes;
+        }
         @Override public void close() { }
         @Override public void sendAclData(byte[] bytes) throws IOException {
             if (failWrite) throw new IOException("synthetic controller write failure");
             sent.add(bytes.clone());
             callbacks.hciEventReceived(new byte[]{0x13, 5, 1, (byte) HANDLE, 0, 1, 0});
             if (afterWrite != null) afterWrite.run();
+        }
+        private List<L2capErtmCodec.Frame> sentTerminusFrames() {
+            HciCodec.AclReassembler decoder = new HciCodec.AclReassembler();
+            List<L2capErtmCodec.Frame> frames = new ArrayList<>();
+            for (byte[] packet : sent) {
+                HciCodec.L2capPdu pdu = decoder.accept(packet);
+                if (pdu != null && pdu.destinationCid == 0x0041) {
+                    frames.add(L2capErtmCodec.decode(HciCodec.TERMINUS_LOCAL_CID, pdu.payload, false));
+                }
+            }
+            return frames;
+        }
+        private List<L2capErtmCodec.Frame> sentTerminusIFrames() {
+            List<L2capErtmCodec.Frame> iFrames = new ArrayList<>();
+            for (L2capErtmCodec.Frame frame : sentTerminusFrames()) {
+                if (!frame.supervisory) iFrames.add(frame);
+            }
+            return iFrames;
+        }
+        private List<Integer> sentTerminusRrReqSeqs() {
+            List<Integer> reqSeqs = new ArrayList<>();
+            for (L2capErtmCodec.Frame frame : sentTerminusFrames()) {
+                if (frame.supervisory && frame.supervisoryFunction == L2capErtmCodec.SUPERVISORY_RR) {
+                    reqSeqs.add(frame.requestSequence);
+                }
+            }
+            return reqSeqs;
         }
         private int smpRequests() {
             HciCodec.AclReassembler decoder = new HciCodec.AclReassembler();

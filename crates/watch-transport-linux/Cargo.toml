@@ -6,6 +6,7 @@ publish.workspace = true
 
 [dependencies]
 serde_json.workspace = true
+watch-core = { path = "../watch-core" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 rusb = { version = "0.9.4", features = ["vendored"] }

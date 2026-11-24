@@ -105,6 +105,10 @@ final class NormalLinkIdsSessionBridge
         return route(ids.sendApplicationData(topic, payload));
     }
 
+    String observedPeerProductVersion() { return ids.observedPeerProductVersion(); }
+    String observedPeerBuildVersion() { return ids.observedPeerBuildVersion(); }
+    Output sendSoftwareUpdateRequest(byte[] payload) { return route(ids.sendSoftwareUpdateRequest(payload)); }
+
     Output sendHealthSyncRequest(byte[] encrypted,java.util.UUID message) {
         requireUsable();return route(ids.sendHealthSyncRequest(encrypted,message));
     }

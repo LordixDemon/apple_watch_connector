@@ -8,6 +8,10 @@ publish = false
 name = "uike_framing"
 path = "src/lib.rs"
 
+[[bin]]
+name = "oneplus_watch_link_probe"
+path = "tools/research/oneplus_watch_link_probe.rs"
+
 [dependencies]
 rusb = "0.9.4"
 watch-protocol = { path = "crates/watch-protocol" }
