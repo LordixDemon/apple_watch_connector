@@ -18,6 +18,9 @@ public class WatchDiscoveryEventTest {
 
     @Test public void ignoresOtherLines() {
         assertNull(WatchDiscoveryEvent.find("[WatchHal] [T+00633ms|Δ0000ms] LE SCAN ACTIVE: FE25/subtype 06"));
+        assertNull(WatchDiscoveryEvent.find("FOO_" + EVENT));
+        assertNull(WatchDiscoveryEvent.find("[WatchHal] [T+00100ms|Δ0001ms] note about WATCH_DISCOVERED_V1: skipped"));
+        assertNull(WatchDiscoveryEvent.find(EVENT + ":extra"));
         assertNull(WatchDiscoveryEvent.find(""));
         assertNull(WatchDiscoveryEvent.find(null));
     }
