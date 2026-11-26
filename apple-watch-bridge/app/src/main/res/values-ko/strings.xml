@@ -1,0 +1,208 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">"Apple Watch Bridge"</string>
+    <string name="ui_title">"Apple Watch Bridge"</string>
+    <string name="ui_subtitle">"연결 및 설정"</string>
+    <string name="ui_watch_name">"Apple Watch"</string>
+    <string name="ui_connected">"연결됨"</string>
+    <string name="ui_disconnected">"연결 해제됨"</string>
+    <string name="ui_connect">"연결"</string>
+    <string name="ui_connected_detail">"보안 연결이 활성화되었습니다."</string>
+    <string name="ui_connecting_detail">"워치에 연결하고 있습니다."</string>
+    <string name="ui_disconnected_detail">"저장된 페어링을 다시 사용하려면 연결하세요."</string>
+    <string name="ui_wifi">"현재 Wi-Fi 동기화"</string>
+    <string name="ui_flashlight">"휴대폰 찾기 손전등 허용"</string>
+    <string name="ui_setup">"페어링 및 설정"</string>
+    <string name="ui_setup_detail">"PIN 및 설정 제어"</string>
+    <string name="ui_advanced">"고급 도구"</string>
+    <string name="ui_advanced_detail">"본딩, 식별 정보 및 전송"</string>
+    <string name="ui_log">"Bluetooth 로그"</string>
+    <string name="ui_copy_log">"로그 복사"</string>
+    <string name="ui_version">"Bridge %1$s"</string>
+    <string name="ui_expanded">"펼쳐짐"</string>
+    <string name="ui_collapsed">"접힘"</string>
+    <string name="ui_confirm_setup">"완료된 설정 저장"</string>
+    <string name="ui_notify_connected">"Bridge가 백그라운드에 있어도 워치 연결이 유지됩니다."</string>
+    <string name="ui_notify_waiting">"Bridge에서 저장된 페어링으로 다시 연결하고 있습니다."</string>
+    <string name="ui_open_bridge">"Companion 열기"</string>
+    <string name="intro">"루팅된 OnePlus 13: Apple BT_CL/uIKE → X448, ML-KEM-1024, SPAKE2+ 및 필수 PPK를 사용하는 제어/페어링 IKE → Apple 비공개 OOB → Bluetooth LE Secure Connections 본딩. CatPlay가 BMW Wi-Fi를 통해 CarPlay를 실행 중이면 Bridge는 협력적으로 RFCOMM을 일시 중지하고, 실행 후 Android Bluetooth를 복원한 뒤 부트스트랩을 재개합니다. PIN, OOB, LTK 및 IRK 값은 로그에 기록하지 않습니다."</string>
+    <string name="connect_button">"Apple Watch 연결"</string>
+    <string name="commit_is_paired_checkbox">"커밋, 활성화 (Albert HTTPS) 및 동기화 완료"</string>
+    <string name="audit_bond_button">"쓰지 않고 워치 본딩 가져오기 검사"</string>
+    <string name="import_bond_button">"Android Bluetooth로 워치 본딩 가져오기"</string>
+    <string name="align_identity_button">"Android BLE 식별 정보를 워치와 맞추기"</string>
+    <string name="probe_stock_button">"GATT 없이 정확한 식별 정보의 ACL 검사"</string>
+    <string name="pin_hint">"워치 화면의 6자리 숫자"</string>
+    <string name="pin_button">"PIN으로 계속"</string>
+    <string name="stop_button">"중지하고 Bluetooth 반환"</string>
+    <string name="copy_button">"전체 Bluetooth 로그 복사"</string>
+    <string name="no_message" formatted="false">"(메시지 없음)"</string>
+    <string name="watch_face_confirmation_does_not_match_the_saved_pair" formatted="false">"시계 페이스 확인 정보가 저장된 페어링과 일치하지 않습니다"</string>
+    <string name="ids_identity_persistent_phone_identifier_created" formatted="false">"IDS 식별 정보: 영구 휴대폰 식별자를 생성했습니다."</string>
+    <string name="ids_identity_existing_pair_identifier_saved_as_the_persistent" formatted="false">"IDS 식별 정보: 기존 페어링 식별자를 영구 휴대폰 식별자로 저장했습니다."</string>
+    <string name="reply" formatted="false">"답장"</string>
+    <string name="send" formatted="false">"보내기"</string>
+    <string name="test_reply" formatted="false">"테스트 답장"</string>
+    <string name="watch_reply_test" formatted="false">"워치 답장 테스트"</string>
+    <string name="watch_reply_bridge_test" formatted="false">"워치 답장 — Bridge 테스트"</string>
+    <string name="tap_reply_your_reply_stays_in_bridge_on_this" formatted="false">"답장을 탭하세요. 답장은 이 휴대폰의 Bridge 안에만 유지됩니다."</string>
+    <string name="command_not_accepted_by_the_service_delivery_is_not" formatted="false">"서비스에서 명령을 수락하지 않았습니다. 전달 여부가 확인되지 않았습니다."</string>
+    <string name="ipc_finish_setup_requested_finish_initial_synchronization" formatted="false">"IPC: FINISH_SETUP 요청됨 (초기 동기화 완료)"</string>
+    <string name="ipc_publish_paired_sync_requested_diagnostic_pairedsync_republish" formatted="false">"IPC: PUBLISH_PAIRED_SYNC 요청됨 (진단용 PairedSync 재게시)"</string>
+    <string name="ipc_force_activation_confirmed_requested_manual_activation_confirmation" formatted="false">"IPC: FORCE_ACTIVATION_CONFIRMED 요청됨 (수동 활성화 확인)"</string>
+    <string name="ipc_redrive_activation_requested_reset_durable_activation_and_repeat" formatted="false">"IPC: REDRIVE_ACTIVATION 요청됨 (영구 활성화 상태 초기화 및 CanBeginActivation 반복)"</string>
+    <string name="ipc_retry_activation_requested_pbbridge_retryactivation_15_restart_watch" formatted="false">"IPC: RETRY_ACTIVATION 요청됨 (PBBridge RetryActivation 15 — 워치 활성화 다시 시작)"</string>
+    <string name="local_target_oneplus_cph2653" formatted="false">"로컬 대상: OnePlus CPH2653; "</string>
+    <string name="runtime_25_26_dynamic_advertising_identifier" formatted="false">"런타임 25..26; 동적 광고 식별자."</string>
+    <string name="no_action_until_a_button_is_pressed" formatted="false">"버튼을 누르기 전에는 아무 작업도 실행하지 않습니다."</string>
+    <string name="persistent_bluetooth_log" formatted="false">"영구 Bluetooth 로그: "</string>
+    <string name="external_mutation_probe_intent_ignored" formatted="false">"외부 변경/검사 인텐트를 무시했습니다. "</string>
+    <string name="operations_require_a_dedicated_button" formatted="false">"작업을 실행하려면 전경 Activity의 "</string>
+    <string name="in_the_foreground_activity" formatted="false">"전용 버튼을 눌러야 합니다."</string>
+    <string name="finish_watch_setup" formatted="false">"워치 설정 완료"</string>
+    <string name="finish_setup_sent_finish_initial_synchronization" formatted="false">"FINISH_SETUP 전송됨 (초기 동기화 완료)"</string>
+    <string name="watch_face_appeared_save_normal_mode" formatted="false">"시계 페이스 표시됨 — 일반 모드 저장"</string>
+    <string name="send_current_wi_fi_network_to_watch" formatted="false">"워치에 현재 Wi-Fi 네트워크 보내기"</string>
+    <string name="wi_fi_request_accepted_after_delivery_check_settings_wi" formatted="false">"Wi-Fi: 요청을 수락했습니다. 전송 후 워치의 설정 → Wi-Fi에서 확인하세요."</string>
+    <string name="wi_fi_wait_for_the_activated_pair_to_connect" formatted="false">"Wi-Fi: 활성화된 페어링이 연결될 때까지 기다리세요."</string>
+    <string name="allow_flashlight_for_find_phone_from_watch" formatted="false">"워치에서 휴대폰 찾기에 손전등 허용"</string>
+    <string name="find_phone_flashlight_permission_is_already_granted" formatted="false">"휴대폰 찾기 손전등 권한이 이미 허용되어 있습니다."</string>
+    <string name="no_saved_pair" formatted="false">"저장된 페어링 없음"</string>
+    <string name="stop_the_current_run_first_confirmation_applies_to_the" formatted="false">"먼저 현재 실행을 중지하세요. 확인 내용은 다음 연결에 적용됩니다."</string>
+    <string name="could_not_save_confirmation" formatted="false">"확인 내용을 저장할 수 없습니다"</string>
+    <string name="normal_mode_saved_for_this_pair_with_owner_confirmation" formatted="false">"소유자 확인을 거쳐 이 페어링의 일반 모드를 저장했습니다. "</string>
+    <string name="setup_will_not_repeat_native_issetup_and_operational_health" formatted="false">"설정은 반복하지 않습니다. 네이티브 isSetup 및 동작 상태는 덮어쓰지 않습니다."</string>
+    <string name="setup_confirmation_not_saved" formatted="false">"설정 완료 확인을 저장하지 못했습니다: "</string>
+    <string name="root_hal_host_is_already_running" formatted="false">"루트 HAL 호스트가 이미 실행 중입니다."</string>
+    <string name="new_pairing_rejected_an_activated_pair_is_saved_normal" formatted="false">"새 페어링 거부됨: 활성화된 페어링이 저장되어 있습니다. 일반 연결에서는 해당 키를 유지합니다."</string>
+    <string name="allow_bluetooth_access_and_connect_again" formatted="false">"Bluetooth 접근을 허용한 뒤 다시 연결하세요."</string>
+    <string name="connection_handed_to_the_background_service_closing_this_screen" formatted="false">"연결을 백그라운드 서비스에 넘겼습니다. 이 화면을 닫아도 HAL은 중지되지 않습니다."</string>
+    <string name="background_connection_did_not_start" formatted="false">"백그라운드 연결을 시작하지 못했습니다: "</string>
+    <string name="new_run" formatted="false">"=== 새 실행: "</string>
+    <string name="commit_and_activation_albert_https" formatted="false">"커밋 및 활성화 (Albert HTTPS): "</string>
+    <string name="enabled" formatted="false">"활성화됨"</string>
+    <string name="disabled" formatted="false">"비활성화됨"</string>
+    <string name="fresh_pairing_a_new_code_is_required_for_this" formatted="false">"새 페어링: 이번 실행에는 새 코드가 필요합니다. "</string>
+    <string name="the_saved_session_is_not_sent_to_the_helper" formatted="false">"저장된 세션은 헬퍼에 보내지 않습니다. "</string>
+    <string name="its_encrypted_file_is_retained_until_a_new_pair" formatted="false">"암호화 파일은 새 페어링을 생성할 때까지 유지됩니다."</string>
+    <string name="requires_magisk_root_and_the_installed_bridge_module" formatted="false">"Magisk 루트 권한과 설치된 Bridge 모듈이 필요합니다."</string>
+    <string name="fail_closed_direct_mode_requires_bluetooth_off" formatted="false">"안전을 위해 차단: 직접 모드에서는 Bluetooth가 꺼져 있어야 합니다. "</string>
+    <string name="with_bluetooth_on_only_a_signed_catplay" formatted="false">"Bluetooth가 켜져 있으면 BMW Wi-Fi 및 미디어가 준비된 후 "</string>
+    <string name="handoff_after_bmw_wi_fi_and_media_are_ready" formatted="false">"서명된 CatPlay 인계만 허용합니다."</string>
+    <string name="normal_activated_pair_connection_setup_albert_and_new_pin" formatted="false">"활성화된 페어링의 일반 연결입니다. 설정, Albert 및 새 PIN 페어링은 비활성화됩니다."</string>
+    <string name="ids_identity_protection_keys_stored_in_android_keystore_helper" formatted="false">"IDS 식별 정보: 보호 키를 Android Keystore에 저장했습니다. 헬퍼가 공개 키와 영구 휴대폰 식별자를 받았습니다."</string>
+    <string name="persistent_static_random_ble_identity" formatted="false">"영구 정적 랜덤 BLE 식별 정보를 "</string>
+    <string name="derived_from_a_non_exportable_android_keystore" formatted="false">"내보낼 수 없는 Android Keystore 키에서 파생하여 "</string>
+    <string name="key_and_sent_to_the_helper_address_irk" formatted="false">"헬퍼에 보냈습니다. 주소/IRK "</string>
+    <string name="saved_pairing_session_state" formatted="false">"저장된 페어링 세션 (상태="</string>
+    <string name="sent_to_the_helper_for_direct_reconnection" formatted="false">")을 직접 재연결할 수 있도록 헬퍼에 보냈습니다."</string>
+    <string name="could_not_send_the_saved_session_to_the_helper" formatted="false">"저장된 세션을 헬퍼에 보낼 수 없습니다: "</string>
+    <string name="pairingsessionrecord_v2_saved" formatted="false">"PairingSessionRecord v2를 "</string>
+    <string name="atomically_using_android_keystore" formatted="false">"Android Keystore AES-GCM으로 원자적으로 저장하고 "</string>
+    <string name="aes_gcm_and_verified_by_readback" formatted="false">"다시 읽어 검증했습니다. "</string>
+    <string name="could_not_securely_save" formatted="false">"안전하게 저장하지 못했습니다: "</string>
+    <string name="will_stop_pairing_before_the_next" formatted="false">"다음 되돌릴 수 없는 단계 전에 "</string>
+    <string name="irreversible_boundary" formatted="false">"페어링을 중지합니다."</string>
+    <string name="bluetooth_bond_material_saved" formatted="false">"Bluetooth 본딩 데이터를 저장했습니다. "</string>
+    <string name="helper_will_stop_smp_before" formatted="false">"헬퍼는 마지막 키 배포 전에 "</string>
+    <string name="final_key_distribution" formatted="false">"SMP를 중지합니다."</string>
+    <string name="root_hal_host_exited_exit" formatted="false">"루트 HAL 호스트 종료, exit="</string>
+    <string name="success_requires_both_exit_0" formatted="false">"성공하려면 exit=0과 "</string>
+    <string name="and_exactly_one_result_pass_carplay" formatted="false">"정확히 한 번의 RESULT: PASS가 모두 필요합니다. CarPlay "</string>
+    <string name="mode_also_requires_manager_restore_pass" formatted="false">"모드에서는 관리자 복원 PASS도 필요합니다."</string>
+    <string name="startup_error" formatted="false">"시작 오류: "</string>
+    <string name="bluetooth_manager_must_be_off_helper_reads" formatted="false">"Bluetooth Manager가 꺼져 있어야 합니다. 헬퍼가 "</string>
+    <string name="the_config_and_prepares_a_redacted_hypothetical_diff" formatted="false">"설정을 읽고 민감한 정보를 가린 가상 변경 내역을 준비하며, "</string>
+    <string name="without_opening_any_file_for_writing" formatted="false">"어떤 파일도 쓰기 모드로 열지 않습니다."</string>
+    <string name="fail_closed_bluetooth_manager_must_be_off" formatted="false">"안전을 위해 차단: Bluetooth Manager가 꺼져 있어야 합니다. "</string>
+    <string name="the_existing_bmw_config_must_remain" formatted="false">"기존 BMW 설정은 "</string>
+    <string name="byte_for_byte_unchanged" formatted="false">"바이트 단위까지 그대로 유지해야 합니다."</string>
+    <string name="root_helper_is_already_running" formatted="false">"루트 헬퍼가 이미 실행 중입니다."</string>
+    <string name="no_encrypted_bond_record" formatted="false">"암호화된 본딩 기록이 없습니다. "</string>
+    <string name="stock_import_did_not_start" formatted="false">"시스템 본딩 가져오기를 시작하지 않았습니다."</string>
+    <string name="root_stock_bond_helper_exited" formatted="false">"시스템 본딩용 루트 헬퍼가 종료되었습니다. "</string>
+    <string name="and_result_pass" formatted="false">"및 RESULT: PASS."</string>
+    <string name="error" formatted="false">"오류 "</string>
+    <string name="bluetooth_helper_probe_is_already_running" formatted="false">"Bluetooth 헬퍼/검사가 이미 실행 중입니다."</string>
+    <string name="acl_only_probe_did_not_start" formatted="false">"ACL 전용 검사를 시작하지 않았습니다."</string>
+    <string name="could_not_open_the_exact_bond_identity" formatted="false">"정확한 본딩 식별 정보를 열 수 없습니다. "</string>
+    <string name="acl_only_probe_did_not_start2" formatted="false">"ACL 전용 검사를 시작하지 않았습니다: "</string>
+    <string name="only_public_bluetooth_apis_and_the_identity_from" formatted="false">"공개 Bluetooth API와 "</string>
+    <string name="the_encrypted_bond_record_scan_connectgatt" formatted="false">"암호화된 본딩 기록의 식별 정보만 사용합니다: scan + connectGatt. "</string>
+    <string name="cccd_and_application_payloads_are_prohibited" formatted="false">"CCCD 및 애플리케이션 페이로드는 금지됩니다."</string>
+    <string name="identity_alignment_did_not_start" formatted="false">"식별 정보 정렬을 시작하지 않았습니다."</string>
+    <string name="fail_closed_bluetooth_manager_must_be_off2" formatted="false">"안전을 위해 차단: Bluetooth Manager가 꺼져 있어야 합니다. "</string>
+    <string name="only_bmw_br_edr_and_this_watch_are_allowed" formatted="false">"BMW BR/EDR과 이 워치만 허용됩니다. "</string>
+    <string name="one_adapter_irk_line_changes_with_a_separate" formatted="false">"별도로 보호된 백업을 만들고 "</string>
+    <string name="protected_backup" formatted="false">"Adapter IRK 한 줄만 변경합니다."</string>
+    <string name="root_identity_aligner_exited_exit" formatted="false">"루트 식별 정보 정렬 도구 종료, exit="</string>
+    <string name="identity_alignment_error" formatted="false">"식별 정보 정렬 오류: "</string>
+    <string name="could_not_confirm_the_helper_result_for" formatted="false">"다음 항목에 대한 헬퍼 결과를 확인할 수 없습니다: "</string>
+    <string name="protected_bond_material_storage" formatted="false">"보호된 본딩 데이터 저장소."</string>
+    <string name="protected_pairing_session_storage" formatted="false">"보호된 페어링 세션 저장소."</string>
+    <string name="root_hal_host_is_not_running" formatted="false">"루트 HAL 호스트가 실행 중이 아닙니다"</string>
+    <string name="enter_exactly_six_digits_from_the_watch_screen" formatted="false">"워치 화면에 표시된 숫자 6자리를 정확히 입력하세요"</string>
+    <string name="pin_must_contain_digits_only" formatted="false">"PIN에는 숫자만 입력할 수 있습니다"</string>
+    <string name="six_digit_pin_sent_to_the_root_process" formatted="false">"6자리 PIN을 루트 프로세스로 보냈습니다. "</string>
+    <string name="its_value_was_not_logged" formatted="false">"값은 로그에 기록하지 않았습니다."</string>
+    <string name="could_not_send_pin" formatted="false">"PIN을 보낼 수 없습니다: "</string>
+    <string name="activation_lock_albert_requested_owner_confirmation" formatted="false">"활성화 잠금: Albert에서 소유자 확인을 요청했습니다 ("</string>
+    <string name="account" formatted="false">", 계정 "</string>
+    <string name="retry_after_a_rejected_attempt" formatted="false">", 거부된 시도 후 재시도"</string>
+    <string name="watch_is_waiting_buddyml_page_was_not_sent_to" formatted="false">"). 워치가 대기 중이며 buddyml 페이지를 워치에 보내지 않았습니다. "</string>
+    <string name="waiting_for_input_in_the_dialog" formatted="false">"대화 상자에서 입력을 기다리는 중입니다."</string>
+    <string name="could_not_parse_activation_challenge" formatted="false">"활성화 챌린지를 해석할 수 없습니다: "</string>
+    <string name="activation_lock_albert_returned_message" formatted="false">"활성화 잠금: Albert에서 다음 메시지를 반환했습니다: "</string>
+    <string name="waiting_for_a_choice_in_the_dialog" formatted="false">"; 대화 상자에서 선택을 기다리는 중입니다."</string>
+    <string name="could_not_parse_activation_alert" formatted="false">"활성화 알림을 해석할 수 없습니다: "</string>
+    <string name="albert_response" formatted="false">"Albert 응답: "</string>
+    <string name="apple_watch_activation" formatted="false">"Apple Watch 활성화"</string>
+    <string name="n_nretry_the_activation_request" formatted="false">"\n\nAlbert에 활성화를 "</string>
+    <string name="to_albert_the_watch_is_still_waiting_for_a" formatted="false">"다시 요청할까요? 워치는 아직 응답을 기다리고 있습니다."</string>
+    <string name="retry" formatted="false">"다시 시도"</string>
+    <string name="cancel" formatted="false">"취소"</string>
+    <string name="activation_retry_requested_from_albert" formatted="false">"Albert에 활성화 재시도를 요청했습니다. "</string>
+    <string name="waiting_for_a_new_confirmation_page" formatted="false">"새 확인 페이지를 기다리는 중입니다."</string>
+    <string name="apple_account_password" formatted="false">"Apple 계정 암호"</string>
+    <string name="apple_watch_is_locked_to_account" formatted="false">"Apple Watch에 활성화 잠금이 설정되어 있습니다. 연결된 계정: "</string>
+    <string name="enter_its_apple_account_and_password_they_are_sent" formatted="false">". 해당 Apple 계정과 암호를 입력하세요. 이 정보는 "</string>
+    <string name="to_albert_apple_com_as_an_iphone_would_and" formatted="false">"iPhone과 동일하게 albert.apple.com으로만 전송되며 "</string>
+    <string name="logged" formatted="false">"로그에 기록하지 않습니다."</string>
+    <string name="apple_requires_owner_confirmation_page" formatted="false">"Apple에서 소유자 확인을 요청했습니다 (페이지 "</string>
+    <string name="values_are_sent_only_to_albert_apple_com" formatted="false">"). 값은 albert.apple.com으로만 전송됩니다."</string>
+    <string name="albert_rejected_the_previous_attempt_check_your" formatted="false">"Albert에서 이전 시도를 거부했습니다. "</string>
+    <string name="account_and_password_n_n" formatted="false">"계정과 암호를 확인하세요.\n\n"</string>
+    <string name="apple_watch_activation_lock" formatted="false">"Apple Watch 활성화 잠금"</string>
+    <string name="unlock" formatted="false">"잠금 해제"</string>
+    <string name="fill_in_all_fields" formatted="false">"모든 필드를 입력하세요"</string>
+    <string name="owner_credentials_sent_to_the_root_process" formatted="false">"소유자 자격 증명을 루트 프로세스로 보내 "</string>
+    <string name="for_an_albert_retry_values_are_not" formatted="false">"Albert에 재시도합니다. 값은 "</string>
+    <string name="could_not_send_credentials" formatted="false">"자격 증명을 보낼 수 없습니다: "</string>
+    <string name="credential_entry_cancelled_the_watch_may_repeat" formatted="false">"자격 증명 입력을 취소했습니다. 워치에서 "</string>
+    <string name="the_activation_request" formatted="false">"활성화를 다시 요청할 수 있습니다."</string>
+    <string name="stock_ble_probe_stop_requested" formatted="false">"시스템 BLE 검사 중지를 요청했습니다."</string>
+    <string name="safe_stop_disconnect_requested_source" formatted="false">"안전한 중지/연결 해제를 요청했습니다. 출처="</string>
+    <string name="could_not_send_stop" formatted="false">"STOP을 보낼 수 없습니다: "</string>
+    <string name="could_not_read_the_full_log_copied_the_current" formatted="false">"전체 로그를 읽을 수 없어 현재 로그를 복사했습니다"</string>
+    <string name="full_log_copied" formatted="false">"전체 로그를 복사했습니다"</string>
+    <string name="ui_log_recent_copied">"최근 로그를 복사했습니다. 전체 로그는 앱 파일에 저장되어 있습니다."</string>
+    <string name="ui_log_copy_failed">"로그를 복사할 수 없습니다. 전체 로그는 앱 파일에 그대로 저장되어 있습니다."</string>
+    <string name="bluetooth_log_is_not_being_recorded" formatted="false">"Bluetooth 로그가 기록되지 않습니다: "</string>
+    <string name="apple_watch_connection" formatted="false">"Apple Watch 연결"</string>
+    <string name="watch_connected" formatted="false">"워치 연결됨"</string>
+    <string name="watch_disconnected" formatted="false">"워치 연결 해제됨"</string>
+    <string name="connecting" formatted="false">"연결 중…"</string>
+    <string name="disconnect" formatted="false">"연결 해제"</string>
+    <string name="stop_alert" formatted="false">"알림 중지"</string>
+    <string name="no_confirmed_activated_pair" formatted="false">"확인된 활성화 페어링 없음"</string>
+    <string name="invalid_transport_state" formatted="false">"올바르지 않은 전송 상태"</string>
+    <string name="reconnecting" formatted="false">"다시 연결 중…"</string>
+    <string name="disconnecting" formatted="false">"연결 해제 중…"</string>
+    <string name="camera_permission_enables_the_phone_flashlight_when_finding_it" formatted="false">"워치에서 휴대폰을 찾을 때 손전등을 켜려면 카메라 권한이 필요합니다. 사진이나 동영상은 촬영하지 않습니다."</string>
+    <string name="allow_flashlight" formatted="false">"손전등 허용"</string>
+    <string name="notification_media_photo" formatted="false">"[사진]"</string>
+    <string name="notification_media_video" formatted="false">"[동영상]"</string>
+    <string name="notification_media_audio" formatted="false">"[오디오]"</string>
+    <string name="notification_media_attachment" formatted="false">"[첨부 파일]"</string>
+    <string name="requires_usb_bluetooth_adapter" formatted="false">"비루트 모드: USB 블루투스 어댑터(USB-OTG)가 연결되면 직접 사용되며 기본 블루투스는 건드리지 않고 켠 상태로 유지할 수 있습니다. 연결되지 않은 경우:"</string>
+</resources>

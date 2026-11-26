@@ -28,11 +28,28 @@ void main() {
     expect(zh.nativePhotoSelected(4), '已选择 4 张照片');
   });
 
+  test('Korean catalog resolves and keeps placeholder structure', () {
+    final ko = lookupAppLocalizations(const Locale('ko'));
+    expect(ko.localeName, 'ko');
+    expect(ko.myWatch, isNotEmpty);
+    expect(ko.faceGallery, isNotEmpty);
+    expect(ko.watchSettings, isNotEmpty);
+    expect(ko.opticalAnalyzedFrames(12), contains('12'));
+    expect(ko.notificationPending(3), contains('3'));
+    expect(
+      ko.updateConfirm('26.6', '23S100'),
+      allOf(contains('26.6'), contains('23S100')),
+    );
+    expect(ko.updateStageProgress('45'), contains('45'));
+  });
+
   test('All shipped locales resolve and unsupported locales fall back', () {
     expect(AppLocalizations.supportedLocales, contains(const Locale('en')));
     expect(AppLocalizations.supportedLocales, contains(const Locale('ru')));
     expect(AppLocalizations.supportedLocales, contains(const Locale('zh')));
+    expect(AppLocalizations.supportedLocales, contains(const Locale('ko')));
     expect(lookupAppLocalizations(const Locale('ru')).localeName, 'ru');
+    expect(lookupAppLocalizations(const Locale('ko')).localeName, 'ko');
     final en = lookupAppLocalizations(const Locale('en'));
     expect(en.myWatch, 'My Watch');
   });
