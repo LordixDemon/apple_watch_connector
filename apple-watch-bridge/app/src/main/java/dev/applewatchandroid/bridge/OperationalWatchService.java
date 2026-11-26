@@ -275,37 +275,48 @@ public final class OperationalWatchService extends Service implements Operationa
             wipe(publicKeys);
             publicKeys = bound;
             localIdentity = identityStore.localIdentity();
-            BluetoothManager manager = getSystemService(BluetoothManager.class);
-            BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
-            if (adapter == null) throw new IOException("Bluetooth adapter unavailable");
-            int adapterState = adapter.getState();
-            CarPlayBluetoothHandoffClient.Status status = CarPlayBluetoothHandoffClient.Status.unavailable();
-            if (adapterState == BluetoothAdapter.STATE_ON) {
-                handoff = new CarPlayBluetoothHandoffClient(getContentResolver());
-                status = handoff.status();
+            // No-root mode: an attached USB Bluetooth adapter is leased by the
+            // isolated :hci host and stock Bluetooth stays as the user left it.
+            String usbAdapter = UsbBluetoothAccess.attached(this)
+                    ? UsbBluetoothAccess.requireAdapter(this, this::log) : null;
+            if (usbAdapter != null) {
+                if (stopping) return;
+                publishState(getString(R.string.connecting), false);
+                process = UsbHostProcess.start(this, new String[]{"--acknowledge-target", "CPH2653",
+                        "--operational-pairing", pairing}, usbAdapter);
+            } else {
+                BluetoothManager manager = getSystemService(BluetoothManager.class);
+                BluetoothAdapter adapter = manager == null ? null : manager.getAdapter();
+                if (adapter == null) throw new IOException("Bluetooth adapter unavailable");
+                int adapterState = adapter.getState();
+                CarPlayBluetoothHandoffClient.Status status = CarPlayBluetoothHandoffClient.Status.unavailable();
+                if (adapterState == BluetoothAdapter.STATE_ON) {
+                    handoff = new CarPlayBluetoothHandoffClient(getContentResolver());
+                    status = handoff.status();
+                }
+                CarPlayHandoffDecision.Mode mode = CarPlayHandoffDecision.decide(
+                        adapterState == BluetoothAdapter.STATE_OFF, adapterState == BluetoothAdapter.STATE_ON,
+                        status.available, status.wifiReady, status.vehicleMediaActive, status.prepared);
+                if (mode == CarPlayHandoffDecision.Mode.REFUSE) throw new IOException("Bluetooth/CarPlay readiness gate refused startup");
+                boolean cooperative = mode == CarPlayHandoffDecision.Mode.COOPERATIVE_CARPLAY;
+                if (cooperative) {
+                    handoffMayBePrepared = true;
+                    CarPlayBluetoothHandoffClient.Status prepared = handoff.prepare();
+                    if (!prepared.available || !prepared.ready || !prepared.prepared) throw new IOException("CarPlay preparation failed");
+                }
+                if (stopping) return;
+                publishState(getString(R.string.connecting), false);
+                String entry = cooperative ? "RootBluetoothCarPlayLease" : "RootBluetoothHalHost";
+                String command = "CLASSPATH=" + shellQuote(getApplicationInfo().sourceDir)
+                        + " app_process " + shellQuote("-Dwatch.native.quic.path="
+                            + getApplicationInfo().sourceDir + "!/lib/arm64-v8a/libwatch_replicator_quic.so")
+                        + " /system/bin dev.applewatchandroid.bridge." + entry
+                        + " --acknowledge-target CPH2653 --operational-pairing " + shellQuote(pairing);
+                process = new ProcessBuilder("su", "-c", command).redirectErrorStream(true).start();
             }
-            CarPlayHandoffDecision.Mode mode = CarPlayHandoffDecision.decide(
-                    adapterState == BluetoothAdapter.STATE_OFF, adapterState == BluetoothAdapter.STATE_ON,
-                    status.available, status.wifiReady, status.vehicleMediaActive, status.prepared);
-            if (mode == CarPlayHandoffDecision.Mode.REFUSE) throw new IOException("Bluetooth/CarPlay readiness gate refused startup");
-            boolean cooperative = mode == CarPlayHandoffDecision.Mode.COOPERATIVE_CARPLAY;
-            if (cooperative) {
-                handoffMayBePrepared = true;
-                CarPlayBluetoothHandoffClient.Status prepared = handoff.prepare();
-                if (!prepared.available || !prepared.ready || !prepared.prepared) throw new IOException("CarPlay preparation failed");
-            }
-            if (stopping) return;
-            publishState(getString(R.string.connecting), false);
-            String entry = cooperative ? "RootBluetoothCarPlayLease" : "RootBluetoothHalHost";
-            String command = "CLASSPATH=" + shellQuote(getApplicationInfo().sourceDir)
-                    + " app_process " + shellQuote("-Dwatch.native.quic.path="
-                        + getApplicationInfo().sourceDir + "!/lib/arm64-v8a/libwatch_replicator_quic.so")
-                    + " /system/bin dev.applewatchandroid.bridge." + entry
-                    + " --acknowledge-target CPH2653 --operational-pairing " + shellQuote(pairing);
-            process = new ProcessBuilder("su", "-c", command).redirectErrorStream(true).start();
             rootProcess = process;
             rootInput = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8));
-            // All credentials are validated before starting root; no missing-record fresh fallback.
+            // All credentials are validated before starting the host; no missing-record fresh fallback.
             writeEncoded("LOCAL_IDENTITY_V1:", localIdentity);
             writeEncoded("LOCAL_IDS_PUBLIC_KEYS_V1:", publicKeys);
             writeEncoded("RESTORED_PAIRING_SESSION_V2:", plaintext);
@@ -313,7 +324,8 @@ public final class OperationalWatchService extends Service implements Operationa
             wipe(localIdentity); localIdentity = null;
             wipe(publicKeys); publicKeys = null;
             if (stopping) writeLine("STOP");
-            log("OPERATIONAL SERVICE root started; setup=false; activation=false; freshPairing=false.");
+            log("OPERATIONAL SERVICE " + (usbAdapter != null ? "USB HCI" : "root")
+                    + " started; setup=false; activation=false; freshPairing=false.");
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
