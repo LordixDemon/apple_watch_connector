@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "AppleWatchBridge"
-include(":core", ":protocol-runtime", ":hal", ":app")
+include(":core", ":protocol-runtime", ":hidl-stubs", ":hal", ":app")

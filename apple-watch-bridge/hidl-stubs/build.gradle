@@ -1,0 +1,46 @@
+plugins {
+    id "java-library"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+def resolveAndroidSdkDir = {
+    def propsFile = rootProject.file("local.properties")
+    if (propsFile.isFile()) {
+        def props = new Properties()
+        propsFile.withInputStream { props.load(it) }
+        def fromProps = props.getProperty("sdk.dir")
+        if (fromProps) return new File(fromProps)
+    }
+    def envHome = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT")
+    return envHome ? new File(envHome) : null
+}
+
+def androidSdkDir = resolveAndroidSdkDir()
+def androidJar = null
+if (androidSdkDir != null) {
+    def preferred = new File(androidSdkDir, "platforms/android-36/android.jar")
+    if (preferred.isFile()) {
+        androidJar = preferred
+    } else {
+        def platformsDir = new File(androidSdkDir, "platforms")
+        if (platformsDir.isDirectory()) {
+            androidJar = platformsDir.listFiles()
+                    ?.findAll { it.isDirectory() && it.name.startsWith("android-") && new File(it, "android.jar").isFile() }
+                    ?.sort { a, b -> b.name <=> a.name }
+                    ?.collect { new File(it, "android.jar") }
+                    ?.find { true }
+        }
+    }
+}
+if (androidJar == null) {
+    throw new GradleException(
+            "Android SDK platforms/android-*/android.jar not found (checked local.properties sdk.dir, ANDROID_HOME, ANDROID_SDK_ROOT)")
+}
+
+dependencies {
+    compileOnly files(androidJar)
+}

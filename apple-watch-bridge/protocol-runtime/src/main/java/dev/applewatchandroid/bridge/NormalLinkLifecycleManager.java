@@ -619,6 +619,189 @@ final class NormalLinkLifecycleManager {
         }
     }
 
+    /**
+     * Separates "no advertising reports reach the host" from "the Watch is not
+     * advertising setup data" when a scan finds no target; logs counts only.
+     * Contributed by Muggles001.
+     */
+    private static final class ScanDiagnostics {
+        private static final long INTERVAL_MS = 10_000;
+        private final java.util.TreeMap<Integer, Integer> leSubevents = new java.util.TreeMap<>();
+        private long nextLog;
+        private int events;
+        private int legacyReports;
+        private int setupPayloads;
+        private int bestSetupRssi = Integer.MIN_VALUE;
+        private final java.util.TreeMap<Integer, Integer> fe25Subtypes = new java.util.TreeMap<>();
+        private final java.util.TreeMap<Integer, Integer> appleTypes = new java.util.TreeMap<>();
+        private final java.util.LinkedHashMap<String, Integer> fe25Samples = new java.util.LinkedHashMap<>();
+
+        ScanDiagnostics(long now) {
+            nextLog = now + INTERVAL_MS;
+        }
+
+        void observe(byte[] event, List<HciCodec.AdvertisingReport> reports) {
+            events++;
+            if (event.length > 2 && (event[0] & 0xff) == 0x3E) {
+                leSubevents.merge(event[2] & 0xff, 1, Integer::sum);
+            }
+            legacyReports += reports.size();
+            for (HciCodec.AdvertisingReport report : reports) {
+                inspectAppleFields(report);
+                if (report.setup == null) continue;
+                setupPayloads++;
+                bestSetupRssi = Math.max(bestSetupRssi, report.rssi);
+            }
+        }
+
+        // Walks AD structures directly so FE25 subtypes and Apple manufacturer
+        // types the setup parser rejects are still counted.
+        private void inspectAppleFields(HciCodec.AdvertisingReport report) {
+            byte[] data = report.data;
+            if (data == null) return;
+            int offset = 0;
+            while (offset < data.length) {
+                int length = data[offset] & 0xff;
+                if (length == 0 || offset + 1 + length > data.length) return;
+                int type = data[offset + 1] & 0xff;
+                int value = offset + 2;
+                int end = offset + 1 + length;
+                if (type == 0x16 && end - value >= 3
+                        && (data[value] & 0xff) == 0x25 && (data[value + 1] & 0xff) == 0xFE) {
+                    fe25Subtypes.merge(data[value + 2] & 0x7F, 1, Integer::sum);
+                    String field = HciCodec.toHex(java.util.Arrays.copyOfRange(data, offset, end));
+                    if (fe25Samples.size() < 4 && !fe25Samples.containsKey(field)) {
+                        fe25Samples.put(field, report.rssi);
+                    }
+                } else if (type == 0xFF && end - value >= 3
+                        && (data[value] & 0xff) == 0x4C && data[value + 1] == 0) {
+                    appleTypes.merge(data[value + 2] & 0xff, 1, Integer::sum);
+                }
+                offset = end;
+            }
+        }
+
+        void maybeLog(long now) {
+            if (now < nextLog) return;
+            nextLog = now + INTERVAL_MS;
+            write("SCAN SUMMARY");
+        }
+
+        void write(String label) {
+            ProtocolHost.log(label + ": events=" + events + " leSubevents=" + leSubevents
+                    + " legacyReports=" + legacyReports + " fe25SetupPayloads=" + setupPayloads
+                    + (setupPayloads > 0 ? " bestSetupRssi=" + bestSetupRssi : "")
+                    + " fe25Subtypes=" + fe25Subtypes + " appleMfgTypes=" + appleTypes
+                    + "; addresses logged=false.");
+            if (label.endsWith("FINAL")) {
+                for (java.util.Map.Entry<String, Integer> sample : fe25Samples.entrySet()) {
+                    ProtocolHost.log("SCAN FE25 SAMPLE: field=" + sample.getKey() + " rssi=" + sample.getValue());
+                }
+            }
+        }
+    }
+
+    private static final int OPCODE_LE_SET_EXTENDED_SCAN_PARAMETERS = 0x2041;
+    private static final int OPCODE_LE_SET_EXTENDED_SCAN_ENABLE = 0x2042;
+    private static final long EXTENDED_SCAN_PROBE_MS = 15_000;
+
+    /**
+     * Diagnostic only, run after the legacy scan has already failed: Watch
+     * setup advertisements sent as Bluetooth 5 extended PDUs never reach a
+     * legacy scan. Extended scan commands make later legacy scan/connect
+     * commands invalid until reset, so the session must end after this probe.
+     */
+    private void probeExtendedScan() throws HalTransportSession.StopRequested {
+        if (session.stopRequested.get() || session.localIdentity == null) {
+            return;
+        }
+        byte[] address = null;
+        try {
+            // Controllers reject extended scan commands (status 0x0C) once
+            // legacy scanning has been used, until the next HCI Reset.
+            session.sendCommandComplete(HciCodec.OPCODE_RESET, new byte[0]);
+            session.scanEnabled = false;
+            session.sendCommandComplete(HciCodec.OPCODE_SET_EVENT_MASK, HciCodec.classicEventMask());
+            // LE event mask bits 0, 1 and 12: connection complete, advertising
+            // report and extended advertising report.
+            session.sendCommandComplete(HciCodec.OPCODE_LE_SET_EVENT_MASK,
+                    new byte[]{0x03, 0x10, 0, 0, 0, 0, 0, 0});
+            address = session.localIdentity.address();
+            session.sendCommandComplete(HciCodec.OPCODE_LE_SET_RANDOM_ADDRESS,
+                    HciCodec.buildLeSetRandomAddressParameters(address));
+            session.sendCommandComplete(OPCODE_LE_SET_EXTENDED_SCAN_PARAMETERS, new byte[]{
+                    (byte) session.localIdentity.addressType(), 0x00, 0x01,
+                    0x01, 0x60, 0x00, 0x60, 0x00});
+            session.sendCommandComplete(OPCODE_LE_SET_EXTENDED_SCAN_ENABLE,
+                    new byte[]{0x01, 0x00, 0x00, 0x00, 0x00, 0x00});
+        } catch (HalTransportSession.StopRequested stopped) {
+            throw stopped;
+        } catch (Exception unsupported) {
+            log("EXTENDED SCAN PROBE: could not start: " + unsupported.getMessage());
+            return;
+        } finally {
+            HalTransportSession.wipe(address);
+        }
+        log("EXTENDED SCAN PROBE: active on LE 1M for " + EXTENDED_SCAN_PROBE_MS + " ms.");
+        ScanDiagnostics diagnostics = new ScanDiagnostics(BridgeClock.elapsedRealtime());
+        int nonLegacy = 0;
+        long deadline = BridgeClock.elapsedRealtime() + EXTENDED_SCAN_PROBE_MS;
+        try {
+            while (BridgeClock.elapsedRealtime() < deadline) {
+                session.checkStop();
+                diagnostics.maybeLog(BridgeClock.elapsedRealtime());
+                HalTransportSession.Packet packet;
+                try { packet = session.nextPacket(Math.min(deadline, BridgeClock.elapsedRealtime() + 250)); }
+                catch (TimeoutException elapsed) { continue; }
+                if (packet.kind != HalTransportSession.PacketKind.EVENT) continue;
+                List<HciCodec.AdvertisingReport> reports = parseExtendedAdvertisingReports(packet.bytes);
+                for (HciCodec.AdvertisingReport report : reports) {
+                    if ((report.eventType & 0x10) == 0) nonLegacy++;
+                }
+                diagnostics.observe(packet.bytes, reports);
+            }
+        } catch (HalTransportSession.StopRequested stopped) {
+            throw stopped;
+        } catch (Exception interrupted) {
+            log("EXTENDED SCAN PROBE: stopped early: " + interrupted.getMessage());
+        } finally {
+            log("EXTENDED SCAN PROBE: nonLegacyReports=" + nonLegacy + ".");
+            diagnostics.write("EXTENDED SCAN SUMMARY FINAL");
+            try {
+                if (!session.stopRequested.get()) {
+                    session.sendCommandComplete(OPCODE_LE_SET_EXTENDED_SCAN_ENABLE,
+                            new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
+                }
+            } catch (Exception ignored) {
+                log("EXTENDED SCAN PROBE: disable was not confirmed; HAL close follows.");
+            }
+        }
+    }
+
+    // LE Extended Advertising Report (subevent 0x0D); the setup payload field is
+    // filled by the same AD parser used for legacy reports.
+    static List<HciCodec.AdvertisingReport> parseExtendedAdvertisingReports(byte[] event) {
+        List<HciCodec.AdvertisingReport> reports = new java.util.ArrayList<>();
+        if (event.length < 4 || (event[0] & 0xff) != 0x3E || (event[2] & 0xff) != 0x0D) return reports;
+        int end = Math.min(event.length, (event[1] & 0xff) + 2);
+        int count = event[3] & 0xff;
+        int offset = 4;
+        for (int index = 0; index < count && offset + 24 <= end; index++) {
+            int eventType = (event[offset] & 0xff) | ((event[offset + 1] & 0xff) << 8);
+            int addressType = event[offset + 2] & 0xff;
+            byte[] address = java.util.Arrays.copyOfRange(event, offset + 3, offset + 9);
+            int rssi = event[offset + 13];
+            int dataLength = event[offset + 23] & 0xff;
+            int dataStart = offset + 24;
+            if (dataStart + dataLength > end) break;
+            byte[] data = java.util.Arrays.copyOfRange(event, dataStart, dataStart + dataLength);
+            reports.add(new HciCodec.AdvertisingReport(eventType, addressType, address, rssi, data,
+                    HciCodec.parseWatchSetupPayload(data)));
+            offset = dataStart + dataLength;
+        }
+        return reports;
+    }
+
     HciCodec.AdvertisingReport awaitTarget() throws Exception {
         long deadline = BridgeClock.elapsedRealtime() + SCAN_TIMEOUT_MS;
         WatchSetupTargetSelector selector = new WatchSetupTargetSelector();
@@ -629,7 +812,9 @@ final class NormalLinkLifecycleManager {
         WatchDiscoverySelection<HciCodec.AdvertisingReport> choices = new WatchDiscoverySelection<>();
         java.util.Map<String, Long> announced = new java.util.HashMap<>();
         int incomplete = 0;
+        ScanDiagnostics diagnostics = new ScanDiagnostics(BridgeClock.elapsedRealtime());
         while (BridgeClock.elapsedRealtime() < deadline) {
+            diagnostics.maybeLog(BridgeClock.elapsedRealtime());
             if (COMPANION_DISCOVERY.get()) {
                 HciCodec.AdvertisingReport selected = choices.select(COMPANION_WATCH_SELECTIONS.poll(), BridgeClock.elapsedRealtime());
                 if (selected != null) {
@@ -651,7 +836,9 @@ final class NormalLinkLifecycleManager {
             try { packet = session.nextPacket(Math.min(deadline, BridgeClock.elapsedRealtime() + 250)); }
             catch (TimeoutException elapsed) { continue; }
             if (packet.kind != HalTransportSession.PacketKind.EVENT) continue;
-            for (HciCodec.AdvertisingReport report : HciCodec.parseLegacyAdvertisingReports(packet.bytes)) {
+            List<HciCodec.AdvertisingReport> reports = HciCodec.parseLegacyAdvertisingReports(packet.bytes);
+            diagnostics.observe(packet.bytes, reports);
+            for (HciCodec.AdvertisingReport report : reports) {
                 if (report.address != null && rejectedSetupCandidates.contains(HciCodec.toHex(report.address))) continue;
                 HciCodec.AdvertisingReport target = selector.accept(report, BridgeClock.elapsedRealtime());
                 if (target != null) {
@@ -694,6 +881,8 @@ final class NormalLinkLifecycleManager {
                 }
             }
         }
+        diagnostics.write("SCAN SUMMARY FINAL");
+        probeExtendedScan();
         throw new HostException("Complete target Watch setup advertisement not found in "
                 + SCAN_TIMEOUT_MS + " ms; return the Watch to new-pair animation");
     }

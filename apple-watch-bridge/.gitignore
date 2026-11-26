@@ -1,6 +1,9 @@
 .gradle/
 build/
 app/build/
+app/prebuilt-jni/
 core/build/
 hal/build/
+hidl-stubs/build/
+protocol-runtime/build/
 local.properties

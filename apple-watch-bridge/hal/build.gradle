@@ -15,7 +15,10 @@ android {
     lint { abortOnError true; warningsAsErrors false }
 }
 
-dependencies { api project(":protocol-runtime") }
+dependencies {
+    api project(":protocol-runtime")
+    compileOnly project(":hidl-stubs")
+}
 
 def halAidlRoot = file("src/main/hal_aidl")
 def halAidlOutput = layout.buildDirectory.dir("generated/source/bluetoothHalAidl")

@@ -5,6 +5,19 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Local firmware asset is generated from a pinned source, never from a camera
+// capture. The asset and JNI loader currently support arm64 Android only.
+val opticalRepository = rootProject.projectDir.resolve("../..").canonicalFile
+val opticalAsset = layout.buildDirectory.file("generated/opticalAssets/optical/visual-pairing-23G71.bin")
+val opticalFirmwareSource = opticalRepository.resolve("firmware/ios-26.6-23G71/extracted/VisualPairing")
+val opticalScript = opticalRepository.resolve("research-tools/prepare_optical_android_asset.py")
+val opticalOracle = opticalRepository.resolve("research-tools/visual_pairing_reader_oracle.py")
+val opticalPython = opticalRepository.resolve("research-tools/venv-dis/bin/python")
+val hasOpticalInputs = listOf(opticalFirmwareSource, opticalScript, opticalOracle, opticalPython).all { it.exists() }
+val requireOpticalAsset = providers.gradleProperty("requireOpticalAsset").orNull == "true"
+val pinOnlyBuild = providers.gradleProperty("pinOnly").orNull == "true"
+val enableOpticalPairingBuild = !pinOnlyBuild && (hasOpticalInputs || requireOpticalAsset)
+
 android {
     namespace = "dev.applewatchandroid.companion.apple_watch_companion"
     compileSdk = flutter.compileSdkVersion
@@ -31,10 +44,16 @@ android {
         versionName = flutter.versionName
         testInstrumentationRunner = "dev.applewatchandroid.companion.apple_watch_companion.OpticalDecoderInstrumentation"
         ndk { abiFilters += "arm64-v8a" }
-        externalNativeBuild { cmake { cppFlags += "-O2" } }
+        if (enableOpticalPairingBuild) {
+            externalNativeBuild { cmake { cppFlags += "-O2" } }
+        }
     }
 
-    externalNativeBuild { cmake { path = file("src/main/cpp/CMakeLists.txt"); version = "3.22.1" } }
+    // The optical reader only runs Apple's VisualPairing asset; when it is
+    // absent or -PpinOnly=true is passed, neither NDK nor CMake is required.
+    if (enableOpticalPairingBuild) {
+        externalNativeBuild { cmake { path = file("src/main/cpp/CMakeLists.txt"); version = "3.22.1" } }
+    }
     testBuildType = "release"
     sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/opticalAssets"))
 
@@ -56,18 +75,7 @@ android {
 
 apply(from = rootProject.file("../../apple-watch-bridge/gradle/android-signing.gradle"))
 
-// Local firmware asset is generated from a pinned source, never from a camera
-// capture. The asset and JNI loader currently support arm64 Android only.
-val opticalRepository = rootProject.projectDir.resolve("../..").canonicalFile
-val opticalAsset = layout.buildDirectory.file("generated/opticalAssets/optical/visual-pairing-23G71.bin")
-val opticalFirmwareSource = opticalRepository.resolve("firmware/ios-26.6-23G71/extracted/VisualPairing")
-val opticalScript = opticalRepository.resolve("research-tools/prepare_optical_android_asset.py")
-val opticalOracle = opticalRepository.resolve("research-tools/visual_pairing_reader_oracle.py")
-val opticalPython = opticalRepository.resolve("research-tools/venv-dis/bin/python")
-val hasOpticalInputs = listOf(opticalFirmwareSource, opticalScript, opticalOracle, opticalPython).all { it.exists() }
-val requireOpticalAsset = providers.gradleProperty("requireOpticalAsset").orNull == "true"
-
-if (hasOpticalInputs || requireOpticalAsset) {
+if (enableOpticalPairingBuild) {
     val prepareOpticalAsset = tasks.register<Exec>("prepareOpticalAsset") {
         inputs.file(opticalFirmwareSource)
         inputs.files(opticalScript, opticalOracle)
@@ -76,7 +84,7 @@ if (hasOpticalInputs || requireOpticalAsset) {
     }
     tasks.named("preBuild") { dependsOn(prepareOpticalAsset) }
 } else {
-    logger.lifecycle("Skipping prepareOpticalAsset: local optical inputs not present")
+    logger.lifecycle("Skipping optical reader/asset build: pinOnly=$pinOnlyBuild hasOpticalInputs=$hasOpticalInputs")
 }
 
 flutter {

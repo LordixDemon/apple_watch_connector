@@ -107,24 +107,12 @@ public final class RootBluetoothHalHost extends ProtocolHost {
             requireStockBluetoothOff();
             log("STOCK BLUETOOTH OFF: raw HAL ownership may begin.");
 
-            IBinder binder = waitForHalBinder();
-            if (binder == null) {
-                throw new HostException(
-                        "Bluetooth HCI HAL did not appear within "
-                                + HAL_LOOKUP_TIMEOUT_MS
-                                + " ms");
-            }
-            log("HAL BINDER FOUND: " + HAL_INSTANCE + ".");
-
-            IBluetoothHci hci = IBluetoothHci.Stub.asInterface(binder);
-            if (hci == null) {
-                throw new HostException("Cannot create IBluetoothHci proxy");
-            }
+            BluetoothController controller = openBluetoothController();
             boolean commitAuthorized =
                     isCommitAuthorized(args);
             log("ROOT HAL START: commitAuthorized=" + commitAuthorized);
             session = new HalTransportSession(
-                    new AndroidBluetoothController(hci),
+                    controller,
                     stopRequested,
                     pinInputs,
                     bondStoreResults,
@@ -242,11 +230,6 @@ public final class RootBluetoothHalHost extends ProtocolHost {
                     "Root HAL host requires uid=0; observed uid="
                             + Process.myUid());
         }
-        if (!"OnePlus".equalsIgnoreCase(Build.MANUFACTURER)
-                || !"CPH2653".equalsIgnoreCase(Build.MODEL)) {
-            throw new HostException(
-                    "This build is fail-closed to OnePlus CPH2653");
-        }
     }
 
     private static boolean isSmpRecoveryInvocation(
@@ -301,6 +284,50 @@ public final class RootBluetoothHalHost extends ProtocolHost {
         }
     }
 
+    private static BluetoothController openBluetoothController() throws HostException, IOException {
+        if (isAidlHalDeclared()) {
+            IBinder binder = waitForHalBinder();
+            if (binder != null) {
+                IBluetoothHci hci = IBluetoothHci.Stub.asInterface(binder);
+                if (hci == null) {
+                    throw new HostException("Cannot create IBluetoothHci proxy");
+                }
+                log("HAL BINDER FOUND (AIDL): " + HAL_INSTANCE + ".");
+                return new AndroidBluetoothController(hci);
+            }
+        } else {
+            log("AIDL Bluetooth HCI HAL is not declared; trying HIDL fallback.");
+        }
+        HidlBluetoothController hidl = HidlBluetoothController.openOrNull();
+        if (hidl != null) {
+            log("HAL BINDER FOUND (HIDL): " + HidlBluetoothController.HCI_DESCRIPTOR + "/default.");
+            return hidl;
+        }
+        throw new HostException(
+                "No Bluetooth HCI HAL found (neither AIDL "
+                        + HAL_INSTANCE
+                        + " nor HIDL "
+                        + HidlBluetoothController.HCI_DESCRIPTOR
+                        + "/default)");
+    }
+
+    @SuppressLint({
+            "BlockedPrivateApi",
+            "PrivateApi"
+    })
+    private static boolean isAidlHalDeclared() {
+        try {
+            Class<?> serviceManager = Class.forName("android.os.ServiceManager");
+            Method declared = serviceManager.getDeclaredMethod("isDeclared", String.class);
+            declared.setAccessible(true);
+            Object result = declared.invoke(null, HAL_INSTANCE);
+            return !(result instanceof Boolean) || (Boolean) result;
+        } catch (Throwable ignored) {
+            // Fall back to waiting for the AIDL binder directly when isDeclared is unavailable.
+            return true;
+        }
+    }
+
     @SuppressLint({
             "BlockedPrivateApi",
             "PrivateApi"
@@ -322,7 +349,8 @@ public final class RootBluetoothHalHost extends ProtocolHost {
             });
             return future.get(HAL_LOOKUP_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException error) {
-            throw new HostException("Timed out waiting for Bluetooth HCI HAL", error);
+            log("AIDL Bluetooth HCI HAL lookup timed out after " + HAL_LOOKUP_TIMEOUT_MS + " ms.");
+            return null;
         } catch (InterruptedException error) {
             Thread.currentThread().interrupt();
             throw new HostException("Interrupted while waiting for Bluetooth HCI HAL", error);
@@ -332,9 +360,8 @@ public final class RootBluetoothHalHost extends ProtocolHost {
                     && invocation.getTargetException() != null) {
                 cause = invocation.getTargetException();
             }
-            throw new HostException(
-                    "Cannot access ServiceManager.waitForDeclaredService",
-                    cause);
+            log("AIDL Bluetooth HCI HAL lookup failed (" + safeMessage(cause) + "); trying HIDL fallback.");
+            return null;
         } finally {
             executor.shutdownNow();
         }

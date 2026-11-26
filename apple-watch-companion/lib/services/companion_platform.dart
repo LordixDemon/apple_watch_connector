@@ -7,10 +7,12 @@ final class CompanionPlatform {
     required this.androidDiagnostics,
     required this.codeOnlyPairing,
   });
+  static const bool _opticalPairingEnabled =
+      bool.fromEnvironment('OPTICAL_PAIRING', defaultValue: true);
   static const android = CompanionPlatform(
-    opticalPairing: true,
+    opticalPairing: _opticalPairingEnabled,
     androidDiagnostics: true,
-    codeOnlyPairing: false,
+    codeOnlyPairing: !_opticalPairingEnabled,
   );
   static const desktop = CompanionPlatform(
     opticalPairing: false,
