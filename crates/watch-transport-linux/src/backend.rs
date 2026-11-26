@@ -107,6 +107,32 @@ impl LinuxBackend {
             "dev.applewatchandroid.bridge.LinuxProtocolHost"
         }
     }
+    fn protocol_fingerprint(&self) -> Option<String> {
+        let path = self.protocol.join("protocol-manifest.json");
+        let metadata = std::fs::symlink_metadata(&path).ok()?;
+        if !metadata.is_file() || metadata.len() > 512 * 1024 {
+            return None;
+        }
+        let bytes = std::fs::read(&path).ok()?;
+        let value = serde_json::from_slice::<Value>(&bytes).ok()?;
+        let artifacts = value.get("artifacts")?.as_object()?;
+        let candidates = if cfg!(target_os = "windows") {
+            ["watch-windows-protocol.jar", "watch-linux-protocol.jar"]
+        } else {
+            ["watch-linux-protocol.jar", "watch-windows-protocol.jar"]
+        };
+        for name in candidates {
+            if let Some(digest) = artifacts.get(name).and_then(Value::as_str)
+                && digest.len() == 64
+                && digest
+                    .bytes()
+                    .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f'))
+            {
+                return Some(digest[..12].to_owned());
+            }
+        }
+        None
+    }
     fn available(&self) -> bool {
         #[cfg(not(target_os = "windows"))]
         {
@@ -166,6 +192,7 @@ impl LinuxBackend {
             if state.phase == "DISCONNECTING" {
                 state.phase = "IDLE".into();
                 state.error = None;
+                state.le_link_summary = None;
                 resume = self.resume_after_stop;
                 self.resume_after_stop = false;
             } else if state.phase != "FAILED" {
@@ -342,6 +369,7 @@ impl LinuxBackend {
         self.maybe_request_initial_about();
         let adapters = self.adapters.snapshot(self.child.is_some());
         let available = self.available();
+        let protocol_fingerprint = self.protocol_fingerprint();
         let mut state = self.state.lock().unwrap();
         let selected = state.selected.clone();
         state.devices.retain(|d| {
@@ -354,7 +382,7 @@ impl LinuxBackend {
             .find(|d| d.value["id"].as_str() == selected.as_deref())
             .map(|d| d.value["productType"].clone())
             .or_else(|| state.product.as_ref().map(|p| json!(p)));
-        let mut snapshot = json!({"apiVersion":1,"coreVersion":env!("CARGO_PKG_VERSION"),"epoch":state.epoch,
+        let mut snapshot = json!({"apiVersion":1,"coreVersion":env!("CARGO_PKG_VERSION"),"coreGitRev":env!("WATCH_GIT_REV"),"protocolFingerprint":protocol_fingerprint,"leLinkSummary":state.le_link_summary,"epoch":state.epoch,
             "logPath":self.state_dir.join("protocol.log").to_string_lossy(),"phase":state.phase,"adapterState":state.adapter,"selectedId":state.selected,
             "devices":state.devices.iter().map(|d|d.value.clone()).collect::<Vec<_>>(),
             "pairId":state.pair_id,"productType":product,"activationConfirmed":state.activated,
@@ -807,5 +835,65 @@ mod tests {
         assert!(recorded.contains(&format!(
             "ACTIVATION-CREDENTIALS-V1:11:login={expected_login}:password={expected_pw}"
         )));
+    }
+
+    #[test]
+    fn snapshot_reports_build_rev_protocol_fingerprint_and_le_link_summary() {
+        let dir = std::env::temp_dir().join(format!(
+            "watch-protocol-fp-test-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let mut backend = LinuxBackend::new();
+        backend.protocol = dir.clone();
+
+        let snap_missing = backend.command(json!({"method":"snapshot"}));
+        assert!(
+            snap_missing["coreGitRev"]
+                .as_str()
+                .is_some_and(|rev| !rev.is_empty())
+        );
+        assert!(snap_missing["protocolFingerprint"].is_null());
+
+        let win_sha = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
+        std::fs::write(
+            dir.join("protocol-manifest.json"),
+            format!(r#"{{"artifacts":{{"watch-windows-protocol.jar":"{win_sha}"}}}}"#),
+        )
+        .unwrap();
+        let snap_win = backend.command(json!({"method":"snapshot"}));
+        assert_eq!(snap_win["protocolFingerprint"], "abcdef012345");
+
+        let linux_sha = "11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff";
+        std::fs::write(
+            dir.join("protocol-manifest.json"),
+            format!(r#"{{"artifacts":{{"watch-linux-protocol.jar":"{linux_sha}"}}}}"#),
+        )
+        .unwrap();
+        {
+            let mut state = backend.state.lock().unwrap();
+            state.observe(
+                "[WatchHal] LE LINK NEGOTIATION DONE: handle=0x0040 phyObserved=true(status=0x00,tx=2,rx=2) dleObserved=true(tx=251B,rx=251B).",
+            );
+            state.observe("[WatchHal] WINDOWS SESSION FAILED: SMP Pairing Response timed out");
+        }
+        let snap_linux = backend.command(json!({"method":"snapshot"}));
+        assert_eq!(snap_linux["protocolFingerprint"], "112233445566");
+        assert!(
+            snap_linux["leLinkSummary"]
+                .as_str()
+                .is_some_and(|s| s.contains("LE LINK NEGOTIATION DONE:"))
+        );
+
+        std::fs::write(
+            dir.join("protocol-manifest.json"),
+            r#"{"artifacts":{"watch-linux-protocol.jar":"INVALID"}}"#,
+        )
+        .unwrap();
+        assert!(backend.protocol_fingerprint().is_none());
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

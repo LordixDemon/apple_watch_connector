@@ -18,6 +18,7 @@ public final class DesktopProtocolHostTest {
     public static void main(String[] args) throws Exception {
         testParseArgs();
         testConfirmPairFlow();
+        testProtocolJarFingerprint();
         System.out.println("Desktop protocol host: PASS");
     }
 
@@ -102,6 +103,46 @@ public final class DesktopProtocolHostTest {
             }
         } finally {
             System.setOut(console);
+            try (var paths = Files.walk(root)) {
+                for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.delete(path);
+            }
+        }
+    }
+
+    private static void testProtocolJarFingerprint() throws Exception {
+        Path root = Files.createTempDirectory("watch-desktop-fp-test-");
+        try {
+            if (!"unknown".equals(DesktopProtocolHost.protocolJarFingerprint(null))) {
+                throw new AssertionError("Null directory should return unknown");
+            }
+            if (!"unknown".equals(DesktopProtocolHost.protocolJarFingerprint(root))) {
+                throw new AssertionError("Missing manifest should return unknown");
+            }
+            Path manifest = root.resolve("protocol-manifest.json");
+            String windowsSha = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
+            Files.writeString(
+                    manifest,
+                    "{\n  \"artifacts\": {\n    \"watch-windows-protocol.jar\": \"" + windowsSha + "\"\n  }\n}\n",
+                    StandardCharsets.UTF_8);
+            if (!"abcdef012345".equals(DesktopProtocolHost.protocolJarFingerprint(root))) {
+                throw new AssertionError("Windows manifest fingerprint mismatch");
+            }
+            String linuxSha = "99887766554433221100ffeeddccbbaa99887766554433221100ffeeddccbbaa";
+            Files.writeString(
+                    manifest,
+                    "{\"artifacts\":{\"watch-linux-protocol.jar\":\"" + linuxSha + "\"}}",
+                    StandardCharsets.UTF_8);
+            if (!"998877665544".equals(DesktopProtocolHost.protocolJarFingerprint(root))) {
+                throw new AssertionError("Linux manifest fingerprint mismatch");
+            }
+            Files.writeString(
+                    manifest,
+                    "{\"artifacts\":{\"watch-windows-protocol.jar\":\"NOT_A_VALID_SHA\"}}",
+                    StandardCharsets.UTF_8);
+            if (!"unknown".equals(DesktopProtocolHost.protocolJarFingerprint(root))) {
+                throw new AssertionError("Malformed manifest should return unknown");
+            }
+        } finally {
             try (var paths = Files.walk(root)) {
                 for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.delete(path);
             }

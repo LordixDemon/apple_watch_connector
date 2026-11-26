@@ -778,4 +778,33 @@ void main() {
       expect(connection.state.canResumeSetup, isTrue);
     },
   );
+
+  test(
+    'Desktop journal includes core rev, protocol jar fingerprint, and LE link summary when present',
+    () async {
+      await observe();
+      expect(connection.state.journal, isNot(contains('• rev ')));
+      expect(connection.state.journal, isNot(contains('• jar ')));
+      expect(connection.state.journal, isNot(contains('LE link:')));
+
+      api.state.addAll({
+        'coreVersion': '0.1.0',
+        'coreGitRev': '9adffd9b',
+        'protocolFingerprint': 'abcdef012345',
+        'leLinkSummary':
+            'LE LINK NEGOTIATION DONE: handle=0x0040 phyObserved=true(status=0x00,tx=2,rx=2) dleObserved=true(tx=251B,rx=251B).',
+      });
+      await observe();
+      expect(
+        connection.state.journal,
+        contains('Core 0.1.0 • API 1 • rev 9adffd9b • jar abcdef012345'),
+      );
+      expect(
+        connection.state.journal,
+        contains(
+          'LE link: LE LINK NEGOTIATION DONE: handle=0x0040 phyObserved=true(status=0x00,tx=2,rx=2) dleObserved=true(tx=251B,rx=251B).',
+        ),
+      );
+    },
+  );
 }

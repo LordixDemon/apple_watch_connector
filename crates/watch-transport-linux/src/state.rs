@@ -2,6 +2,8 @@
 use serde_json::{Value, json};
 use std::{collections::VecDeque, time::Instant};
 
+const JOURNAL_MAX_LINES: usize = 200;
+
 pub(crate) struct Device {
     pub(crate) value: Value,
     pub(crate) seen: Instant,
@@ -31,6 +33,7 @@ pub(crate) struct State {
     pub(crate) watch_settings: serde_json::Map<String, Value>,
     pub(crate) activation_challenge: Option<ActivationChallenge>,
     pub(crate) pending_initial_about_epoch: Option<String>,
+    pub(crate) le_link_summary: Option<String>,
     pub(crate) error: Option<String>,
     pub(crate) journal: VecDeque<String>,
 }
@@ -54,6 +57,7 @@ impl Default for State {
             watch_settings: serde_json::Map::new(),
             activation_challenge: None,
             pending_initial_about_epoch: None,
+            le_link_summary: None,
             error: None,
             journal: VecDeque::new(),
         }
@@ -93,7 +97,7 @@ impl State {
 
     fn push_journal(&mut self, line: &str) {
         self.journal.push_back(line.chars().take(384).collect());
-        while self.journal.len() > 48 {
+        while self.journal.len() > JOURNAL_MAX_LINES {
             self.journal.pop_front();
         }
     }
@@ -350,7 +354,16 @@ impl State {
         if line.contains("LE ACL CONNECTED:") {
             self.ready = false;
             self.ids_ready = false;
+            self.le_link_summary = None;
             self.phase = "PAIRING_SECURITY".into();
+        }
+        if line.contains("LE LINK NEGOTIATION DONE:")
+            || line.contains("LE LINK NEGOTIATION SKIPPED:")
+        {
+            let summary = line
+                .find("LE LINK NEGOTIATION ")
+                .map_or(line, |index| &line[index..]);
+            self.le_link_summary = Some(summary.chars().take(256).collect());
         }
         if line == "BRIDGE_TRANSPORT_V1:DOWN" {
             self.transport_epoch = None;
@@ -359,6 +372,7 @@ impl State {
             self.watch_settings.clear();
             self.activation_challenge = None;
             self.pending_initial_about_epoch = None;
+            self.le_link_summary = None;
             self.ready = false;
             self.ids_ready = false;
             if self.phase != "DISCONNECTING" {
@@ -653,5 +667,45 @@ mod tests {
         state.observe("BRIDGE_TRANSPORT_V1:DOWN");
         assert!(state.about.is_none());
         assert!(state.watch_settings.is_empty());
+    }
+
+    #[test]
+    fn journal_retains_200_lines_and_le_link_summary_survives_failure() {
+        let mut state = State::default();
+        state.observe(
+            "[WatchHal] [T+100ms] LE LINK NEGOTIATION DONE: handle=0x0040 phyObserved=true(status=0x00,tx=2,rx=2) dleObserved=true(tx=251B,rx=251B).",
+        );
+        assert_eq!(
+            state.le_link_summary.as_deref(),
+            Some(
+                "LE LINK NEGOTIATION DONE: handle=0x0040 phyObserved=true(status=0x00,tx=2,rx=2) dleObserved=true(tx=251B,rx=251B)."
+            )
+        );
+        for index in 0..240 {
+            state.observe(&format!("[WatchHal] diagnostic line {index}"));
+        }
+        assert_eq!(state.journal.len(), JOURNAL_MAX_LINES);
+        assert!(state.journal.back().unwrap().contains("diagnostic line 239"));
+        state.observe("[WatchHal] WINDOWS SESSION FAILED: SMP Pairing Response timed out after 20000 ms");
+        assert_eq!(state.phase, "FAILED");
+        assert!(
+            state
+                .le_link_summary
+                .as_deref()
+                .is_some_and(|summary| summary.contains("tx=251B,rx=251B"))
+        );
+
+        let mut skipped = State::default();
+        skipped.observe(
+            "[WatchHal] [T+50ms] LE LINK NEGOTIATION SKIPPED: handle=0x0040 localControllerEdl=false localController2mPhy=false.",
+        );
+        assert_eq!(
+            skipped.le_link_summary.as_deref(),
+            Some(
+                "LE LINK NEGOTIATION SKIPPED: handle=0x0040 localControllerEdl=false localController2mPhy=false."
+            )
+        );
+        skipped.observe("BRIDGE_TRANSPORT_V1:DOWN");
+        assert!(skipped.le_link_summary.is_none());
     }
 }

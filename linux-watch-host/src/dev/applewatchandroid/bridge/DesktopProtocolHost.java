@@ -5,6 +5,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
@@ -12,6 +13,8 @@ import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static dev.applewatchandroid.bridge.ProtocolHost.*;
 
@@ -31,7 +34,43 @@ final class DesktopProtocolHost {
         RootWifiNetworkReader.Reader wifiReader();
     }
 
+    private static final long MAX_MANIFEST_BYTES = 512 * 1024;
+    private static final Pattern PROTOCOL_JAR_SHA_PATTERN = Pattern.compile(
+            "\"watch-(?:windows|linux)-protocol\\.jar\"\\s*:\\s*\"([0-9a-f]{12})[0-9a-f]{52}\"");
+
     private DesktopProtocolHost() {}
+
+    static String protocolJarFingerprint(Path protocolDirectory) {
+        if (protocolDirectory == null) {
+            return "unknown";
+        }
+        Path manifest = protocolDirectory.resolve("protocol-manifest.json");
+        try {
+            if (!Files.isRegularFile(manifest, LinkOption.NOFOLLOW_LINKS)
+                    || Files.size(manifest) > MAX_MANIFEST_BYTES) {
+                return "unknown";
+            }
+            String content = Files.readString(manifest, StandardCharsets.UTF_8);
+            Matcher matcher = PROTOCOL_JAR_SHA_PATTERN.matcher(content);
+            return matcher.find() ? matcher.group(1) : "unknown";
+        } catch (Exception ignored) {
+            return "unknown";
+        }
+    }
+
+    private static String currentProtocolFingerprint() {
+        try {
+            var codeSource = DesktopProtocolHost.class.getProtectionDomain().getCodeSource();
+            if (codeSource == null || codeSource.getLocation() == null) {
+                return "unknown";
+            }
+            Path location = Path.of(codeSource.getLocation().toURI());
+            Path directory = Files.isDirectory(location) ? location : location.getParent();
+            return protocolJarFingerprint(directory);
+        } catch (Exception ignored) {
+            return "unknown";
+        }
+    }
 
     static ParsedArgs parseArgs(String[] args) {
         if (args.length < 2 || !(args[1].equals("pair") || args[1].equals("resume") || args[1].equals("confirm"))) {
@@ -118,6 +157,10 @@ final class DesktopProtocolHost {
         BlockingQueue<OutboundAppMessage> outbound = new LinkedBlockingQueue<>(32);
         try (LinuxProtocolOutput output = new LinuxProtocolOutput(
                 BridgePaths.files().resolve("protocol.log"), secrets, bonds, records, stop)) {
+            log("DESKTOP PROTOCOL RUNTIME: platform=" + platform.platformTag()
+                    + " jarSha12=" + currentProtocolFingerprint()
+                    + " smpTimeoutMs=" + SMP_RESPONSE_TIMEOUT_MS
+                    + " leLinkNegotiation=2M+DLE.");
             LinuxIdentityStore installation = new LinuxIdentityStore(secrets, new SecureRandom());
             RootWifiNetworkReader.installPlatformReader(platform.wifiReader());
             identities.offer(installation.bluetoothRecord());

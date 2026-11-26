@@ -68,7 +68,7 @@ class ProtocolHost {
     static final long PIN_INPUT_TIMEOUT_MS = 600_000;
     static final long PAIRING_IKE_TIMEOUT_MS = 25_000;
     static final long PAIRING_IKE_ACK_TIMEOUT_MS = 5_000;
-    static final long SMP_RESPONSE_TIMEOUT_MS = 10_000;
+    static final long SMP_RESPONSE_TIMEOUT_MS = 20_000;
     static final long SMP_ENCRYPTION_TIMEOUT_MS = 10_000;
     static final long LEGACY_GATT_TIMEOUT_MS = 10_000;
     static final long LEGACY_POST_SMP_DIAGNOSTIC_WINDOW_MS = 5_000;

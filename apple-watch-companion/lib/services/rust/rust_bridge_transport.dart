@@ -116,6 +116,20 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
         'PIN_AUTHENTICATED' => 'BOND_REQUIRED',
         _ => phase,
       };
+      final coreGitRev = (snapshot['coreGitRev'] as String?)?.trim() ?? '';
+      final protocolFingerprint =
+          (snapshot['protocolFingerprint'] as String?)?.trim() ?? '';
+      final leLinkSummary =
+          (snapshot['leLinkSummary'] as String?)?.trim() ?? '';
+      final coreHeader = StringBuffer(
+        'Core ${snapshot['coreVersion'] ?? '—'} • API 1',
+      );
+      if (coreGitRev.isNotEmpty) {
+        coreHeader.write(' • rev $coreGitRev');
+      }
+      if (protocolFingerprint.isNotEmpty) {
+        coreHeader.write(' • jar $protocolFingerprint');
+      }
       _publish({
         'bridgeAvailable': true,
         'identityKnown': true,
@@ -231,13 +245,14 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
               _ => '',
             },
         'bridgeJournal':
-            'Core ${snapshot['coreVersion'] ?? '—'} • API 1\n'
+            '$coreHeader\n'
             'Adapter: $adapter\nPhase: $phase • epoch: $epoch\n'
             'Pairing exchange: ${snapshot['pairingStage'] ?? '—'}\n'
             'Endpoint registered: ${snapshot['pairingEndpointRegistered'] == true} • stream open: ${snapshot['pairingStreamOpen'] == true}\n'
             'Verified setup advertisements: ${watches.length}\n'
             'Pairing available: $pairing • IDS available: ${capabilities['operationalIds'] == true}\n'
             'Pairing restriction: ${capabilities['pairingUnavailableReason'] ?? '—'}\n'
+            '${leLinkSummary.isNotEmpty ? 'LE link: $leLinkSummary\n' : ''}'
             'Log file: ${snapshot['logPath'] ?? '—'}\n'
             '${snapshot['error'] as String? ?? ''}\n'
             '${snapshot['journal'] as String? ?? ''}',
