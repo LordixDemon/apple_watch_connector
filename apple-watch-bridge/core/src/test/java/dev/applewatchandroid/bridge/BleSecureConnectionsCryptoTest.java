@@ -137,6 +137,23 @@ public final class BleSecureConnectionsCryptoTest {
     }
 
     @Test
+    public void g2MatchesBluetoothCoreSampleD5InSmpByteOrder() {
+        byte[] u = reverse(hex(
+                "20b003d2f297be2c5e2c83a7e9f9a5b9"
+                        + "eff49111acf4fddbcc0301480e359de6"));
+        byte[] v = reverse(hex(
+                "55188b3d32f6bb9a900afcfbeed4e72a"
+                        + "59cb9ac2f19d7cfb6b4fdd49f47fc5fd"));
+        byte[] x = reverse(hex(
+                "d5cb8454d177733effffb2ec712baeab"));
+        byte[] y = reverse(hex(
+                "a6e8e7cc25a75f6e216583f7ff3dc4cf"));
+
+        org.junit.Assert.assertEquals(0x2f9ed5baL, BleSecureConnectionsCrypto.g2(u, v, x, y));
+        org.junit.Assert.assertEquals(938554, BleSecureConnectionsCrypto.g2NumericComparison(u, v, x, y));
+    }
+
+    @Test
     public void rejectsInvalidPeerPoint() {
         BleSecureConnectionsCrypto.LocalOobMaterial local =
                 BleSecureConnectionsCrypto.generateLocalOob(

@@ -13,10 +13,18 @@ class SettingsStorage {
   static const _keyPigmentIntents = 'aw_native_pigment_intents_v2';
   static const _keyFaceEditIntents = 'aw_native_face_edit_intents_v1';
   static const _keyMonogramIntents = 'aw_native_monogram_intents_v1';
+  static const _keyIncludeLegacyStrategies = 'aw_include_legacy_strategies_v1';
 
   final SharedPreferences _prefs;
 
   SettingsStorage(this._prefs);
+
+  bool loadIncludeLegacyStrategies() =>
+      _prefs.getBool(_keyIncludeLegacyStrategies) ?? false;
+
+  Future<void> saveIncludeLegacyStrategies(bool value) async {
+    await _prefs.setBool(_keyIncludeLegacyStrategies, value);
+  }
 
   String? loadMonogramIntents() => _prefs.getString(_keyMonogramIntents);
   Future<void> saveMonogramIntents(String value) async {

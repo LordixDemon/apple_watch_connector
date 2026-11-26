@@ -15,18 +15,18 @@ import java.util.Arrays;
  * unsegmented I-frame and supervisory-frame subset needed for the first control
  * IKE exchange.</p>
  */
-final class L2capErtmCodec {
-    static final int SEQUENCE_MODULUS = 64;
+public final class L2capErtmCodec {
+    public static final int SEQUENCE_MODULUS = 64;
 
-    static final int SAR_UNSEGMENTED = 0;
-    static final int SAR_START = 1;
-    static final int SAR_END = 2;
-    static final int SAR_CONTINUATION = 3;
+    public static final int SAR_UNSEGMENTED = 0;
+    public static final int SAR_START = 1;
+    public static final int SAR_END = 2;
+    public static final int SAR_CONTINUATION = 3;
 
-    static final int SUPERVISORY_RR = 0;
-    static final int SUPERVISORY_REJ = 1;
-    static final int SUPERVISORY_RNR = 2;
-    static final int SUPERVISORY_SREJ = 3;
+    public static final int SUPERVISORY_RR = 0;
+    public static final int SUPERVISORY_REJ = 1;
+    public static final int SUPERVISORY_RNR = 2;
+    public static final int SUPERVISORY_SREJ = 3;
 
     private static final int L2CAP_BASIC_HEADER_LENGTH = 4;
     private static final int ENHANCED_CONTROL_LENGTH = 2;
@@ -43,7 +43,7 @@ final class L2capErtmCodec {
     private L2capErtmCodec() {
     }
 
-    static byte[] encodeInformationFrame(
+    public static byte[] encodeInformationFrame(
             int destinationCid,
             int txSequence,
             int requestSequence,
@@ -81,7 +81,7 @@ final class L2capErtmCodec {
         return copy;
     }
 
-    static byte[] encodeReceiverReady(
+    public static byte[] encodeReceiverReady(
             int destinationCid,
             int requestSequence,
             boolean finalBit,
@@ -127,7 +127,7 @@ final class L2capErtmCodec {
                 fcsEnabled);
     }
 
-    static Frame decode(
+    public static Frame decode(
             int destinationCid,
             byte[] l2capPayload,
             boolean fcsEnabled) {

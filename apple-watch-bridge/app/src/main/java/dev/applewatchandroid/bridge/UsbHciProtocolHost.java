@@ -49,10 +49,11 @@ final class UsbHciProtocolHost extends ProtocolHost {
                 throw new HostException(invalid.getMessage());
             }
             NativeFacePackageAccess.installPlatformPreparer(AndroidNativeFacePackageAccess::prepare);
-            EXPERIMENTAL_LEGACY_PAIRING.set(invocation.experimentalLegacyPairing);
-            if (invocation.experimentalLegacyPairing) {
-                log("[EXPERIMENTAL] Legacy Watch pairing (watchOS 1-9, strategies 1-3) enabled via CLI; "
-                        + "modern Strategy 4 remains default priority.");
+            setStrategyPolicy(invocation.strategyPolicy);
+            if (invocation.strategyPolicy.includesExperimental()) {
+                log("[EXPERIMENTAL] Pairing strategies enabled via CLI: strategies="
+                        + invocation.strategyPolicy.toCsv()
+                        + "; modern Strategy 4 remains highest priority.");
             }
             operationalMode = invocation.operationalPairing != null;
             ownershipFile = new RandomAccessFile(new File(lockDirectory, "usb-hci.lock"), "rw");
@@ -88,6 +89,9 @@ final class UsbHciProtocolHost extends ProtocolHost {
                         + "Unspecified Reason recovery PDU; no pairing material was created.");
             } else if (operationalMode) {
                 log("RESULT: STOPPED — operational session ended; setup replay attempted=false.");
+            } else if (session.legacyPairingCompleted()) {
+                log("RESULT: PASS — [EXPERIMENTAL LEGACY] Apple Watch legacy pairing/reconnect milestone completed "
+                        + "over USB HCI (SMP bond + AWP2 session record persisted; secret bytes logged=false).");
             } else if (invocation.commit && !session.setupCompleted()) {
                 exitStatus = 2;
                 log("RESULT: INCOMPLETE — transport returned before verified Watch setup and reconnect completion.");

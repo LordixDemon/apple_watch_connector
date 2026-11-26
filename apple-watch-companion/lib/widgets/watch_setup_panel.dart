@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import '../l10n/strings.dart';
+import '../models/pairing_strategy.dart';
 import '../models/watch_connection_state.dart';
 import '../providers/watch_connection_provider.dart';
 import '../theme/ios_colors.dart';
@@ -73,11 +74,38 @@ class _WatchSetupPanelState extends State<WatchSetupPanel> {
     values.clear();
   }
 
+  String _discoveredWatchMeta(DiscoveredWatch watch) {
+    final parts = <String>[
+      if (watch.productType.isNotEmpty &&
+          watch.productType != watch.effectiveName)
+        watch.productType,
+      if (watch.watchOs.isNotEmpty)
+        watch.watchOs.toLowerCase().startsWith('watchos')
+            ? watch.watchOs
+            : 'watchOS ${watch.watchOs}',
+      '${watch.rssi} dBm',
+    ];
+    return parts.join(' • ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = widget.connection,
         state = provider.state,
-        s = Strings.current;
+        s = Strings.of(context);
+    final activeLegacyStrategy =
+        !state.operationalEligible &&
+            state.pairingStrategy != null &&
+            state.pairingStrategy! < 4
+        ? state.pairingStrategy
+        : null;
+    final selectedParts = <String>[
+      if (state.discoveredProductType.isNotEmpty) state.discoveredProductType,
+      if (state.discoveredWatchOs.isNotEmpty)
+        state.discoveredWatchOs.toLowerCase().startsWith('watchos')
+            ? state.discoveredWatchOs
+            : 'watchOS ${state.discoveredWatchOs}',
+    ];
     return Container(
       padding: const EdgeInsets.all(CompanionSpacing.cardInset),
       decoration: BoxDecoration(
@@ -106,15 +134,29 @@ class _WatchSetupPanelState extends State<WatchSetupPanel> {
               ),
             ],
           ),
-          if (state.discoveredProductType.isNotEmpty)
+          if (selectedParts.isNotEmpty || activeLegacyStrategy != null)
             Padding(
               padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                '${state.discoveredProductType} • watchOS ${state.discoveredWatchOs}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: IosColors.secondaryLabel,
-                ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (selectedParts.isNotEmpty)
+                    Text(
+                      selectedParts.join(' • '),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: IosColors.secondaryLabel,
+                      ),
+                    ),
+                  if (activeLegacyStrategy != null)
+                    _LegacyStrategyPill(
+                      label: s.legacyStrategyBadge(
+                        PairingStrategyInfo.badgeFor(activeLegacyStrategy),
+                      ),
+                    ),
+                ],
               ),
             ),
           if (state.setupPhase == 'DISCOVERING') ...[
@@ -135,11 +177,22 @@ class _WatchSetupPanelState extends State<WatchSetupPanel> {
                       : () => provider.selectWatch(watch.token),
                   child: Column(
                     children: [
-                      Text(
-                        WatchConnectionState.nameForProduct(watch.productType),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          Text(watch.effectiveName),
+                          if (watch.isLegacy)
+                            _LegacyStrategyPill(
+                              label: s.legacyStrategyBadge(watch.strategyBadge),
+                              onFilledButton: true,
+                            ),
+                        ],
                       ),
                       Text(
-                        '${watch.productType} • watchOS ${watch.watchOs} • ${watch.rssi} dBm',
+                        _discoveredWatchMeta(watch),
                         style: const TextStyle(fontSize: 11),
                       ),
                       Text(
@@ -227,6 +280,36 @@ class _WatchSetupPanelState extends State<WatchSetupPanel> {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _LegacyStrategyPill extends StatelessWidget {
+  final String label;
+  final bool onFilledButton;
+
+  const _LegacyStrategyPill({required this.label, this.onFilledButton = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: onFilledButton
+            ? CupertinoColors.black.withValues(alpha: 0.25)
+            : IosColors.systemOrange.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: onFilledButton
+              ? CupertinoColors.white
+              : IosColors.systemOrange,
+        ),
       ),
     );
   }

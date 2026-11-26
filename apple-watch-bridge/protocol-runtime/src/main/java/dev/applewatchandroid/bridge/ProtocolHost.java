@@ -1,6 +1,8 @@
 package dev.applewatchandroid.bridge;
 
 
+import dev.applewatchandroid.bridge.spi.StrategyPolicy;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
@@ -9,12 +11,33 @@ import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Shared protocol coordinator; no platform controller or OS services. */
 class ProtocolHost {
     static final AtomicBoolean COMPANION_DISCOVERY = new AtomicBoolean();
     /** Opt-in toggle for experimental legacy watchOS 1-9 pairing (Strategies 1-3). Off by default. */
     static final AtomicBoolean EXPERIMENTAL_LEGACY_PAIRING = new AtomicBoolean(false);
+    /** Active ordered strategy policy for discovery and pairing. Defaults to Strategy 4 only. */
+    static final AtomicReference<StrategyPolicy> ACTIVE_STRATEGY_POLICY =
+            new AtomicReference<>(StrategyPolicy.PRODUCTION_DEFAULT);
+
+    static StrategyPolicy effectiveStrategyPolicy() {
+        StrategyPolicy policy = ACTIVE_STRATEGY_POLICY.get();
+        if (policy == null) {
+            policy = StrategyPolicy.PRODUCTION_DEFAULT;
+        }
+        if (EXPERIMENTAL_LEGACY_PAIRING.get() && !policy.includesExperimental()) {
+            return StrategyPolicy.ALL_WITH_EXPERIMENTAL;
+        }
+        return policy;
+    }
+
+    static void setStrategyPolicy(StrategyPolicy policy) {
+        StrategyPolicy next = policy == null ? StrategyPolicy.PRODUCTION_DEFAULT : policy;
+        ACTIVE_STRATEGY_POLICY.set(next);
+        EXPERIMENTAL_LEGACY_PAIRING.set(next.includesExperimental());
+    }
     static final BlockingQueue<String> COMPANION_WATCH_SELECTIONS = new LinkedBlockingQueue<>(1);
     /**
      * SEED_STALE_FLOW commands queued by the command reader and drained on
@@ -362,6 +385,7 @@ class ProtocolHost {
     static void resetSessionControls() {
         COMPANION_DISCOVERY.set(false);
         EXPERIMENTAL_LEGACY_PAIRING.set(false);
+        ACTIVE_STRATEGY_POLICY.set(StrategyPolicy.PRODUCTION_DEFAULT);
         COMPANION_WATCH_SELECTIONS.clear();
         PENDING_STALE_FLOW_SEEDS.clear();
         OPERATIONAL_REQUESTS.disconnect();

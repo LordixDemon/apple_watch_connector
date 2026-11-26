@@ -5,29 +5,53 @@ import java.util.Arrays;
 import java.util.List;
 
 /** Fixed-channel transactions must remain serviced while NetworkRelay owns its dynamic CID. */
-final class BluetoothLinkMaintenance {
-    static final int ATT_CID = 4;
-    static final int LE_SIGNALING_CID = 5;
+public final class BluetoothLinkMaintenance {
+    public static final int ATT_CID = 4;
+    public static final int LE_SIGNALING_CID = 5;
 
     private BluetoothLinkMaintenance() {}
 
-    @FunctionalInterface interface AttributeReader {
+    /**
+     * Returns true when the ATT opcode is a Server-to-Client response, error,
+     * notification, or confirmation meant for a local ATT client rather than the
+     * local GATT server.
+     */
+    public static boolean isAttClientResponseOpcode(int opcode) {
+        return opcode == 0x01 // Error Response
+                || opcode == 0x03 // Exchange MTU Response
+                || opcode == 0x05 // Find Information Response
+                || opcode == 0x07 // Find By Type Value Response
+                || opcode == 0x09 // Read By Type Response
+                || opcode == 0x0B // Read Response
+                || opcode == 0x0D // Read Blob Response
+                || opcode == 0x0F // Read Multiple Response
+                || opcode == 0x11 // Read By Group Type Response
+                || opcode == 0x13 // Write Response
+                || opcode == 0x17 // Prepare Write Response
+                || opcode == 0x19 // Execute Write Response
+                || opcode == 0x1B // Handle Value Notification
+                || opcode == 0x1E // Handle Value Confirmation
+                || opcode == 0x21 // Read Multiple Variable Response
+                || opcode == 0x23; // Multiple Handle Value Notification
+    }
+
+    @FunctionalInterface public interface AttributeReader {
         byte[] read(byte[] request) throws Exception;
     }
 
     /** Server transactions only: late discovery responses never start legacy setup writes. */
-    static final class AttServer {
+    public static final class AttServer {
         private final AttributeReader attributes;
         private int connection = -1;
         private int mtu = 23;
         private int serviceChangedCccd;
         private int continuityCccd;
 
-        AttServer(AttributeReader attributes) { this.attributes = attributes; }
+        public AttServer(AttributeReader attributes) { this.attributes = attributes; }
 
-        void reset() { connection = -1; mtu = 23; serviceChangedCccd = 0; continuityCccd = 0; }
+        public void reset() { connection = -1; mtu = 23; serviceChangedCccd = 0; continuityCccd = 0; }
 
-        byte[] accept(int handle, byte[] pdu) throws Exception {
+        public byte[] accept(int handle, byte[] pdu) throws Exception {
             if (connection != handle) { reset(); connection = handle; }
             if (pdu == null || pdu.length == 0) return null;
             int op = pdu[0] & 255;
@@ -89,7 +113,7 @@ final class BluetoothLinkMaintenance {
     }
 
     /** Reject unsupported LE procedures explicitly, without changing working link parameters. */
-    static List<byte[]> leSignalingReplies(byte[] pdu) {
+    public static List<byte[]> leSignalingReplies(byte[] pdu) {
         List<byte[]> replies = new ArrayList<>();
         if (pdu == null || pdu.length > 1024) return replies;
         for (int offset = 0, count = 0; offset + 4 <= pdu.length && count < 32; count++) {

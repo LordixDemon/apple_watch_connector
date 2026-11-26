@@ -1,5 +1,12 @@
 package dev.applewatchandroid.bridge;
 
+import dev.applewatchandroid.bridge.discovery.CompositeDiscoveryEngine;
+import dev.applewatchandroid.bridge.spi.DiscoveredWatch;
+import dev.applewatchandroid.bridge.spi.DiscoveryEventCodec;
+import dev.applewatchandroid.bridge.spi.PairingStrategyId;
+import dev.applewatchandroid.bridge.spi.StrategyPolicy;
+import dev.applewatchandroid.bridge.spi.WatchAdvertisedProfile;
+
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
@@ -804,82 +811,65 @@ final class NormalLinkLifecycleManager {
 
     HciCodec.AdvertisingReport awaitTarget() throws Exception {
         long deadline = BridgeClock.elapsedRealtime() + SCAN_TIMEOUT_MS;
-        WatchSetupTargetSelector selector = new WatchSetupTargetSelector();
-        LegacyWatchPairingCodec.LegacyTargetSelector legacySelector =
-                EXPERIMENTAL_LEGACY_PAIRING.get()
-                        ? new LegacyWatchPairingCodec.LegacyTargetSelector()
-                        : null;
-        WatchDiscoverySelection<HciCodec.AdvertisingReport> choices = new WatchDiscoverySelection<>();
+        StrategyPolicy policy = effectiveStrategyPolicy();
+        CompositeDiscoveryEngine<HciCodec.AdvertisingReport, HciCodec.AdvertisingReport> engine =
+                WatchDiscoveryEngines.forPolicy(policy);
         java.util.Map<String, Long> announced = new java.util.HashMap<>();
         int incomplete = 0;
         ScanDiagnostics diagnostics = new ScanDiagnostics(BridgeClock.elapsedRealtime());
-        while (BridgeClock.elapsedRealtime() < deadline) {
-            diagnostics.maybeLog(BridgeClock.elapsedRealtime());
-            if (COMPANION_DISCOVERY.get()) {
-                HciCodec.AdvertisingReport selected = choices.select(COMPANION_WATCH_SELECTIONS.poll(), BridgeClock.elapsedRealtime());
-                if (selected != null) {
-                    return selected;
-                }
-            }
-            if (legacySelector != null) {
-                HciCodec.AdvertisingReport readyLegacy =
-                        legacySelector.pollReady(BridgeClock.elapsedRealtime());
-                if (readyLegacy != null) {
-                    HciCodec.AdvertisingReport acceptedLegacy =
-                            handleDiscoveredLegacyTarget(readyLegacy, choices, announced);
-                    if (acceptedLegacy != null) {
-                        return acceptedLegacy;
+        try {
+            while (BridgeClock.elapsedRealtime() < deadline) {
+                long now = BridgeClock.elapsedRealtime();
+                diagnostics.maybeLog(now);
+                if (COMPANION_DISCOVERY.get()) {
+                    WatchAdvertisedProfile<HciCodec.AdvertisingReport> selected =
+                            engine.select(COMPANION_WATCH_SELECTIONS.poll(), now);
+                    if (selected != null) {
+                        session.activeSelectedStrategy = selected.strategyId;
+                        return selected.payload;
                     }
                 }
-            }
-            HalTransportSession.Packet packet;
-            try { packet = session.nextPacket(Math.min(deadline, BridgeClock.elapsedRealtime() + 250)); }
-            catch (TimeoutException elapsed) { continue; }
-            if (packet.kind != HalTransportSession.PacketKind.EVENT) continue;
-            List<HciCodec.AdvertisingReport> reports = HciCodec.parseLegacyAdvertisingReports(packet.bytes);
-            diagnostics.observe(packet.bytes, reports);
-            for (HciCodec.AdvertisingReport report : reports) {
-                if (report.address != null && rejectedSetupCandidates.contains(HciCodec.toHex(report.address))) continue;
-                HciCodec.AdvertisingReport target = selector.accept(report, BridgeClock.elapsedRealtime());
-                if (target != null) {
-                    if (session.pairingIke.opticalPairing != null) {
-                        if (!session.pairingIke.opticalPairing.matches(target.setup.decodedIdentifier, target.setup.decodedMetadata)) continue;
-                        log("OPTICAL TARGET MATCHED: fresh setup advertisement; name/key/address logged=false.");
-                        return target;
+                for (WatchAdvertisedProfile<HciCodec.AdvertisingReport> ready : engine.pollReady(now)) {
+                    HciCodec.AdvertisingReport accepted =
+                            handleDiscoveredProfile(ready, engine, announced, false);
+                    if (accepted != null) {
+                        return accepted;
                     }
-                    if (session.pairingIke.legacyOpticalPairing != null) continue;
-                    if (COMPANION_DISCOVERY.get()) {
-                        long now = BridgeClock.elapsedRealtime();
-                        String token = choices.observe(HciCodec.toHex(target.address), target, now);
-                        if (now - announced.getOrDefault(token, -2_000L) >= 1_000) {
-                            announced.put(token, now);
-                            log("WATCH_DISCOVERED_V1:" + token + ":" + target.setup.decodedMetadata.productType()
-                                    + ":" + target.setup.decodedMetadata.systemVersionString() + ":" + target.rssi);
+                }
+                HalTransportSession.Packet packet;
+                try {
+                    packet = session.nextPacket(Math.min(deadline, BridgeClock.elapsedRealtime() + 250));
+                } catch (TimeoutException elapsed) {
+                    continue;
+                }
+                if (packet.kind != HalTransportSession.PacketKind.EVENT) {
+                    continue;
+                }
+                List<HciCodec.AdvertisingReport> reports = HciCodec.parseLegacyAdvertisingReports(packet.bytes);
+                diagnostics.observe(packet.bytes, reports);
+                for (HciCodec.AdvertisingReport report : reports) {
+                    if (report.address != null && rejectedSetupCandidates.contains(HciCodec.toHex(report.address))) {
+                        continue;
+                    }
+                    WatchAdvertisedProfile<HciCodec.AdvertisingReport> matched =
+                            engine.accept(report, BridgeClock.elapsedRealtime());
+                    if (matched != null) {
+                        HciCodec.AdvertisingReport accepted =
+                                handleDiscoveredProfile(matched, engine, announced, report.eventType == 4);
+                        if (accepted != null) {
+                            return accepted;
                         }
                         continue;
                     }
-                    log("WATCH SETUP TARGET MATCHED: complete 12-byte setup data; scanResponse="
-                            + (report.eventType == 4) + " rssi=" + report.rssi + "; identifiers logged=false.");
-                    return target;
-                }
-                if (legacySelector != null) {
-                    HciCodec.AdvertisingReport legacyTarget =
-                            legacySelector.accept(report, BridgeClock.elapsedRealtime());
-                    if (legacyTarget != null) {
-                        HciCodec.AdvertisingReport acceptedLegacy =
-                                handleDiscoveredLegacyTarget(legacyTarget, choices, announced);
-                        if (acceptedLegacy != null) {
-                            return acceptedLegacy;
-                        }
-                        continue;
+                    if (report.setup != null && incomplete++ < 4) {
+                        log("WATCH SETUP SKIP: incomplete or non-target advertisement; setupBytes="
+                                + report.setup.watchSetupData.length + " eventType=" + report.eventType
+                                + "; identifiers logged=false.");
                     }
                 }
-                if (report.setup != null && incomplete++ < 4) {
-                    log("WATCH SETUP SKIP: incomplete or non-target advertisement; setupBytes="
-                            + report.setup.watchSetupData.length + " eventType=" + report.eventType
-                            + "; identifiers logged=false.");
-                }
             }
+        } finally {
+            engine.reset();
         }
         diagnostics.write("SCAN SUMMARY FINAL");
         probeExtendedScan();
@@ -887,42 +877,81 @@ final class NormalLinkLifecycleManager {
                 + SCAN_TIMEOUT_MS + " ms; return the Watch to new-pair animation");
     }
 
-    HciCodec.AdvertisingReport handleDiscoveredLegacyTarget(
-            HciCodec.AdvertisingReport legacyTarget,
-            WatchDiscoverySelection<HciCodec.AdvertisingReport> choices,
-            java.util.Map<String, Long> announced) {
-        if (session.pairingIke.legacyOpticalPairing != null) {
-            if (!legacyTarget.legacySetup.matchesOpticalCode(session.pairingIke.legacyOpticalPairing)) {
+    private HciCodec.AdvertisingReport handleDiscoveredProfile(
+            WatchAdvertisedProfile<HciCodec.AdvertisingReport> profile,
+            CompositeDiscoveryEngine<HciCodec.AdvertisingReport, HciCodec.AdvertisingReport> engine,
+            java.util.Map<String, Long> announced,
+            boolean scanResponse) {
+        HciCodec.AdvertisingReport target = profile.payload;
+        if (profile.strategyId == PairingStrategyId.NETWORK_RELAY_S4) {
+            if (session.pairingIke.opticalPairing != null) {
+                if (!session.pairingIke.opticalPairing.matches(
+                        target.setup.decodedIdentifier, target.setup.decodedMetadata)) {
+                    profile.close();
+                    return null;
+                }
+                session.activeSelectedStrategy = PairingStrategyId.NETWORK_RELAY_S4;
+                log("OPTICAL TARGET MATCHED: fresh setup advertisement; name/key/address logged=false.");
+                return target;
+            }
+            if (session.pairingIke.legacyOpticalPairing != null) {
+                profile.close();
                 return null;
             }
+            if (COMPANION_DISCOVERY.get()) {
+                announceDiscoveredWatch(profile, engine, announced);
+                return null;
+            }
+            session.activeSelectedStrategy = PairingStrategyId.NETWORK_RELAY_S4;
+            log("WATCH SETUP TARGET MATCHED: complete 12-byte setup data; scanResponse="
+                    + scanResponse + " rssi=" + target.rssi + "; identifiers logged=false.");
+            return target;
+        }
+
+        // Experimental legacy Strategies 1–3
+        if (session.pairingIke.legacyOpticalPairing != null) {
+            if (target.legacySetup == null
+                    || !target.legacySetup.matchesOpticalCode(session.pairingIke.legacyOpticalPairing)) {
+                profile.close();
+                return null;
+            }
+            session.activeSelectedStrategy = profile.strategyId;
             log("[EXPERIMENTAL LEGACY] OPTICAL TARGET MATCHED: strategy="
-                    + legacyTarget.legacySetup.effectiveStrategy() + "; name/key/address logged=false.");
-            return legacyTarget;
+                    + profile.strategyId.wireId() + " inferred=" + profile.strategyInferred
+                    + "; name/key/address logged=false.");
+            return target;
         }
         if (session.pairingIke.opticalPairing != null) {
+            profile.close();
             return null;
         }
         if (COMPANION_DISCOVERY.get()) {
-            long now = BridgeClock.elapsedRealtime();
-            String token = choices.observe(HciCodec.toHex(legacyTarget.address), legacyTarget, now);
-            if (now - announced.getOrDefault(token, -2_000L) >= 1_000) {
-                announced.put(token, now);
-                String product = legacyTarget.legacySetup.productType != null
-                        ? legacyTarget.legacySetup.productType
-                        : "Apple Watch [EXPERIMENTAL-LEGACY-S"
-                                + legacyTarget.legacySetup.effectiveStrategy() + "]";
-                String version = legacyTarget.legacySetup.systemVersion != null
-                        ? legacyTarget.legacySetup.systemVersion
-                        : "watchOS 1-9 (exp)";
-                log("WATCH_DISCOVERED_V1:" + token + ":" + product + ":" + version + ":" + legacyTarget.rssi);
-            }
+            announceDiscoveredWatch(profile, engine, announced);
             return null;
         }
+        session.activeSelectedStrategy = profile.strategyId;
         log("[EXPERIMENTAL LEGACY] WATCH TARGET MATCHED: strategy="
-                + legacyTarget.legacySetup.effectiveStrategy()
-                + " hasUuid9AA4730F=" + legacyTarget.legacySetup.hasExtensiblePairServiceUuid
-                + " rssi=" + legacyTarget.rssi + "; identifiers logged=false.");
-        return legacyTarget;
+                + profile.strategyId.wireId()
+                + " inferred=" + profile.strategyInferred
+                + " hasUuid9AA4730F=" + (target.legacySetup != null && target.legacySetup.hasExtensiblePairServiceUuid)
+                + " rssi=" + target.rssi + "; identifiers logged=false.");
+        return target;
+    }
+
+    private void announceDiscoveredWatch(
+            WatchAdvertisedProfile<HciCodec.AdvertisingReport> profile,
+            CompositeDiscoveryEngine<HciCodec.AdvertisingReport, HciCodec.AdvertisingReport> engine,
+            java.util.Map<String, Long> announced) {
+        long now = BridgeClock.elapsedRealtime();
+        String token = engine.observeSelection(profile, now);
+        if (now - announced.getOrDefault(token, -2_000L) >= 1_000) {
+            announced.put(token, now);
+            DiscoveredWatch observation = profile.toPublicObservation(token);
+            log(DiscoveryEventCodec.encodeV2(observation));
+            if (profile.strategyId == PairingStrategyId.NETWORK_RELAY_S4) {
+                log(DiscoveryEventCodec.encodeV1(observation));
+            }
+        }
     }
 
     /**

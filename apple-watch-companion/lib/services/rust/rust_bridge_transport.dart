@@ -61,10 +61,22 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
       )) {
         if (device is! Map ||
             device['id'] is! String ||
-            device['productType'] is! String ||
-            (device['productType'] as String).isEmpty ||
-            device['watchOs'] is! String ||
             device['rssi'] is! int) {
+          continue;
+        }
+        final rawProductType = device['productType'];
+        final rawWatchOs = device['watchOs'];
+        final rawDisplayName = device['displayName'];
+        final rawStrategy = device['strategy'];
+        if ((rawProductType != null && rawProductType is! String) ||
+            (rawWatchOs != null && rawWatchOs is! String) ||
+            (rawDisplayName != null && rawDisplayName is! String)) {
+          continue;
+        }
+        final productType = rawProductType as String? ?? '';
+        final watchOs = rawWatchOs as String? ?? '';
+        final displayName = (rawDisplayName as String?)?.trim() ?? '';
+        if (productType.isEmpty && displayName.isEmpty && rawStrategy is! int) {
           continue;
         }
         final id = device['id'] as String;
@@ -79,9 +91,15 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
           _discoveredIds[token] = id;
           watches.add({
             'token': token,
-            'productType': device['productType'],
-            'watchOs': device['watchOs'],
+            'productType': productType,
+            'watchOs': watchOs,
             'rssi': device['rssi'],
+            if (displayName.isNotEmpty) 'displayName': displayName,
+            if (rawStrategy is int) 'strategy': rawStrategy,
+            if (device['experimental'] is bool)
+              'experimental': device['experimental'],
+            if (device['authStyles'] is List)
+              'authStyles': device['authStyles'],
           });
         }
       }
@@ -130,6 +148,8 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
       if (protocolFingerprint.isNotEmpty) {
         coreHeader.write(' • jar $protocolFingerprint');
       }
+      final selectedProduct = selected?['productType'] as String?;
+      final selectedDisplay = selected?['displayName'] as String?;
       _publish({
         'bridgeAvailable': true,
         'identityKnown': true,
@@ -227,12 +247,21 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
             pairing &&
             phase == 'PIN_REQUIRED' &&
             snapshot['pinRequired'] == true,
-        'discoveredProductType': selected?['productType'] ?? '',
-        'discoveredWatchOs': selected?['watchOs'] ?? '',
+        'discoveredProductType':
+            (selectedProduct != null && selectedProduct.isNotEmpty)
+            ? selectedProduct
+            : (selectedDisplay ?? ''),
+        'discoveredWatchOs': selected?['watchOs'] as String? ?? '',
         'productType': pairId.isNotEmpty
             ? snapshot['productType'] as String? ?? ''
             : '',
         'discoveredWatches': watches,
+        if (capabilities['strategies'] is List)
+          'capabilities': {'strategies': capabilities['strategies']},
+        if (snapshot['pairingStrategy'] is int)
+          'pairingStrategy': snapshot['pairingStrategy']
+        else if (selected?['strategy'] is int)
+          'pairingStrategy': selected!['strategy'],
         'backendError':
             snapshot['error'] as String? ??
             switch (capabilities['pairingUnavailableReason']) {
@@ -301,6 +330,18 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
     _events.add({'type': 'connection', 'data': connection});
   }
 
+  static List<int>? _parseStrategies(Map<String, dynamic>? arguments) {
+    final raw = arguments?['strategies'];
+    if (raw is! List) return null;
+    final ids = <int>[];
+    for (final item in raw) {
+      if (item is int && item >= 1 && item <= 4 && !ids.contains(item)) {
+        ids.add(item);
+      }
+    }
+    return ids.isEmpty ? null : ids;
+  }
+
   @override
   Future<dynamic> invoke(
     String method, [
@@ -343,10 +384,14 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
           request = {'method': 'refreshAdapters'};
         }
       case 'discoverWatches':
-        request = {'method': 'scan'};
+        final strategies = _parseStrategies(arguments);
+        request = {'method': 'scan', 'strategies': ?strategies};
       case 'requestConnectionPermissions':
+        final isResume = _connection['hasPair'] == true;
+        final strategies = isResume ? null : _parseStrategies(arguments);
         request = {
-          'method': _connection['hasPair'] == true ? 'resume' : 'scan',
+          'method': isResume ? 'resume' : 'scan',
+          'strategies': ?strategies,
         };
       case 'selectDiscoveredWatch':
         final id = _discoveredIds[arguments?['discoveryToken']];
@@ -370,7 +415,12 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
           }
           request = {'method': 'submitPin', 'pin': pin};
         } else {
-          request = {'method': 'pair', 'mode': 'code'};
+          final strategies = _parseStrategies(arguments);
+          request = {
+            'method': 'pair',
+            'mode': 'code',
+            'strategies': ?strategies,
+          };
         }
       case 'refreshWatchState':
         if (_connection['connected'] != true ||

@@ -74,7 +74,7 @@ final class WindowsSecretStore implements DesktopSecretStore {
         String product=pair.peerProductType();if(product==null||!product.matches("Watch[0-9]{1,3},[0-9]{1,3}"))product="";
         boolean activated=pair.state().wireValue()>=PairingSessionRecord.DurableState.ACTIVATION_CONFIRMED.wireValue();
         boolean verified=OperationalSessionPolicy.mayUseOperationalMode(pair.state(),id,null,false,pair.hasObservedSetupEvidence());
-        String json="{\"pairId\":\""+id+"\",\"productType\":\""+product+"\",\"activationConfirmed\":"+activated+",\"protocolVerified\":"+verified+",\"ownerConfirmed\":"+(activated&&id.equals(ownerConfirmedPair()))+"}";
+        String json="{\"pairId\":\""+id+"\",\"productType\":\""+product+"\",\"activationConfirmed\":"+activated+",\"protocolVerified\":"+verified+",\"ownerConfirmed\":"+(activated&&id.equals(ownerConfirmedPair()))+",\"pairingStrategy\":"+pair.pairingStrategy().wireId()+",\"idsLinkKind\":"+pair.idsLinkKind().wireId()+"}";
         atomicWrite(directory.resolve("pair-public.json"),json.getBytes(StandardCharsets.UTF_8));
     }
 }

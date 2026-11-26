@@ -83,11 +83,13 @@ final class HalTransportSession {
     PairingSessionRecord activePairingSessionRecord;
     WatchSetupMetadataCodec.Identifier activeWatchSetupIdentifier;
     WatchSetupMetadataCodec.ExtendedMetadata activeWatchSetupMetadata;
+    dev.applewatchandroid.bridge.spi.PairingStrategyId activeSelectedStrategy;
     volatile boolean cleaned;
     volatile boolean reconnectRequested;
     final boolean commitIsPairedAuthorized;
     final String operationalPairingId;
     boolean freshPairingPerformed;
+    volatile boolean legacyPairingCompleted;
 
     final ModernPairingIkeRunner pairingIke = new ModernPairingIkeRunner(this);
     final ModernSmpBondingRunner smpBonding = new ModernSmpBondingRunner(this);
@@ -443,7 +445,7 @@ final class HalTransportSession {
         }
         target = normalLink.awaitTarget();
         boolean legacyTargetSelected =
-                EXPERIMENTAL_LEGACY_PAIRING.get()
+                effectiveStrategyPolicy().includesExperimental()
                         && !target.isExpectedTarget()
                         && target.legacySetup != null;
         if (!target.isExpectedTarget() && !legacyTargetSelected) {
@@ -1516,6 +1518,8 @@ final class HalTransportSession {
         }
         activeWatchSetupIdentifier = null;
         activeWatchSetupMetadata = null;
+        activeSelectedStrategy = null;
+        normalLink.fixedChannelRouter.setAttClientActive(false);
         normalLink.modernRegistrationDeadlineMs = -1;
         log("CLEANUP START: scan="
                 + scanEnabled
@@ -1568,6 +1572,8 @@ final class HalTransportSession {
             initializedByUs = false;
             packets.clear();
             aclReassembler.reset();
+            normalLink.fixedChannelRouter.setAttClientActive(false);
+            normalLink.fixedChannelRouter.reset();
             clearDeferredSmpPdus();
             if (localIdentity != null) {
                 localIdentity.destroy();
@@ -1646,6 +1652,10 @@ final class HalTransportSession {
 
     boolean setupCompleted() {
         return postCommit.setupCompleted();
+    }
+
+    boolean legacyPairingCompleted() {
+        return legacyPairingCompleted;
     }
 
     HciCodec.AdvertisingReport awaitTarget() throws Exception {

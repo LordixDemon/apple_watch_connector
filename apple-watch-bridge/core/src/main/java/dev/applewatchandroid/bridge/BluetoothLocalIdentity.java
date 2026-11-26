@@ -9,11 +9,11 @@ import java.util.Arrays;
  * has no textual formatter. Callers receive defensive copies and must destroy
  * both the record object and any serialized copy after use.</p>
  */
-final class BluetoothLocalIdentity implements AutoCloseable {
-    static final int ADDRESS_TYPE_RANDOM = 1;
-    static final int ADDRESS_LENGTH = 6;
-    static final int IRK_LENGTH = 16;
-    static final int SERIALIZED_LENGTH = 28;
+public final class BluetoothLocalIdentity implements AutoCloseable {
+    public static final int ADDRESS_TYPE_RANDOM = 1;
+    public static final int ADDRESS_LENGTH = 6;
+    public static final int IRK_LENGTH = 16;
+    public static final int SERIALIZED_LENGTH = 28;
 
     private static final byte[] MAGIC =
             new byte[]{'A', 'W', 'I', '1'};
@@ -31,13 +31,13 @@ final class BluetoothLocalIdentity implements AutoCloseable {
         this.irk = irk.clone();
     }
 
-    static BluetoothLocalIdentity create(
+    public static BluetoothLocalIdentity create(
             byte[] address,
             byte[] irk) {
         return new BluetoothLocalIdentity(address, irk);
     }
 
-    static BluetoothLocalIdentity parse(byte[] serialized) {
+    public static BluetoothLocalIdentity parse(byte[] serialized) {
         if (serialized == null
                 || serialized.length != SERIALIZED_LENGTH
                 || !startsWith(serialized, MAGIC)
@@ -89,17 +89,17 @@ final class BluetoothLocalIdentity implements AutoCloseable {
         return output;
     }
 
-    int addressType() {
+    public int addressType() {
         requireLive();
         return ADDRESS_TYPE_RANDOM;
     }
 
-    byte[] address() {
+    public byte[] address() {
         requireLive();
         return address.clone();
     }
 
-    byte[] irk() {
+    public byte[] irk() {
         requireLive();
         return irk.clone();
     }
@@ -109,7 +109,7 @@ final class BluetoothLocalIdentity implements AutoCloseable {
         destroy();
     }
 
-    void destroy() {
+    public void destroy() {
         if (address != null) {
             Arrays.fill(address, (byte) 0);
             address = null;

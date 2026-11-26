@@ -1899,4 +1899,16 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get watchConnectionSubtitle =>
       'Сопряжение, переподключение и статус Bridge';
+
+  @override
+  String get includeLegacyWatches => 'Старые часы Apple Watch (watchOS 1–9)';
+
+  @override
+  String get includeLegacyWatchesSubtitle =>
+      'Экспериментальная поддержка стратегий 1–3 для ранних моделей.';
+
+  @override
+  String legacyStrategyBadge(String strategy) {
+    return 'Устаревшая $strategy';
+  }
 }

@@ -18,17 +18,17 @@ import java.util.Map;
  * legacy Apple Watch hardware. Secret-bearing objects intentionally expose no
  * textual {@code toString()} formatting.</p>
  */
-final class LegacyWatchPairingCodec {
-    static final int STRATEGY_UNKNOWN = 0;
+public final class LegacyWatchPairingCodec {
+    public static final int STRATEGY_UNKNOWN = 0;
     /** watchOS 1-3: simultaneous BT SMP + IDS over com.apple.ids. */
-    static final int STRATEGY_SIMULTANEOUS = 1;
+    public static final int STRATEGY_SIMULTANEOUS = 1;
     /** watchOS 3-5: GATT "NANO" write -> BT SMP -> IDSBTLink over com.apple.ids. */
-    static final int STRATEGY_SEQUENTIAL = 2;
+    public static final int STRATEGY_SEQUENTIAL = 2;
     /** watchOS 6-9: GATT "NANO" write -> BT SMP -> Direct IPSec (terminusLink) or IDSBTLink fallback. */
-    static final int STRATEGY_SEQUENTIAL_DIRECT_IPSEC = 3;
+    public static final int STRATEGY_SEQUENTIAL_DIRECT_IPSEC = 3;
 
-    static final int STYLE_OOB = 1;
-    static final int STYLE_PASSCODE = 2;
+    public static final int STYLE_OOB = 1;
+    public static final int STYLE_PASSCODE = 2;
 
     static final String EXTENSIBLE_PAIR_SERVICE_UUID = "9AA4730F-B25C-4CC3-B821-C931559FC196";
     static final String EXTENSIBLE_PAIR_CONTROL_CHAR_UUID = "5F6C6A23-8AC8-400E-810B-017134943460";
@@ -201,7 +201,7 @@ final class LegacyWatchPairingCodec {
     }
 
     /** Encodes the 6-byte {@code NRExtensiblePair} GATT control write payload: {@code "NANO" + strategy + style}. */
-    static byte[] encodeControlPayload(int strategy, int style) {
+    public static byte[] encodeControlPayload(int strategy, int style) {
         if (!isSupportedLegacyStrategy(strategy)) {
             throw new IllegalArgumentException("Unsupported legacy pairing strategy: " + strategy);
         }
@@ -245,7 +245,7 @@ final class LegacyWatchPairingCodec {
      * Supports 1-byte lengths ({@code <= 127}) and 2-byte big-endian lengths ({@code 128..32767})
      * without bit-7 checksum insertion.
      */
-    static byte[] encodeIdsBtLinkPacket(byte[] payload) {
+    public static byte[] encodeIdsBtLinkPacket(byte[] payload) {
         if (payload == null || payload.length == 0 || payload.length > IDS_BT_LINK_MAX_PACKET_LENGTH) {
             throw new IllegalArgumentException("IDSBTLink payload must be 1..32767 bytes");
         }
@@ -342,8 +342,27 @@ final class LegacyWatchPairingCodec {
         }
 
         boolean matchesOpticalCode(LegacyOpticalCode code) {
-            if (code == null || localName == null || !code.advertisedName.equals(localName)) {
+            if (code == null) {
                 return false;
+            }
+            if (localName != null && !code.advertisedName.equals(localName)) {
+                return false;
+            }
+            if (localName == null) {
+                if (advertisingIdentifier < 0 || enclosureMaterial < 0 || deviceSize < 0
+                        || !isSupportedLegacyStrategy(strategy)) {
+                    return false;
+                }
+                String synthesized = String.format(
+                        java.util.Locale.US,
+                        "%05d%c%c%c",
+                        advertisingIdentifier,
+                        HUMAN_ALPHABET.charAt(strategy),
+                        HUMAN_ALPHABET.charAt(enclosureMaterial),
+                        HUMAN_ALPHABET.charAt(deviceSize));
+                if (!code.advertisedName.equals(synthesized)) {
+                    return false;
+                }
             }
             if (isSupportedLegacyStrategy(strategy) && strategy != code.strategy) {
                 return false;
@@ -527,11 +546,11 @@ final class LegacyWatchPairingCodec {
      * Minimal dynamic GATT ATT client PDU builders/parsers for discovering and writing
      * {@code 9AA4730F-...} / {@code 5F6C6A23-...} without hardcoding handles.
      */
-    static final class GattAttClient {
+    public static final class GattAttClient {
         private GattAttClient() {
         }
 
-        static boolean isAttClientResponseOpcode(int opcode) {
+        public static boolean isAttClientResponseOpcode(int opcode) {
             return opcode == ATT_OPCODE_ERROR_RSP
                     || opcode == ATT_OPCODE_EXCHANGE_MTU_RSP
                     || opcode == ATT_OPCODE_FIND_BY_TYPE_VALUE_RSP
@@ -540,7 +559,7 @@ final class LegacyWatchPairingCodec {
                     || opcode == ATT_OPCODE_WRITE_RSP;
         }
 
-        static byte[] buildExchangeMtuRequest(int clientRxMtu) {
+        public static byte[] buildExchangeMtuRequest(int clientRxMtu) {
             if (clientRxMtu < 23 || clientRxMtu > 517) {
                 throw new IllegalArgumentException("ATT client RX MTU must be 23..517");
             }
@@ -550,14 +569,14 @@ final class LegacyWatchPairingCodec {
             return pdu;
         }
 
-        static int parseExchangeMtuResponse(byte[] pdu) {
+        public static int parseExchangeMtuResponse(byte[] pdu) {
             if (pdu == null || pdu.length != 3 || (pdu[0] & 0xff) != ATT_OPCODE_EXCHANGE_MTU_RSP) {
                 throw new IllegalArgumentException("Expected 3-byte ATT_EXCHANGE_MTU_RSP");
             }
             return Math.max(23, readLe16(pdu, 1));
         }
 
-        static byte[] buildFindExtensiblePairServiceRequest(int startHandle) {
+        public static byte[] buildFindExtensiblePairServiceRequest(int startHandle) {
             validateHandleRange(startHandle, 0xFFFF);
             byte[] pdu = new byte[7 + EXTENSIBLE_PAIR_SERVICE_UUID_LE.length];
             pdu[0] = ATT_OPCODE_FIND_BY_TYPE_VALUE_REQ;
@@ -568,7 +587,7 @@ final class LegacyWatchPairingCodec {
             return pdu;
         }
 
-        static List<HandleRange> parseFindByTypeValueResponse(byte[] pdu) {
+        public static List<HandleRange> parseFindByTypeValueResponse(byte[] pdu) {
             if (pdu == null || pdu.length < 5 || (pdu[0] & 0xff) != ATT_OPCODE_FIND_BY_TYPE_VALUE_RSP
                     || ((pdu.length - 1) % 4) != 0) {
                 throw new IllegalArgumentException("Malformed ATT_FIND_BY_TYPE_VALUE_RSP");
@@ -580,7 +599,7 @@ final class LegacyWatchPairingCodec {
             return List.copyOf(ranges);
         }
 
-        static byte[] buildReadPrimaryServicesRequest(int startHandle, int endHandle) {
+        public static byte[] buildReadPrimaryServicesRequest(int startHandle, int endHandle) {
             validateHandleRange(startHandle, endHandle);
             byte[] pdu = new byte[7];
             pdu[0] = ATT_OPCODE_READ_BY_GROUP_TYPE_REQ;
@@ -590,7 +609,7 @@ final class LegacyWatchPairingCodec {
             return pdu;
         }
 
-        static List<PrimaryService> parseReadPrimaryServicesResponse(byte[] pdu) {
+        public static List<PrimaryService> parseReadPrimaryServicesResponse(byte[] pdu) {
             if (pdu == null || pdu.length < 2 || (pdu[0] & 0xff) != ATT_OPCODE_READ_BY_GROUP_TYPE_RSP) {
                 throw new IllegalArgumentException("Expected ATT_READ_BY_GROUP_TYPE_RSP");
             }
@@ -608,7 +627,7 @@ final class LegacyWatchPairingCodec {
             return List.copyOf(services);
         }
 
-        static byte[] buildDiscoverCharacteristicsRequest(int startHandle, int endHandle) {
+        public static byte[] buildDiscoverCharacteristicsRequest(int startHandle, int endHandle) {
             validateHandleRange(startHandle, endHandle);
             byte[] pdu = new byte[7];
             pdu[0] = ATT_OPCODE_READ_BY_TYPE_REQ;
@@ -618,7 +637,7 @@ final class LegacyWatchPairingCodec {
             return pdu;
         }
 
-        static List<CharacteristicDeclaration> parseDiscoverCharacteristicsResponse(byte[] pdu) {
+        public static List<CharacteristicDeclaration> parseDiscoverCharacteristicsResponse(byte[] pdu) {
             if (pdu == null || pdu.length < 2 || (pdu[0] & 0xff) != ATT_OPCODE_READ_BY_TYPE_RSP) {
                 throw new IllegalArgumentException("Expected ATT_READ_BY_TYPE_RSP");
             }
@@ -637,7 +656,7 @@ final class LegacyWatchPairingCodec {
             return List.copyOf(list);
         }
 
-        static byte[] buildWriteRequest(int valueHandle, byte[] value) {
+        public static byte[] buildWriteRequest(int valueHandle, byte[] value) {
             if (valueHandle < 1 || valueHandle > 0xFFFF || value == null) {
                 throw new IllegalArgumentException("Invalid ATT write handle or payload");
             }
@@ -648,11 +667,11 @@ final class LegacyWatchPairingCodec {
             return pdu;
         }
 
-        static boolean isWriteResponse(byte[] pdu) {
+        public static boolean isWriteResponse(byte[] pdu) {
             return pdu != null && pdu.length == 1 && (pdu[0] & 0xff) == ATT_OPCODE_WRITE_RSP;
         }
 
-        static AttError parseErrorResponse(byte[] pdu) {
+        public static AttError parseErrorResponse(byte[] pdu) {
             if (pdu == null || pdu.length != 5 || (pdu[0] & 0xff) != ATT_OPCODE_ERROR_RSP) {
                 throw new IllegalArgumentException("Expected 5-byte ATT_ERROR_RSP");
             }
@@ -666,56 +685,56 @@ final class LegacyWatchPairingCodec {
         }
     }
 
-    static final class HandleRange {
-        final int startHandle;
-        final int endHandle;
+    public static final class HandleRange {
+        public final int startHandle;
+        public final int endHandle;
 
-        HandleRange(int startHandle, int endHandle) {
+        public HandleRange(int startHandle, int endHandle) {
             this.startHandle = startHandle;
             this.endHandle = endHandle;
         }
     }
 
-    static final class PrimaryService {
-        final int startHandle;
-        final int endHandle;
-        final byte[] uuidBytes;
+    public static final class PrimaryService {
+        public final int startHandle;
+        public final int endHandle;
+        public final byte[] uuidBytes;
 
-        PrimaryService(int startHandle, int endHandle, byte[] uuidBytes) {
+        public PrimaryService(int startHandle, int endHandle, byte[] uuidBytes) {
             this.startHandle = startHandle;
             this.endHandle = endHandle;
             this.uuidBytes = uuidBytes.clone();
         }
 
-        boolean isExtensiblePairService() {
+        public boolean isExtensiblePairService() {
             return Arrays.equals(uuidBytes, EXTENSIBLE_PAIR_SERVICE_UUID_LE);
         }
     }
 
-    static final class CharacteristicDeclaration {
-        final int declarationHandle;
-        final int properties;
-        final int valueHandle;
-        final byte[] uuidBytes;
+    public static final class CharacteristicDeclaration {
+        public final int declarationHandle;
+        public final int properties;
+        public final int valueHandle;
+        public final byte[] uuidBytes;
 
-        CharacteristicDeclaration(int declarationHandle, int properties, int valueHandle, byte[] uuidBytes) {
+        public CharacteristicDeclaration(int declarationHandle, int properties, int valueHandle, byte[] uuidBytes) {
             this.declarationHandle = declarationHandle;
             this.properties = properties;
             this.valueHandle = valueHandle;
             this.uuidBytes = uuidBytes.clone();
         }
 
-        boolean isExtensiblePairControlCharacteristic() {
+        public boolean isExtensiblePairControlCharacteristic() {
             return Arrays.equals(uuidBytes, EXTENSIBLE_PAIR_CONTROL_CHAR_UUID_LE);
         }
     }
 
-    static final class AttError {
-        final int requestOpcode;
-        final int attributeHandle;
-        final int errorCode;
+    public static final class AttError {
+        public final int requestOpcode;
+        public final int attributeHandle;
+        public final int errorCode;
 
-        AttError(int requestOpcode, int attributeHandle, int errorCode) {
+        public AttError(int requestOpcode, int attributeHandle, int errorCode) {
             this.requestOpcode = requestOpcode;
             this.attributeHandle = attributeHandle;
             this.errorCode = errorCode;
@@ -726,13 +745,13 @@ final class LegacyWatchPairingCodec {
      * [EXPERIMENTAL] Legacy PBBridge optical pairing payload for strategies 1-3 (16-byte / 32-hex
      * OOB key). Secret bytes are held in a mutable array wiped by {@link #close()}.
      */
-    static final class LegacyOpticalCode implements AutoCloseable {
-        final int strategy;
-        final int compatibilityVersion;
-        final String advertisedName;
-        final int material;
-        final int size;
-        final String systemVersion;
+    public static final class LegacyOpticalCode implements AutoCloseable {
+        public final int strategy;
+        public final int compatibilityVersion;
+        public final String advertisedName;
+        public final int material;
+        public final int size;
+        public final String systemVersion;
         private byte[] oobKey;
 
         private LegacyOpticalCode(
@@ -752,7 +771,7 @@ final class LegacyWatchPairingCodec {
             this.oobKey = oobKey;
         }
 
-        static LegacyOpticalCode parse(byte[] payload) {
+        public static LegacyOpticalCode parse(byte[] payload) {
             if (payload == null || payload.length != 110) {
                 throw invalid();
             }
@@ -842,7 +861,7 @@ final class LegacyWatchPairingCodec {
             }
         }
 
-        byte[] oobKey() {
+        public byte[] oobKey() {
             if (oobKey == null) {
                 throw new IllegalStateException("Legacy optical code is closed");
             }
@@ -879,12 +898,12 @@ final class LegacyWatchPairingCodec {
         }
     }
 
-    static final class IdsBtLinkFrame {
-        final byte[] payload;
-        final boolean checksumFlagged;
-        final int rawChecksum;
+    public static final class IdsBtLinkFrame {
+        public final byte[] payload;
+        public final boolean checksumFlagged;
+        public final int rawChecksum;
 
-        IdsBtLinkFrame(byte[] payload, boolean checksumFlagged, int rawChecksum) {
+        public IdsBtLinkFrame(byte[] payload, boolean checksumFlagged, int rawChecksum) {
             this.payload = payload.clone();
             this.checksumFlagged = checksumFlagged;
             this.rawChecksum = rawChecksum;
@@ -895,11 +914,14 @@ final class LegacyWatchPairingCodec {
      * Incremental decoder for {@code IDSBTLink} 1-byte/2-byte length-prefixed frames
      * (derived from iOS 26.6 {@code identityservicesd} {@code 0x1006f5ec8..0x1006f6100}).
      */
-    static final class IdsBtLinkStreamDecoder {
+    public static final class IdsBtLinkStreamDecoder {
         private static final int MAX_BUFFERED_BYTES = 64 * 1024;
         private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        List<IdsBtLinkFrame> push(byte[] chunk) {
+        public IdsBtLinkStreamDecoder() {
+        }
+
+        public List<IdsBtLinkFrame> push(byte[] chunk) {
             if (chunk != null && chunk.length > 0) {
                 if (buffer.size() + chunk.length > MAX_BUFFERED_BYTES) {
                     buffer.reset();

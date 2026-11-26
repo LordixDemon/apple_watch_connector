@@ -10,8 +10,8 @@ import java.util.Locale;
  * complete record or validate an opaque record immediately before encrypting
  * it with Android Keystore.</p>
  */
-final class BluetoothBondSecretRecord {
-    static final int SERIALIZED_LENGTH = 75;
+public final class BluetoothBondSecretRecord {
+    public static final int SERIALIZED_LENGTH = 75;
 
     private static final byte[] MAGIC =
             new byte[]{'A', 'W', 'B', '1'};
@@ -27,7 +27,7 @@ final class BluetoothBondSecretRecord {
     private BluetoothBondSecretRecord() {
     }
 
-    static byte[] encode(
+    public static byte[] encode(
             int localAddressType,
             byte[] localAddress,
             int peerConnectionAddressType,
@@ -112,7 +112,7 @@ final class BluetoothBondSecretRecord {
         return output;
     }
 
-    static void validateSerialized(byte[] record) {
+    public static void validateSerialized(byte[] record) {
         if (record == null
                 || record.length != SERIALIZED_LENGTH
                 || !startsWith(record, MAGIC)
@@ -173,7 +173,7 @@ final class BluetoothBondSecretRecord {
     private static final int PEER_IRK_OFFSET =
             LTK_OFFSET + KEY_LENGTH * 2;
 
-    static byte[] extractLongTermKey(byte[] record) {
+    public static byte[] extractLongTermKey(byte[] record) {
         validateSerialized(record);
         return Arrays.copyOfRange(
                 record,
@@ -181,7 +181,7 @@ final class BluetoothBondSecretRecord {
                 LTK_OFFSET + KEY_LENGTH);
     }
 
-    static byte[] extractLocalIdentityResolvingKey(byte[] record) {
+    public static byte[] extractLocalIdentityResolvingKey(byte[] record) {
         validateSerialized(record);
         return Arrays.copyOfRange(
                 record,
@@ -189,7 +189,7 @@ final class BluetoothBondSecretRecord {
                 LOCAL_IRK_OFFSET + KEY_LENGTH);
     }
 
-    static byte[] extractPeerIdentityResolvingKey(byte[] record) {
+    public static byte[] extractPeerIdentityResolvingKey(byte[] record) {
         validateSerialized(record);
         return Arrays.copyOfRange(
                 record,
@@ -204,12 +204,12 @@ final class BluetoothBondSecretRecord {
     private static final int PEER_IDENTITY_ADDRESS_TYPE_OFFSET =
             PEER_IDENTITY_ADDRESS_OFFSET - 1;
 
-    static int extractPeerConnectionAddressType(byte[] record) {
+    public static int extractPeerConnectionAddressType(byte[] record) {
         validateSerialized(record);
         return unsigned(record[PEER_CONNECTION_ADDRESS_TYPE_OFFSET]);
     }
 
-    static byte[] extractPeerConnectionAddress(byte[] record) {
+    public static byte[] extractPeerConnectionAddress(byte[] record) {
         validateSerialized(record);
         return Arrays.copyOfRange(
                 record,
@@ -217,12 +217,12 @@ final class BluetoothBondSecretRecord {
                 PEER_CONNECTION_ADDRESS_OFFSET + ADDRESS_LENGTH);
     }
 
-    static int extractPeerIdentityAddressType(byte[] record) {
+    public static int extractPeerIdentityAddressType(byte[] record) {
         validateSerialized(record);
         return unsigned(record[PEER_IDENTITY_ADDRESS_TYPE_OFFSET]);
     }
 
-    static byte[] extractPeerIdentityAddress(byte[] record) {
+    public static byte[] extractPeerIdentityAddress(byte[] record) {
         validateSerialized(record);
         return Arrays.copyOfRange(
                 record,
@@ -230,12 +230,12 @@ final class BluetoothBondSecretRecord {
                 PEER_IDENTITY_ADDRESS_OFFSET + ADDRESS_LENGTH);
     }
 
-    static int extractLocalAddressType(byte[] record) {
+    public static int extractLocalAddressType(byte[] record) {
         validateSerialized(record);
         return unsigned(record[MAGIC.length + 1]);
     }
 
-    static byte[] extractLocalAddress(byte[] record) {
+    public static byte[] extractLocalAddress(byte[] record) {
         validateSerialized(record);
         return Arrays.copyOfRange(
                 record,

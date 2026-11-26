@@ -3,7 +3,7 @@ package dev.applewatchandroid.bridge;
 import java.io.IOException;
 
 /** Portable packet-level controller lease; platforms own initialization and cleanup. */
-interface BluetoothController extends AutoCloseable {
+public interface BluetoothController extends AutoCloseable {
     int SUCCESS = 0;
     int ALREADY_INITIALIZED = 1;
     interface Callbacks {

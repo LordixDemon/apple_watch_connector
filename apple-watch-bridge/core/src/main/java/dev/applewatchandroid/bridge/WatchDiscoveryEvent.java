@@ -1,17 +1,20 @@
 package dev.applewatchandroid.bridge;
 
+import dev.applewatchandroid.bridge.spi.DiscoveryEventCodec;
+
 /**
  * Locates a helper discovery observation in a stdout line. The helper emits it
  * through ProtocolHost.log, which prefixes "[WatchHal] [T+...ms|Δ...ms] ", so
  * the marker is not at the start of the line.
  */
 final class WatchDiscoveryEvent {
-    static final String PREFIX = "WATCH_DISCOVERED_V1:";
+    static final String PREFIX = DiscoveryEventCodec.V1_PREFIX;
+    static final String V2_PREFIX = DiscoveryEventCodec.V2_PREFIX;
 
     private WatchDiscoveryEvent() {}
 
     /**
-     * Returns the line from the marker onward when it appears at a token boundary
+     * Returns the line from the V1 marker onward when it appears at a token boundary
      * with the expected 5-field format, or null otherwise.
      */
     static String find(String line) {
@@ -28,5 +31,13 @@ final class WatchDiscoveryEvent {
             from = at + PREFIX.length();
         }
         return null;
+    }
+
+    /**
+     * Returns the line from the V2 JSON marker onward when it appears at a token
+     * boundary within bounds, or null otherwise.
+     */
+    static String findV2(String line) {
+        return DiscoveryEventCodec.findV2(line);
     }
 }

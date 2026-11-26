@@ -1836,4 +1836,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get watchConnectionSubtitle => '페어링, 재연결 및 브리지 링크 상태 확인';
+
+  @override
+  String get includeLegacyWatches => '구형 Apple Watch 포함 (watchOS 1–9)';
+
+  @override
+  String get includeLegacyWatchesSubtitle => '구형 모델용 레거시 페어링 전략 1–3 실험적 지원.';
+
+  @override
+  String legacyStrategyBadge(String strategy) {
+    return '레거시 $strategy';
+  }
 }

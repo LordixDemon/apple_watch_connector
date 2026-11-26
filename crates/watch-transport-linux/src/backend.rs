@@ -19,6 +19,7 @@ pub struct LinuxBackend {
     resume_after_stop: bool,
     stop_deadline: Option<Instant>,
     adapters: crate::adapters::AdapterRegistry,
+    active_strategies: Vec<u8>,
 }
 impl Default for LinuxBackend {
     fn default() -> Self {
@@ -71,6 +72,7 @@ impl LinuxBackend {
             state_dir,
             resume_after_stop: false,
             stop_deadline: None,
+            active_strategies: vec![4],
         }
     }
     fn java(&self) -> PathBuf {
@@ -203,7 +205,7 @@ impl LinuxBackend {
             }
         }
         if resume {
-            self.start(true);
+            self.start(true, &[4]);
         }
     }
     fn confirm_setup(&mut self) -> Value {
@@ -252,7 +254,7 @@ impl LinuxBackend {
             }
         }
         if self.child.is_none() {
-            return self.start(true);
+            return self.start(true, &[4]);
         }
         let result = self.send("STOP");
         if result["status"] == "QUEUED" {
@@ -261,11 +263,16 @@ impl LinuxBackend {
         }
         result
     }
-    fn start(&mut self, resume: bool) -> Value {
+    fn start(&mut self, resume: bool, strategies: &[u8]) -> Value {
         self.reap();
         if self.child.is_some() {
             return json!({"status":"BUSY"});
         }
+        self.active_strategies = if resume || strategies.is_empty() {
+            vec![4]
+        } else {
+            strategies.to_vec()
+        };
         if !self.available() {
             return json!({"status":"UNAVAILABLE","reason":"Raw HCI helper, protocol runtime or controller driver is missing"});
         }
@@ -300,7 +307,7 @@ impl LinuxBackend {
             .arg(self.protocol.join("*"))
             .arg(self.host_class())
             .arg(&self.helper)
-            .arg(if resume { "resume" } else { "pair" })
+            .args(host_mode_args(resume, &self.active_strategies))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
@@ -380,18 +387,22 @@ impl LinuxBackend {
             .devices
             .iter()
             .find(|d| d.value["id"].as_str() == selected.as_deref())
-            .map(|d| d.value["productType"].clone())
+            .and_then(|d| {
+                let pt = &d.value["productType"];
+                (!pt.is_null()).then(|| pt.clone())
+            })
             .or_else(|| state.product.as_ref().map(|p| json!(p)));
         let mut snapshot = json!({"apiVersion":1,"coreVersion":env!("CARGO_PKG_VERSION"),"coreGitRev":env!("WATCH_GIT_REV"),"protocolFingerprint":protocol_fingerprint,"leLinkSummary":state.le_link_summary,"epoch":state.epoch,
             "logPath":self.state_dir.join("protocol.log").to_string_lossy(),"phase":state.phase,"adapterState":state.adapter,"selectedId":state.selected,
             "devices":state.devices.iter().map(|d|d.value.clone()).collect::<Vec<_>>(),
-            "pairId":state.pair_id,"productType":product,"activationConfirmed":state.activated,
+            "pairId":state.pair_id,"pairingStrategy":state.pairing_strategy,"productType":product,"activationConfirmed":state.activated,
             "softwareUpdate":state.update,
             "watchReady":state.ready,"operationalEligible":state.verified,"pinRequired":state.phase=="PIN_REQUIRED",
             "pairingStreamOpen":self.child.is_some() && !["IDLE","DISCOVERING","CONNECTING","DISCONNECTING","FAILED"].contains(&state.phase.as_str()),
             "pairingStage":state.phase,"error":state.error,"journal":state.journal.iter().cloned().collect::<Vec<_>>().join("\n"),
             "capabilities":{"platform":if cfg!(target_os="windows") {"windows"} else {"linux"},"backend":if cfg!(target_os="windows") {"usb_hci_shared_protocol"} else {"hci_user_channel_shared_protocol"},
                 "adapterSelection":true,"discovery":available,"bluetoothLink":available,"fixedL2cap":available,"pairing":available,
+                "strategies":strategy_capabilities(),
                 "features":{"softwareUpdates":available,"telemetry":available,"watchSettings":available},
                 "operationalIds":available,"ownerConfirmation":true,"wifi":false,"pairingUnavailableReason":if available {None} else {Some(if cfg!(target_os="windows") {"WINDOWS_RAW_HCI_REQUIRED"} else {"LINUX_BACKEND_NOT_INSTALLED"})}}});
         if let Some(obj) = snapshot.as_object_mut() {
@@ -445,8 +456,11 @@ impl LinuxBackend {
         self.reap();
         match request["method"].as_str() {
             Some("snapshot") => self.snapshot(),
-            Some("scan" | "pair") => self.start(false),
-            Some("resume") => self.start(true),
+            Some("scan" | "pair") => match parse_strategy_request(&request) {
+                Ok(strategies) => self.start(false, &strategies),
+                Err(status) => json!({"status": status}),
+            },
+            Some("resume") => self.start(true, &[4]),
             Some("confirmSetup") => self.confirm_setup(),
             Some(
                 method @ ("querySoftwareUpdate"
@@ -706,6 +720,72 @@ impl LinuxBackend {
         }
     }
 }
+fn parse_strategy_request(request: &Value) -> Result<Vec<u8>, &'static str> {
+    let include_legacy = match request.get("includeLegacy") {
+        None | Some(Value::Null) => None,
+        Some(Value::Bool(flag)) => Some(*flag),
+        Some(_) => return Err("REJECTED"),
+    };
+    match request.get("strategies") {
+        None | Some(Value::Null) => {
+            if include_legacy == Some(true) {
+                Ok(vec![4, 3, 2, 1])
+            } else {
+                Ok(vec![4])
+            }
+        }
+        Some(value) => parse_strategies(value),
+    }
+}
+
+fn parse_strategies(value: &Value) -> Result<Vec<u8>, &'static str> {
+    match value {
+        Value::Null => Ok(vec![4]),
+        Value::Array(items) if !items.is_empty() && items.len() <= 4 => {
+            let mut strategies = Vec::with_capacity(items.len());
+            for item in items {
+                let Some(strategy) = item
+                    .as_u64()
+                    .and_then(|n| u8::try_from(n).ok())
+                    .filter(|&n| (1..=4).contains(&n))
+                else {
+                    return Err("REJECTED");
+                };
+                if strategies.contains(&strategy) {
+                    return Err("REJECTED");
+                }
+                strategies.push(strategy);
+            }
+            Ok(strategies)
+        }
+        _ => Err("REJECTED"),
+    }
+}
+
+fn host_mode_args(resume: bool, strategies: &[u8]) -> Vec<String> {
+    if resume {
+        return vec!["resume".into()];
+    }
+    if strategies.is_empty() || strategies == [4] {
+        return vec!["pair".into()];
+    }
+    let csv = strategies
+        .iter()
+        .map(u8::to_string)
+        .collect::<Vec<_>>()
+        .join(",");
+    vec!["pair".into(), format!("--strategies={csv}")]
+}
+
+fn strategy_capabilities() -> Value {
+    json!([
+        {"id": 4, "slug": "network_relay", "watchOsRange": "watchOS 9+", "experimental": false, "defaultEnabled": true, "maturity": "production", "watchOs": "watchOS 9+"},
+        {"id": 3, "slug": "direct_ipsec_legacy", "watchOsRange": "watchOS 6-9", "experimental": true, "defaultEnabled": false, "maturity": "experimental", "watchOs": "watchOS 6-9"},
+        {"id": 2, "slug": "sequential_legacy", "watchOsRange": "watchOS 3-5", "experimental": true, "defaultEnabled": false, "maturity": "experimental", "watchOs": "watchOS 3-5"},
+        {"id": 1, "slug": "simultaneous_legacy", "watchOsRange": "watchOS 1-3", "experimental": true, "defaultEnabled": false, "maturity": "experimental", "watchOs": "watchOS 1-3"}
+    ])
+}
+
 /// Mirrors OperationalCommandPolicy: one stdin line of standard base64.
 fn bulletin_payload(payload: &str) -> bool {
     let body = payload.trim_end_matches('=');
@@ -988,5 +1068,103 @@ mod tests {
         assert!(backend.protocol_fingerprint().is_none());
 
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn strategy_list_validation_accepts_valid_and_rejects_malformed() {
+        let mut backend = LinuxBackend::new();
+        backend.helper = PathBuf::from("/nonexistent-watch-helper-for-test");
+        assert_eq!(backend.active_strategies, vec![4]);
+
+        for request in [
+            json!({"method":"scan","strategies":[5]}),
+            json!({"method":"scan","strategies":[0]}),
+            json!({"method":"pair","strategies":[-1]}),
+            json!({"method":"scan","strategies":[4,4]}),
+            json!({"method":"pair","strategies":[]}),
+            json!({"method":"scan","strategies":[1,2,3,4,1]}),
+            json!({"method":"scan","strategies":"4"}),
+            json!({"method":"pair","strategies":4}),
+            json!({"method":"scan","strategies":[4.5]}),
+            json!({"method":"pair","strategies":["4"]}),
+            json!({"method":"scan","includeLegacy":"yes"}),
+            json!({"method":"pair","includeLegacy":1}),
+        ] {
+            let res = backend.command(request);
+            assert_eq!(res["status"], "REJECTED");
+            assert_eq!(backend.active_strategies, vec![4]);
+        }
+
+        let res_all = backend.command(json!({"method":"scan","strategies":[4,3,2,1]}));
+        assert_eq!(res_all["status"], "UNAVAILABLE");
+        assert_eq!(backend.active_strategies, vec![4, 3, 2, 1]);
+        assert_eq!(
+            host_mode_args(false, &backend.active_strategies),
+            vec!["pair", "--strategies=4,3,2,1"]
+        );
+
+        let res_include_legacy = backend.command(json!({"method":"pair","includeLegacy":true}));
+        assert_eq!(res_include_legacy["status"], "UNAVAILABLE");
+        assert_eq!(backend.active_strategies, vec![4, 3, 2, 1]);
+
+        let res_include_legacy_false = backend.command(json!({"method":"scan","includeLegacy":false}));
+        assert_eq!(res_include_legacy_false["status"], "UNAVAILABLE");
+        assert_eq!(backend.active_strategies, vec![4]);
+
+        let res_explicit_overrides = backend.command(json!({"method":"pair","strategies":[4,1],"includeLegacy":true}));
+        assert_eq!(res_explicit_overrides["status"], "UNAVAILABLE");
+        assert_eq!(backend.active_strategies, vec![4, 1]);
+
+        let res_default = backend.command(json!({"method":"pair","strategies":[4]}));
+        assert_eq!(res_default["status"], "UNAVAILABLE");
+        assert_eq!(backend.active_strategies, vec![4]);
+        assert_eq!(host_mode_args(false, &backend.active_strategies), vec!["pair"]);
+
+        let res_omitted = backend.command(json!({"method":"scan"}));
+        assert_eq!(res_omitted["status"], "UNAVAILABLE");
+        assert_eq!(backend.active_strategies, vec![4]);
+        assert_eq!(host_mode_args(false, &backend.active_strategies), vec!["pair"]);
+
+        let res_subset = backend.command(json!({"method":"pair","strategies":[3,1]}));
+        assert_eq!(res_subset["status"], "UNAVAILABLE");
+        assert_eq!(backend.active_strategies, vec![3, 1]);
+        assert_eq!(
+            host_mode_args(false, &backend.active_strategies),
+            vec!["pair", "--strategies=3,1"]
+        );
+
+        let res_resume = backend.command(json!({"method":"resume"}));
+        assert_eq!(res_resume["status"], "UNAVAILABLE");
+        assert_eq!(backend.active_strategies, vec![4]);
+        assert_eq!(host_mode_args(true, &[4, 3, 2, 1]), vec!["resume"]);
+    }
+
+    #[test]
+    fn snapshot_includes_capabilities_strategies_and_pairing_strategy() {
+        let mut backend = LinuxBackend::new();
+        let initial = backend.command(json!({"method":"snapshot"}));
+        assert!(initial["pairingStrategy"].is_null());
+        assert_eq!(
+            initial["capabilities"]["strategies"],
+            json!([
+                {"id": 4, "slug": "network_relay", "watchOsRange": "watchOS 9+", "experimental": false, "defaultEnabled": true, "maturity": "production", "watchOs": "watchOS 9+"},
+                {"id": 3, "slug": "direct_ipsec_legacy", "watchOsRange": "watchOS 6-9", "experimental": true, "defaultEnabled": false, "maturity": "experimental", "watchOs": "watchOS 6-9"},
+                {"id": 2, "slug": "sequential_legacy", "watchOsRange": "watchOS 3-5", "experimental": true, "defaultEnabled": false, "maturity": "experimental", "watchOs": "watchOS 3-5"},
+                {"id": 1, "slug": "simultaneous_legacy", "watchOsRange": "watchOS 1-3", "experimental": true, "defaultEnabled": false, "maturity": "experimental", "watchOs": "watchOS 1-3"}
+            ])
+        );
+
+        {
+            let mut state = backend.state.lock().unwrap();
+            state.phase = "DISCOVERING".into();
+            state.observe("WATCH_DISCOVERED_V2:{\"token\":\"11111111-1111-4111-8111-111111111111\",\"displayName\":\"Apple Watch (Legacy S1)\",\"rssi\":-61,\"strategy\":1}");
+            state.selected = Some("11111111-1111-4111-8111-111111111111".into());
+            state.observe("PAIRING_STRATEGY_V1:1");
+        }
+        let paired = backend.command(json!({"method":"snapshot"}));
+        assert_eq!(paired["pairingStrategy"], 1);
+        assert!(paired["productType"].is_null());
+        assert_eq!(paired["devices"][0]["strategy"], 1);
+        assert_eq!(paired["devices"][0]["experimental"], true);
     }
 }

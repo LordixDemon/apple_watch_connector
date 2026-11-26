@@ -8,6 +8,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
 
+import dev.applewatchandroid.bridge.spi.DiscoveredWatch;
+import dev.applewatchandroid.bridge.spi.DiscoveryEventCodec;
+import dev.applewatchandroid.bridge.spi.PairingStrategyId;
+import dev.applewatchandroid.bridge.spi.StrategyPolicy;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -134,15 +139,23 @@ final class BridgeSetupEngine implements AutoCloseable {
         }
         if (busy() || OperationalWatchService.hasOwner()) return false;
         switch (method) {
-            case "beginPairing" -> { if (encryptedPairingSessionFile.isFile()) return false; startRootHost(true); }
+            case "beginPairing" -> {
+                if (encryptedPairingSessionFile.isFile()) return false;
+                StrategyPolicy policy = parseStrategiesArg(args);
+                if (policy == null) return false;
+                startRootHost(true, null, null, policy);
+            }
             case "beginOpticalPairing", "replacePairOptically" -> {
+                StrategyPolicy policy = parseStrategiesArg(args);
+                if (policy == null) return false;
                 byte[] payload = args.getByteArray("opticalCode");
-                try (OpticalPairingCode ignored = OpticalPairingCode.parse(payload)) {
+                try {
+                    validateOpticalPayload(payload, policy.includesExperimental());
                     boolean replacement = "replacePairOptically".equals(method);
                     if (replacement != encryptedPairingSessionFile.isFile()) return false;
                     String previous = replacement ? args.getString("pairId") : null;
                     if (replacement && previous == null) return false;
-                    startRootHost(true, payload.clone(), previous);
+                    startRootHost(true, payload.clone(), previous, policy);
                 } catch (IllegalArgumentException invalid) { return false; }
                 finally { wipe(payload); args.remove("opticalCode"); }
             }
@@ -193,15 +206,78 @@ final class BridgeSetupEngine implements AutoCloseable {
         }
         publishSetup();
     }
+    private static StrategyPolicy parseStrategiesArg(android.os.Bundle args) {
+        if (args == null || !args.containsKey("strategies")) {
+            return StrategyPolicy.PRODUCTION_DEFAULT;
+        }
+        int[] raw = args.getIntArray("strategies");
+        if (raw == null || raw.length == 0 || raw.length > PairingStrategyId.values().length) {
+            return null;
+        }
+        java.util.List<PairingStrategyId> ids = new java.util.ArrayList<>(raw.length);
+        for (int wireId : raw) {
+            PairingStrategyId id = PairingStrategyId.fromWireId(wireId);
+            if (id == null || ids.contains(id)) {
+                return null;
+            }
+            ids.add(id);
+        }
+        return new StrategyPolicy(ids);
+    }
+
+    private static void validateOpticalPayload(byte[] payload, boolean allowLegacy) {
+        try (OpticalPairingCode ignored = OpticalPairingCode.parse(payload)) {
+            return;
+        } catch (IllegalArgumentException modernInvalid) {
+            if (!allowLegacy) {
+                throw modernInvalid;
+            }
+            try (LegacyWatchPairingCodec.LegacyOpticalCode ignored =
+                         LegacyWatchPairingCodec.LegacyOpticalCode.parse(payload)) {
+                return;
+            }
+        }
+    }
+
+    private synchronized void discoverV2(String marker) {
+        if (!"DISCOVERING".equals(setupState.getString("setupPhase"))) return;
+        try {
+            DiscoveredWatch watch = DiscoveryEventCodec.decodeV2(marker);
+            android.os.Bundle row = new android.os.Bundle();
+            row.putString("token", watch.token());
+            row.putString("productType", watch.productType() != null ? watch.productType() : watch.displayName());
+            row.putString("displayName", watch.displayName());
+            row.putString("watchOs", watch.watchOs() != null ? watch.watchOs() : watch.strategy().watchOsRange());
+            row.putInt("rssi", watch.rssi());
+            row.putInt("strategy", watch.strategy().wireId());
+            row.putBoolean("experimental", watch.experimental());
+            row.putBoolean("hasV2Metadata", true);
+            java.util.ArrayList<android.os.Bundle> rows = setupState.getParcelableArrayList("discoveredWatches");
+            if (rows == null) rows = new java.util.ArrayList<>();
+            rows.removeIf(old -> watch.token().equals(old.getString("token")));
+            if (rows.size() >= 8) rows.remove(0);
+            rows.add(row);
+            setupState.putParcelableArrayList("discoveredWatches", rows);
+            publishSetup();
+        } catch (IllegalArgumentException invalid) { /* Not a valid V2 observation. */ }
+    }
+
     private synchronized void discover(String line) {
         String[] parts = line.split(":");
         if (parts.length != 5 || !"DISCOVERING".equals(setupState.getString("setupPhase"))) return;
         try {
             if (!java.util.UUID.fromString(parts[1]).toString().equals(parts[1]) || !parts[2].matches("Watch[0-9]+,[0-9]+")) return;
+            java.util.ArrayList<android.os.Bundle> rows = setupState.getParcelableArrayList("discoveredWatches");
+            if (rows != null && rows.stream().anyMatch(old ->
+                    parts[1].equals(old.getString("token")) && old.getBoolean("hasV2Metadata", false))) {
+                return;
+            }
             android.os.Bundle row = new android.os.Bundle();
             row.putString("token", parts[1]); row.putString("productType", parts[2]);
+            row.putString("displayName", parts[2]);
             row.putString("watchOs", parts[3]); row.putInt("rssi", Integer.parseInt(parts[4]));
-            java.util.ArrayList<android.os.Bundle> rows = setupState.getParcelableArrayList("discoveredWatches");
+            row.putInt("strategy", PairingStrategyId.NETWORK_RELAY_S4.wireId());
+            row.putBoolean("experimental", false);
             if (rows == null) rows = new java.util.ArrayList<>();
             rows.removeIf(old -> parts[1].equals(old.getString("token")));
             if (rows.size() >= 8) rows.remove(0);
@@ -302,10 +378,17 @@ final class BridgeSetupEngine implements AutoCloseable {
     }
 
     private void startRootHost(boolean freshPairing) {
-        startRootHost(freshPairing, null, null);
+        startRootHost(freshPairing, null, null, StrategyPolicy.PRODUCTION_DEFAULT);
     }
 
     private void startRootHost(boolean freshPairing, byte[] opticalCode, String replacedPair) {
+        startRootHost(freshPairing, opticalCode, replacedPair, StrategyPolicy.PRODUCTION_DEFAULT);
+    }
+
+    private void startRootHost(boolean freshPairing, byte[] opticalCode, String replacedPair, StrategyPolicy strategyPolicy) {
+        final StrategyPolicy effectiveStrategies = strategyPolicy == null
+                ? StrategyPolicy.PRODUCTION_DEFAULT
+                : strategyPolicy;
         if (busy() || OperationalWatchService.hasOwner()) {
             wipe(opticalCode);
             appendLog(getString(R.string.root_hal_host_is_already_running));
@@ -453,6 +536,9 @@ final class BridgeSetupEngine implements AutoCloseable {
                         hostArgs.add("--commit-is-paired");
                     }
                     if (opticalCode != null) hostArgs.add("--optical-pairing");
+                    if (operationalPairing == null && effectiveStrategies.includesExperimental()) {
+                        hostArgs.add("--strategies=" + effectiveStrategies.toCsv());
+                    }
                     process = UsbHostProcess.start(context, hostArgs.toArray(new String[0]), usbAdapter);
                 } else {
                     String apk = context.getApplicationInfo().sourceDir;
@@ -468,7 +554,10 @@ final class BridgeSetupEngine implements AutoCloseable {
                                     + (operationalPairing != null
                                         ? " --operational-pairing " + shellQuote(operationalPairing)
                                         : (commitAuthorized ? " --commit-is-paired" : ""))
-                                    + (opticalCode == null ? "" : " --optical-pairing");
+                                    + (opticalCode == null ? "" : " --optical-pairing")
+                                    + (operationalPairing == null && effectiveStrategies.includesExperimental()
+                                        ? " --strategies=" + effectiveStrategies.toCsv()
+                                        : "");
                     process = new ProcessBuilder("su", "-c", command)
                             .redirectErrorStream(true)
                             .start();
@@ -559,6 +648,8 @@ final class BridgeSetupEngine implements AutoCloseable {
                         }
                         // The helper logs discoveries through ProtocolHost.log, which adds a
                         // "[WatchHal] [T+...]" prefix, so match the marker anywhere in the line.
+                        String discoveryV2 = WatchDiscoveryEvent.findV2(line);
+                        if (discoveryV2 != null) { discoverV2(discoveryV2); continue; }
                         String discovery = WatchDiscoveryEvent.find(line);
                         if (discovery != null) { discover(discovery); continue; }
                         if (line.startsWith(HealthRegistryObservationCodec.PREFIX) || line.startsWith(HealthDataEventCodec.PREFIX) || line.startsWith(HealthPeerIdentityCodec.PREFIX)
@@ -632,7 +723,7 @@ final class BridgeSetupEngine implements AutoCloseable {
                             eventIntent.putExtra("deviceName", "Apple Watch");
                             context.sendBroadcast(eventIntent);
                         }
-                        if (line.contains("PIN_REQUIRED:")) {
+                        if (line.contains("PIN_REQUIRED:") || line.contains("LEGACY_PIN_PROMPT_V1:")) {
                             setPinEntryEnabled(true);
                         }
                         if (line.contains(

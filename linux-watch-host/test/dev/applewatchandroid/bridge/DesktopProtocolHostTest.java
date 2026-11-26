@@ -29,8 +29,21 @@ public final class DesktopProtocolHostTest {
         }
         DesktopProtocolHost.ParsedArgs legacy = DesktopProtocolHost.parseArgs(
                 new String[]{"/bin/hci", "pair", "--experimental-legacy-pairing"});
-        if (legacy.mode() != DesktopProtocolHost.Mode.PAIR || !legacy.experimentalLegacy()) {
+        if (legacy.mode() != DesktopProtocolHost.Mode.PAIR || !legacy.experimentalLegacy()
+                || !"4,3,2,1".equals(legacy.strategyPolicy().toCsv())) {
             throw new AssertionError("legacy pair parse mismatch");
+        }
+        DesktopProtocolHost.ParsedArgs custom = DesktopProtocolHost.parseArgs(
+                new String[]{"/bin/hci", "pair", "--strategies=4,1"});
+        if (custom.mode() != DesktopProtocolHost.Mode.PAIR || !custom.experimentalLegacy()
+                || !"4,1".equals(custom.strategyPolicy().toCsv())) {
+            throw new AssertionError("custom strategies parse mismatch");
+        }
+        DesktopProtocolHost.ParsedArgs s4Only = DesktopProtocolHost.parseArgs(
+                new String[]{"/bin/hci", "pair", "--strategies=4"});
+        if (s4Only.mode() != DesktopProtocolHost.Mode.PAIR || s4Only.experimentalLegacy()
+                || !"4".equals(s4Only.strategyPolicy().toCsv())) {
+            throw new AssertionError("s4-only strategies parse mismatch");
         }
         DesktopProtocolHost.ParsedArgs resume = DesktopProtocolHost.parseArgs(new String[]{"/bin/hci", "resume"});
         if (resume.mode() != DesktopProtocolHost.Mode.RESUME || resume.experimentalLegacy()) {
@@ -50,6 +63,9 @@ public final class DesktopProtocolHostTest {
                 {"/bin/hci", "confirm"},
                 {"/bin/hci", "confirm", pairId, "extra"},
                 {"/bin/hci", "resume", "--experimental-legacy-pairing"},
+                {"/bin/hci", "resume", "--strategies=4,1"},
+                {"/bin/hci", "pair", "--strategies=9"},
+                {"/bin/hci", "pair", "--strategies="},
                 {"/bin/hci", "pair", "--unknown-flag"},
                 {"/bin/hci", "pair", "--experimental-legacy-pairing", "extra"},
         }) {
@@ -94,7 +110,9 @@ public final class DesktopProtocolHostTest {
             String pairJson = Files.readString(identityDir.resolve("pair-public.json"), StandardCharsets.UTF_8);
             if (!pairJson.contains("\"pairId\":\"" + pairId + "\"")
                     || !pairJson.contains("\"activationConfirmed\":true")
-                    || !pairJson.contains("\"ownerConfirmed\":true")) {
+                    || !pairJson.contains("\"ownerConfirmed\":true")
+                    || !pairJson.contains("\"pairingStrategy\":4")
+                    || !pairJson.contains("\"idsLinkKind\":1")) {
                 throw new AssertionError("pair-public.json incomplete: " + pairJson);
             }
             String stdout = captured.toString(StandardCharsets.UTF_8);

@@ -1,5 +1,8 @@
 package dev.applewatchandroid.bridge;
 
+import dev.applewatchandroid.bridge.spi.IdsLinkKind;
+import dev.applewatchandroid.bridge.spi.PairingStrategyId;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -119,6 +122,45 @@ final class PairingSessionRecordCodec {
                         "Pairing session record has trailing payload bytes");
             }
 
+            PairingStrategyId strategy = PairingStrategyId.NETWORK_RELAY_S4;
+            byte[] strategyField = fields.get(PairingSessionRecord.FIELD_PAIRING_STRATEGY);
+            if (strategyField != null) {
+                int wireId = parseU8(strategyField, "pairing strategy");
+                strategy = PairingStrategyId.fromWireId(wireId);
+                if (strategy == null) {
+                    throw new IllegalArgumentException("Unsupported pairing strategy wire ID: " + wireId);
+                }
+            }
+            IdsLinkKind idsLinkKind = strategy == PairingStrategyId.NETWORK_RELAY_S4
+                    ? IdsLinkKind.NETWORK_RELAY_ESP
+                    : IdsLinkKind.IDS_BT_LINK;
+            byte[] linkKindField = fields.get(PairingSessionRecord.FIELD_IDS_LINK_KIND);
+            if (linkKindField != null) {
+                int wireId = parseU8(linkKindField, "IDS link kind");
+                idsLinkKind = IdsLinkKind.fromWireValue(wireId);
+                if (idsLinkKind == null) {
+                    throw new IllegalArgumentException("Unsupported IDS link kind wire ID: " + wireId);
+                }
+            }
+            boolean smpSc = true;
+            int smpEdiv = 0;
+            byte[] smpRand = null;
+            byte[] smpParams = fields.get(PairingSessionRecord.FIELD_SMP_SECURITY_PARAMS);
+            if (smpParams != null) {
+                if (smpParams.length != PairingSessionRecord.SMP_SECURITY_PARAMS_LENGTH) {
+                    throw new IllegalArgumentException("Pairing session SMP security parameters length is invalid");
+                }
+                int scFlag = smpParams[0] & 0xff;
+                if (scFlag > 1) {
+                    throw new IllegalArgumentException("Pairing session SMP SC flag is invalid");
+                }
+                smpSc = scFlag != 0;
+                smpEdiv = ((smpParams[1] & 0xff) << 8) | (smpParams[2] & 0xff);
+                smpRand = Arrays.copyOfRange(smpParams, 3, 11);
+            }
+            byte[] strategyExtension = fields.get(PairingSessionRecord.FIELD_STRATEGY_EXTENSION);
+            boolean legacyStrategy = strategy.isExperimental();
+
             PairingSessionRecord decoded = new PairingSessionRecord(
                     required(fields, PairingSessionRecord.FIELD_GENERATION_UUID),
                     state,
@@ -132,39 +174,45 @@ final class PairingSessionRecordCodec {
                     fields.get(PairingSessionRecord.FIELD_PENDING_LOCAL_C547),
                     fields.get(PairingSessionRecord.FIELD_PENDING_REMOTE_C547),
                     fields.get(PairingSessionRecord.FIELD_PENDING_IDS_AUTH_DATA),
-                    required(
-                            fields,
-                            PairingSessionRecord.FIELD_LOCAL_NETWORK_MATERIAL),
-                    required(fields, PairingSessionRecord.FIELD_REMOTE_IDENTITY),
-                    required(fields, PairingSessionRecord.FIELD_REMOTE_CLASS_D),
-                    required(fields, PairingSessionRecord.FIELD_REMOTE_CLASS_C),
-                    required(
-                            fields,
-                            PairingSessionRecord.FIELD_INITIATOR_CLASS_D_ADDRESS),
-                    required(
-                            fields,
-                            PairingSessionRecord.FIELD_RESPONDER_CLASS_D_ADDRESS),
-                    required(
-                            fields,
-                            PairingSessionRecord.FIELD_INITIATOR_CLASS_C_ADDRESS),
-                    required(
-                            fields,
-                            PairingSessionRecord.FIELD_RESPONDER_CLASS_C_ADDRESS),
-                    parseU16(
-                            required(
-                                    fields,
-                                    PairingSessionRecord.FIELD_NETWORK_RELAY_VERSION),
-                            "NetworkRelay version"),
-                    parseU8(
-                            required(
-                                    fields,
-                                    PairingSessionRecord.FIELD_DEVICE_TYPE),
-                            "device type"),
-                    parseBoolean(
-                            required(
-                                    fields,
-                                    PairingSessionRecord.FIELD_ALWAYS_ON_WIFI),
-                            "always-on Wi-Fi"),
+                    legacyStrategy
+                            ? fields.get(PairingSessionRecord.FIELD_LOCAL_NETWORK_MATERIAL)
+                            : required(fields, PairingSessionRecord.FIELD_LOCAL_NETWORK_MATERIAL),
+                    legacyStrategy
+                            ? fields.get(PairingSessionRecord.FIELD_REMOTE_IDENTITY)
+                            : required(fields, PairingSessionRecord.FIELD_REMOTE_IDENTITY),
+                    legacyStrategy
+                            ? fields.get(PairingSessionRecord.FIELD_REMOTE_CLASS_D)
+                            : required(fields, PairingSessionRecord.FIELD_REMOTE_CLASS_D),
+                    legacyStrategy
+                            ? fields.get(PairingSessionRecord.FIELD_REMOTE_CLASS_C)
+                            : required(fields, PairingSessionRecord.FIELD_REMOTE_CLASS_C),
+                    legacyStrategy
+                            ? fields.get(PairingSessionRecord.FIELD_INITIATOR_CLASS_D_ADDRESS)
+                            : required(fields, PairingSessionRecord.FIELD_INITIATOR_CLASS_D_ADDRESS),
+                    legacyStrategy
+                            ? fields.get(PairingSessionRecord.FIELD_RESPONDER_CLASS_D_ADDRESS)
+                            : required(fields, PairingSessionRecord.FIELD_RESPONDER_CLASS_D_ADDRESS),
+                    legacyStrategy
+                            ? fields.get(PairingSessionRecord.FIELD_INITIATOR_CLASS_C_ADDRESS)
+                            : required(fields, PairingSessionRecord.FIELD_INITIATOR_CLASS_C_ADDRESS),
+                    legacyStrategy
+                            ? fields.get(PairingSessionRecord.FIELD_RESPONDER_CLASS_C_ADDRESS)
+                            : required(fields, PairingSessionRecord.FIELD_RESPONDER_CLASS_C_ADDRESS),
+                    legacyStrategy && !fields.containsKey(PairingSessionRecord.FIELD_NETWORK_RELAY_VERSION)
+                            ? 0
+                            : parseU16(
+                                    required(fields, PairingSessionRecord.FIELD_NETWORK_RELAY_VERSION),
+                                    "NetworkRelay version"),
+                    legacyStrategy && !fields.containsKey(PairingSessionRecord.FIELD_DEVICE_TYPE)
+                            ? 0
+                            : parseU8(
+                                    required(fields, PairingSessionRecord.FIELD_DEVICE_TYPE),
+                                    "device type"),
+                    legacyStrategy && !fields.containsKey(PairingSessionRecord.FIELD_ALWAYS_ON_WIFI)
+                            ? false
+                            : parseBoolean(
+                                    required(fields, PairingSessionRecord.FIELD_ALWAYS_ON_WIFI),
+                                    "always-on Wi-Fi"),
                     decodeRequiredText(
                             fields,
                             PairingSessionRecord.FIELD_DEVICE_NAME,
@@ -200,7 +248,15 @@ final class PairingSessionRecordCodec {
                     decodeOptionalText(
                             fields,
                             PairingSessionRecord.FIELD_REMOTE_INSTANCE_UUID,
-                            "remote instance UUID"));
+                            "remote instance UUID"),
+                    strategy,
+                    idsLinkKind,
+                    smpSc,
+                    smpEdiv,
+                    smpRand,
+                    strategyExtension,
+                    false);
+            wipe(smpRand);
             try {
                 decoded.observedSetupEvidence = (flags & PairingSessionRecord.FLAG_OBSERVED_SETUP_EVIDENCE) != 0;
                 decoded.idsDeviceInfoExchanged = (flags & PairingSessionRecord.FLAG_IDS_DEVICE_INFO_EXCHANGED) != 0;
@@ -307,30 +363,38 @@ final class PairingSessionRecordCodec {
                 fields,
                 PairingSessionRecord.FIELD_PENDING_IDS_AUTH_DATA,
                 record.pendingIdsAuthData);
-        fields.add(new Field(
+        addOptional(
+                fields,
                 PairingSessionRecord.FIELD_LOCAL_NETWORK_MATERIAL,
-                record.localNetworkMaterial));
-        fields.add(new Field(
+                record.localNetworkMaterial);
+        addOptional(
+                fields,
                 PairingSessionRecord.FIELD_REMOTE_IDENTITY,
-                record.remoteIdentity));
-        fields.add(new Field(
+                record.remoteIdentity);
+        addOptional(
+                fields,
                 PairingSessionRecord.FIELD_REMOTE_CLASS_D,
-                record.remoteClassD));
-        fields.add(new Field(
+                record.remoteClassD);
+        addOptional(
+                fields,
                 PairingSessionRecord.FIELD_REMOTE_CLASS_C,
-                record.remoteClassC));
-        fields.add(new Field(
+                record.remoteClassC);
+        addOptional(
+                fields,
                 PairingSessionRecord.FIELD_INITIATOR_CLASS_D_ADDRESS,
-                record.initiatorClassDAddress));
-        fields.add(new Field(
+                record.initiatorClassDAddress);
+        addOptional(
+                fields,
                 PairingSessionRecord.FIELD_RESPONDER_CLASS_D_ADDRESS,
-                record.responderClassDAddress));
-        fields.add(new Field(
+                record.responderClassDAddress);
+        addOptional(
+                fields,
                 PairingSessionRecord.FIELD_INITIATOR_CLASS_C_ADDRESS,
-                record.initiatorClassCAddress));
-        fields.add(new Field(
+                record.initiatorClassCAddress);
+        addOptional(
+                fields,
                 PairingSessionRecord.FIELD_RESPONDER_CLASS_C_ADDRESS,
-                record.responderClassCAddress));
+                record.responderClassCAddress);
         fields.add(new Field(
                 PairingSessionRecord.FIELD_NETWORK_RELAY_VERSION,
                 u16(record.networkRelayVersion)));
@@ -376,6 +440,36 @@ final class PairingSessionRecordCodec {
         if (record.observedPeerMaximum != null) fields.add(new Field(PairingSessionRecord.FIELD_OBSERVED_PEER_MAXIMUM,
                 new byte[]{(byte) (record.observedPeerMaximum >>> 8), (byte) (int) record.observedPeerMaximum}));
         addText(fields, PairingSessionRecord.FIELD_OBSERVED_PEER_BUILD, record.observedPeerBuild);
+        if (record.pairingStrategy != PairingStrategyId.NETWORK_RELAY_S4) {
+            fields.add(new Field(
+                    PairingSessionRecord.FIELD_PAIRING_STRATEGY,
+                    new byte[]{(byte) record.pairingStrategy.wireId()}));
+            fields.add(new Field(
+                    PairingSessionRecord.FIELD_IDS_LINK_KIND,
+                    new byte[]{(byte) record.idsLinkKind.wireValue()}));
+        } else if (record.idsLinkKind != IdsLinkKind.NETWORK_RELAY_ESP) {
+            fields.add(new Field(
+                    PairingSessionRecord.FIELD_IDS_LINK_KIND,
+                    new byte[]{(byte) record.idsLinkKind.wireValue()}));
+        }
+        if (record.pairingStrategy != PairingStrategyId.NETWORK_RELAY_S4
+                || !record.smpSecureConnections
+                || record.smpEdiv != 0
+                || record.smpRand != null) {
+            byte[] smpParams = new byte[PairingSessionRecord.SMP_SECURITY_PARAMS_LENGTH];
+            smpParams[0] = record.smpSecureConnections ? (byte) 1 : 0;
+            smpParams[1] = (byte) ((record.smpEdiv >>> 8) & 0xff);
+            smpParams[2] = (byte) (record.smpEdiv & 0xff);
+            if (record.smpRand != null && record.smpRand.length == 8) {
+                System.arraycopy(record.smpRand, 0, smpParams, 3, 8);
+            }
+            try {
+                fields.add(new Field(PairingSessionRecord.FIELD_SMP_SECURITY_PARAMS, smpParams));
+            } finally {
+                wipe(smpParams);
+            }
+        }
+        addOptional(fields, PairingSessionRecord.FIELD_STRATEGY_EXTENSION, record.strategyExtension);
         return fields;
     }
 
@@ -405,9 +499,24 @@ final class PairingSessionRecordCodec {
         requireNonzero(
                 "pairing generation UUID",
                 record.generationUuid);
+        if (record.pairingStrategy == null || record.idsLinkKind == null) {
+            throw new IllegalArgumentException("Pairing strategy and IDS link kind are required");
+        }
+        if (record.smpEdiv < 0 || record.smpEdiv > 0xffff) {
+            throw new IllegalArgumentException("Pairing session SMP EDIV is out of range");
+        }
+        if (record.smpRand != null && record.smpRand.length != 8) {
+            throw new IllegalArgumentException("Pairing session SMP Rand must be 8 bytes");
+        }
+        if (record.strategyExtension != null
+                && record.strategyExtension.length > PairingSessionRecord.MAX_STRATEGY_EXTENSION_LENGTH) {
+            throw new IllegalArgumentException("Pairing session strategy extension exceeds max bound");
+        }
+        boolean legacyStrategy = record.pairingStrategy.isExperimental();
         if (record.state == null
                 || record.transitionCounter < 1
-                || !record.modernPairing) {
+                || (!legacyStrategy && !record.modernPairing)
+                || (legacyStrategy && record.modernPairing)) {
             throw new IllegalArgumentException(
                     "Pairing session state metadata is invalid");
         }
@@ -440,6 +549,16 @@ final class PairingSessionRecordCodec {
             throw new IllegalArgumentException(
                     "Remote IDS instance UUID is transient and "
                             + "must not be persisted");
+        }
+
+        if (legacyStrategy) {
+            if (record.state.wireValue() < PairingSessionRecord.DurableState.SMP_BONDED_RAW.wireValue()
+                    || record.bluetoothBond == null) {
+                throw new IllegalArgumentException(
+                        "Legacy pairing session requires a persisted Bluetooth bond");
+            }
+            BluetoothBondSecretRecord.validateSerialized(record.bluetoothBond);
+            return;
         }
 
         AppleNetworkRelayPairingMaterial local = null;
@@ -797,7 +916,12 @@ final class PairingSessionRecordCodec {
                 || type == PairingSessionRecord.FIELD_REMOTE_INSTANCE_UUID
                 || type == PairingSessionRecord.FIELD_LOCAL_IDS_DEVICE_UUID
                 || type == PairingSessionRecord.FIELD_PEER_SPS_METADATA
-                || type == PairingSessionRecord.FIELD_OBSERVED_PEER_MAXIMUM || type == PairingSessionRecord.FIELD_OBSERVED_PEER_BUILD;
+                || type == PairingSessionRecord.FIELD_OBSERVED_PEER_MAXIMUM
+                || type == PairingSessionRecord.FIELD_OBSERVED_PEER_BUILD
+                || type == PairingSessionRecord.FIELD_PAIRING_STRATEGY
+                || type == PairingSessionRecord.FIELD_IDS_LINK_KIND
+                || type == PairingSessionRecord.FIELD_SMP_SECURITY_PARAMS
+                || type == PairingSessionRecord.FIELD_STRATEGY_EXTENSION;
     }
 
     static int roleCode(

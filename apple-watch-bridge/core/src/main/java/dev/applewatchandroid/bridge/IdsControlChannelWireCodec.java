@@ -16,7 +16,7 @@ import java.util.UUID;
  * Wire encoder, decoder, TLV parser, and {@code Cursor} primitives for
  * {@link IdsControlChannelCodec}.
  */
-final class IdsControlChannelWireCodec {
+public final class IdsControlChannelWireCodec {
     private static final int SETUP_HEADER_LENGTH = 16;
     private static final int ENCRYPTED_SETUP_HEADER_LENGTH = 24;
     private static final int UUID_LENGTH = 16;
@@ -477,6 +477,85 @@ final class IdsControlChannelWireCodec {
                 wipe(value);
             }
         }
+    }
+
+    /**
+     * Legacy-compatible Hello parser for watchOS 1–5 peers over {@code IDSBTLink}
+     * where newer Hello TLVs ({@code 3} capability, {@code 4} serviceMin, {@code 5} deviceUUID)
+     * may be omitted. Strategy 4 continues using the strict {@link #parseHello} parser.
+     */
+    static IdsControlChannelCodec.HelloMessage parseHelloLegacyLenient(
+            Cursor cursor) {
+        String controlVersion = cursor.readStringU16(false);
+        String productName = cursor.readStringU16(false);
+        String productVersion = cursor.readStringU16(false);
+        String productBuildVersion = cursor.readStringU16(false);
+        String model = cursor.readStringU16(false);
+        long pairingProtocolVersion = cursor.readU32();
+        Map<Integer, byte[]> fields = new HashMap<>();
+        try {
+            while (cursor.remaining() != 0) {
+                int id = cursor.readU8();
+                int length = cursor.readU16();
+                if (length < 0 || length > cursor.remaining()) {
+                    throw new IllegalArgumentException("Legacy IDS Hello TLV length is invalid");
+                }
+                byte[] val = cursor.readBytes(length);
+                if (!fields.containsKey(id)) {
+                    fields.put(id, val);
+                } else {
+                    wipe(val);
+                }
+            }
+            byte[] minimum = fields.get(0);
+            byte[] maximum = fields.get(1);
+            byte[] instance = fields.get(2);
+            byte[] capability = fields.get(3);
+            byte[] serviceMin = fields.get(4);
+            byte[] device = fields.get(5);
+            long minVer = (minimum != null && minimum.length == 4) ? readU32(minimum, 0) : pairingProtocolVersion;
+            long maxVer = (maximum != null && maximum.length == 4) ? readU32(maximum, 0) : pairingProtocolVersion;
+            UUID instanceUuid = (instance != null && instance.length == UUID_LENGTH)
+                    ? readUuid(instance) : new UUID(0L, 0L);
+            UUID deviceUuid = (device != null && device.length == UUID_LENGTH)
+                    ? readUuid(device) : instanceUuid;
+            long capFlags = (capability != null && capability.length == 8) ? readU64(capability, 0) : 0L;
+            int svcMin = (serviceMin != null && serviceMin.length == 2) ? readU16(serviceMin, 0) : 0;
+            return new IdsControlChannelCodec.HelloMessage(
+                    controlVersion,
+                    productName,
+                    productVersion,
+                    productBuildVersion,
+                    model,
+                    pairingProtocolVersion,
+                    minVer,
+                    maxVer,
+                    instanceUuid,
+                    deviceUuid,
+                    capFlags,
+                    svcMin);
+        } finally {
+            for (byte[] value : fields.values()) {
+                wipe(value);
+            }
+        }
+    }
+
+    /**
+     * Decodes a framed or unframed IDS Control Hello payload using the lenient legacy parser
+     * for watchOS 1–5 {@code IDSBTLink} frames (where TLVs 3, 4, and 5 may be absent).
+     */
+    public static IdsControlChannelCodec.HelloMessage decodeLegacyHelloPayload(byte[] payload) {
+        if (payload == null || payload.length < 2) {
+            throw new IllegalArgumentException("Legacy IDS Hello payload is truncated");
+        }
+        Cursor cursor = new Cursor(payload);
+        int type = cursor.readU8();
+        if (type != IdsControlChannelCodec.TYPE_HELLO) {
+            throw new IllegalArgumentException("Expected IDS Control Hello type 0x01, got 0x"
+                    + Integer.toHexString(type));
+        }
+        return parseHelloLegacyLenient(cursor);
     }
 
     private static IdsControlChannelCodec.SetupChannelMessage parseSetupChannel(

@@ -26,12 +26,12 @@ import java.util.Arrays;
  * accepted or returned here are little-endian, matching the SMP packets and
  * Android's native stack. Secret values are never converted to text.</p>
  */
-final class BleSecureConnectionsCrypto {
-    static final int AES_VALUE_LENGTH = 16;
-    static final int P256_VALUE_LENGTH = 32;
-    static final int PUBLIC_KEY_LENGTH = 64;
-    static final int DEVICE_ADDRESS_LENGTH = 7;
-    static final int IO_CAPABILITY_LENGTH = 3;
+public final class BleSecureConnectionsCrypto {
+    public static final int AES_VALUE_LENGTH = 16;
+    public static final int P256_VALUE_LENGTH = 32;
+    public static final int PUBLIC_KEY_LENGTH = 64;
+    public static final int DEVICE_ADDRESS_LENGTH = 7;
+    public static final int IO_CAPABILITY_LENGTH = 3;
 
     private static final byte[] F5_SALT_BIG_ENDIAN = new byte[]{
             0x6c, (byte) 0x88, (byte) 0x83, (byte) 0x91,
@@ -59,7 +59,7 @@ final class BleSecureConnectionsCrypto {
      * Bluetooth Core f4(U, V, X, Z), with every multi-octet input and the
      * result represented in SMP little-endian order.
      */
-    static byte[] f4(
+    public static byte[] f4(
             byte[] uLittleEndian,
             byte[] vLittleEndian,
             byte[] xLittleEndian,
@@ -125,7 +125,7 @@ final class BleSecureConnectionsCrypto {
      * Bluetooth Core f5(W, N1, N2, A1, A2). Inputs and both outputs use SMP
      * little-endian order.
      */
-    static F5Result f5(
+    public static F5Result f5(
             byte[] dhKeyLittleEndian,
             byte[] n1LittleEndian,
             byte[] n2LittleEndian,
@@ -225,7 +225,7 @@ final class BleSecureConnectionsCrypto {
      * Bluetooth Core f6(W, N1, N2, R, IOcap, A1, A2), in SMP
      * little-endian order.
      */
-    static byte[] f6(
+    public static byte[] f6(
             byte[] macKeyLittleEndian,
             byte[] n1LittleEndian,
             byte[] n2LittleEndian,
@@ -325,10 +325,61 @@ final class BleSecureConnectionsCrypto {
     }
 
     /**
+     * Bluetooth Core Vol 3 Part H Section 2.2.9 {@code g2(U, V, X, Y) = AES-CMAC_X(U || V || Y) mod 2^32},
+     * accepting SMP little-endian wire inputs and returning the unsigned 32-bit integer value.
+     */
+    public static long g2(
+            byte[] uLittleEndian,
+            byte[] vLittleEndian,
+            byte[] xLittleEndian,
+            byte[] yLittleEndian) {
+        requireLength("g2 U", uLittleEndian, P256_VALUE_LENGTH);
+        requireLength("g2 V", vLittleEndian, P256_VALUE_LENGTH);
+        requireLength("g2 X", xLittleEndian, AES_VALUE_LENGTH);
+        requireLength("g2 Y", yLittleEndian, AES_VALUE_LENGTH);
+
+        byte[] keyBigEndian = reverseCopy(xLittleEndian);
+        byte[] uBigEndian = reverseCopy(uLittleEndian);
+        byte[] vBigEndian = reverseCopy(vLittleEndian);
+        byte[] yBigEndian = reverseCopy(yLittleEndian);
+        byte[] messageBigEndian = new byte[P256_VALUE_LENGTH * 2 + AES_VALUE_LENGTH];
+        byte[] macBigEndian = new byte[AES_VALUE_LENGTH];
+        try {
+            int offset = copy(uBigEndian, messageBigEndian, 0);
+            offset = copy(vBigEndian, messageBigEndian, offset);
+            copy(yBigEndian, messageBigEndian, offset);
+            calculateCmacBigEndian(keyBigEndian, messageBigEndian, macBigEndian);
+            return ((long) (macBigEndian[12] & 0xff) << 24)
+                    | ((long) (macBigEndian[13] & 0xff) << 16)
+                    | ((long) (macBigEndian[14] & 0xff) << 8)
+                    | (long) (macBigEndian[15] & 0xff);
+        } finally {
+            wipe(keyBigEndian);
+            wipe(uBigEndian);
+            wipe(vBigEndian);
+            wipe(yBigEndian);
+            wipe(messageBigEndian);
+            wipe(macBigEndian);
+        }
+    }
+
+    /**
+     * Derives the 6-digit LE Secure Connections Numeric Comparison value
+     * ({@code g2(U, V, X, Y) mod 1_000_000}).
+     */
+    public static int g2NumericComparison(
+            byte[] uLittleEndian,
+            byte[] vLittleEndian,
+            byte[] xLittleEndian,
+            byte[] yLittleEndian) {
+        return (int) (g2(uLittleEndian, vLittleEndian, xLittleEndian, yLittleEndian) % 1_000_000L);
+    }
+
+    /**
      * Derives the 128-bit {@code ra}/{@code rb} value for Bluetooth Core LE SC Passkey Entry
      * (Vol 3 Part H Section 2.3.5.6.3) in SMP little-endian wire order.
      */
-    static byte[] passkeyToR128LittleEndian(int passkey) {
+    public static byte[] passkeyToR128LittleEndian(int passkey) {
         if (passkey < 0 || passkey > 999_999) {
             throw new IllegalArgumentException("BLE SMP passkey must be in 0..999999");
         }
@@ -343,7 +394,7 @@ final class BleSecureConnectionsCrypto {
      * Returns the single-byte round parameter {@code z = 0x80 | bit_i(passkey)} for round
      * {@code 0 <= round < 20} of Bluetooth Core LE SC Passkey Entry.
      */
-    static int passkeyRoundZ(int passkey, int round) {
+    public static int passkeyRoundZ(int passkey, int round) {
         if (passkey < 0 || passkey > 999_999) {
             throw new IllegalArgumentException("BLE SMP passkey must be in 0..999999");
         }
@@ -357,7 +408,7 @@ final class BleSecureConnectionsCrypto {
      * Bluetooth Core Vol 3 Part H Section 2.2.3 confirm value generation function {@code c1(k, r, preq, pres, iat, ia, rat, ra)}
      * for LE Legacy Pairing (SC = 0), with all multi-octet inputs and output in SMP little-endian order.
      */
-    static byte[] legacyC1(
+    public static byte[] legacyC1(
             byte[] tkLittleEndian,
             byte[] rLittleEndian,
             byte[] preqLittleEndian,
@@ -426,7 +477,7 @@ final class BleSecureConnectionsCrypto {
      * Bluetooth Core Vol 3 Part H Section 2.2.4 key generation function {@code s1(k, r1, r2)}
      * for LE Legacy Pairing STK derivation, with all multi-octet inputs and output in SMP little-endian order.
      */
-    static byte[] legacyS1(
+    public static byte[] legacyS1(
             byte[] tkLittleEndian,
             byte[] r1LittleEndian,
             byte[] r2LittleEndian) {
@@ -456,7 +507,7 @@ final class BleSecureConnectionsCrypto {
         }
     }
 
-    static LocalOobMaterial generateLocalOob(
+    public static LocalOobMaterial generateLocalOob(
             SecureRandom random) {
         if (random == null) {
             throw new IllegalArgumentException(
@@ -509,7 +560,7 @@ final class BleSecureConnectionsCrypto {
         }
     }
 
-    static final class F5Result {
+    public static final class F5Result {
         private final byte[] macKey;
         private final byte[] longTermKey;
         private boolean destroyed;
@@ -521,17 +572,17 @@ final class BleSecureConnectionsCrypto {
             this.longTermKey = longTermKey.clone();
         }
 
-        byte[] macKey() {
+        public byte[] macKey() {
             requireLive();
             return macKey.clone();
         }
 
-        byte[] longTermKey() {
+        public byte[] longTermKey() {
             requireLive();
             return longTermKey.clone();
         }
 
-        void destroy() {
+        public void destroy() {
             if (destroyed) {
                 return;
             }
@@ -549,7 +600,7 @@ final class BleSecureConnectionsCrypto {
         }
     }
 
-    static final class LocalOobMaterial {
+    public static final class LocalOobMaterial {
         private final byte[] privateScalar;
         private final byte[] publicX;
         private final byte[] publicY;
@@ -571,7 +622,7 @@ final class BleSecureConnectionsCrypto {
                             confirmation);
         }
 
-        byte[] publicKeyForSmp() {
+        public byte[] publicKeyForSmp() {
             requireLive();
             byte[] output = new byte[PUBLIC_KEY_LENGTH];
             System.arraycopy(
@@ -589,17 +640,17 @@ final class BleSecureConnectionsCrypto {
             return output;
         }
 
-        byte[] publicXLittleEndian() {
+        public byte[] publicXLittleEndian() {
             requireLive();
             return publicX.clone();
         }
 
-        byte[] appleOobData() {
+        public byte[] appleOobData() {
             requireLive();
             return appleOobData.serialize();
         }
 
-        byte[] calculateDhKey(
+        public byte[] calculateDhKey(
                 byte[] peerPublicKeyLittleEndian) {
             requireLive();
             requireLength(
@@ -655,7 +706,7 @@ final class BleSecureConnectionsCrypto {
             }
         }
 
-        void destroy() {
+        public void destroy() {
             if (destroyed) {
                 return;
             }
@@ -666,7 +717,7 @@ final class BleSecureConnectionsCrypto {
             destroyed = true;
         }
 
-        boolean isDestroyed() {
+        public boolean isDestroyed() {
             return destroyed;
         }
 
@@ -770,7 +821,7 @@ final class BleSecureConnectionsCrypto {
         }
     }
 
-    static boolean matchesRpa(byte[] address, byte[] irk) {
+    public static boolean matchesRpa(byte[] address, byte[] irk) {
         if (address == null || address.length != 6 || irk == null || irk.length != 16) {
             return false;
         }

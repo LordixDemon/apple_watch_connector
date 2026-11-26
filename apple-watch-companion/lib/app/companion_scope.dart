@@ -38,8 +38,10 @@ class CompanionScope extends StatelessWidget {
         ),
       ),
       ChangeNotifierProvider<WatchConnectionProvider>(
-        create: (context) =>
-            WatchConnectionProvider(bridge: context.read<WatchBridgeService>()),
+        create: (context) => WatchConnectionProvider(
+          bridge: context.read<WatchBridgeService>(),
+          storage: storage,
+        ),
       ),
     ],
     child: child,

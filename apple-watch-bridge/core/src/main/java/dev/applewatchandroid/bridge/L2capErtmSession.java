@@ -15,9 +15,9 @@ import java.util.List;
  * messages fit in one I-frame, so accepting SAR fragments here would hide a
  * protocol mismatch instead of helping the first bring-up.</p>
  */
-final class L2capErtmSession implements AutoCloseable {
-    static final int TARGET_MPS = 2042;
-    static final int TARGET_TX_WINDOW = 32;
+public final class L2capErtmSession implements AutoCloseable {
+    public static final int TARGET_MPS = 2042;
+    public static final int TARGET_TX_WINDOW = 32;
 
     public static volatile java.util.function.Consumer<String> diagnosticLogger = null;
 
@@ -51,7 +51,7 @@ final class L2capErtmSession implements AutoCloseable {
     /** Last I-frame piggyback ReqSeq; stale RR behind this is ignored. */
     private int lastInformationReqSeq = -1;
 
-    L2capErtmSession(
+    public L2capErtmSession(
             int localCid,
             int remoteCid,
             boolean fcsEnabled) {
@@ -66,7 +66,7 @@ final class L2capErtmSession implements AutoCloseable {
      * Builds and retains one exact I-frame until its ReqSeq acknowledgement.
      * The returned byte array is owned by the caller.
      */
-    byte[] sendInformation(
+    public byte[] sendInformation(
             byte[] sdu) {
         requireOpen();
         if (sdu == null) {
@@ -110,7 +110,7 @@ final class L2capErtmSession implements AutoCloseable {
      * frame, as required by ERTM. Callers should close the result after
      * consuming it because its buffers can contain IKE or ESP material.</p>
      */
-    InboundResult accept(
+    public InboundResult accept(
             byte[] l2capPayload) {
         requireOpen();
         L2capErtmCodec.Frame frame = null;
@@ -777,10 +777,10 @@ final class L2capErtmSession implements AutoCloseable {
         }
     }
 
-    static final class InboundResult implements AutoCloseable {
+    public static final class InboundResult implements AutoCloseable {
         private final List<byte[]> deliveredSdus;
         private final List<byte[]> immediateOutboundFrames;
-        final boolean acknowledgementRecommended;
+        public final boolean acknowledgementRecommended;
         private boolean destroyed;
 
         private InboundResult(
@@ -816,13 +816,13 @@ final class L2capErtmSession implements AutoCloseable {
                     acknowledgementRecommended);
         }
 
-        List<byte[]> deliveredSdus() {
+        public List<byte[]> deliveredSdus() {
             requireAlive();
             return deepCopy(
                     deliveredSdus);
         }
 
-        List<byte[]> immediateOutboundFrames() {
+        public List<byte[]> immediateOutboundFrames() {
             requireAlive();
             return deepCopy(
                     immediateOutboundFrames);

@@ -33,12 +33,21 @@ internal object BridgeStateProjection {
         }
         for (key in listOf("identityKnown", "hasPair", "operationalEligible", "activationConfirmed",
                 "setupRunning", "pinRequired", "bluetoothPermission")) put(key, data.getBoolean(key, false))
+        if (data.containsKey("pairingStrategy")) put("pairingStrategy", data.getInt("pairingStrategy"))
+        if (data.containsKey("idsLinkKind")) put("idsLinkKind", data.getInt("idsLinkKind"))
+        data.getIntArray("supportedStrategies")?.let { put("supportedStrategies", it.toList()) }
         if (data.containsKey("activationChallengeId")) put("activationChallengeId", data.getInt("activationChallengeId"))
         data.getStringArray("activationFields")?.let { put("activationFields", it.toList()) }
         val candidates = data.getParcelableArrayList<Bundle>("discoveredWatches") ?: arrayListOf()
-        put("discoveredWatches", candidates.map { row -> mapOf(
-            "token" to row.getString("token"), "productType" to row.getString("productType"),
-            "watchOs" to row.getString("watchOs"), "rssi" to row.getInt("rssi")) })
+        put("discoveredWatches", candidates.map { row -> buildMap<String, Any?> {
+            put("token", row.getString("token"))
+            put("productType", row.getString("productType"))
+            row.getString("displayName")?.let { put("displayName", it) }
+            put("watchOs", row.getString("watchOs"))
+            put("rssi", row.getInt("rssi"))
+            if (row.containsKey("strategy")) put("strategy", row.getInt("strategy"))
+            if (row.containsKey("experimental")) put("experimental", row.getBoolean("experimental"))
+        } })
         put("observedAt", data.getLong("observedAt"))
         if (data.containsKey("batteryLevel")) {
             put("batteryLevel", data.getInt("batteryLevel"))

@@ -1547,5 +1547,22 @@
   "jumpToBottom": "Bottom",
   "copiedToClipboard": "Copied",
   "noMatchingJournalLines": "No matching log lines",
-  "watchConnectionSubtitle": "Pair, reconnect, and check bridge link status"
+  "watchConnectionSubtitle": "Pair, reconnect, and check bridge link status",
+  "includeLegacyWatches": "Include Legacy Watches (watchOS 1–9)",
+  "@includeLegacyWatches": {
+    "description": "Opt-in toggle to include experimental pairing strategies for legacy Apple Watch models."
+  },
+  "includeLegacyWatchesSubtitle": "Experimental support for older Apple Watch models (Strategies 1–3).",
+  "@includeLegacyWatchesSubtitle": {
+    "description": "Subtitle explaining the experimental legacy Apple Watch pairing strategies toggle."
+  },
+  "legacyStrategyBadge": "Legacy {strategy}",
+  "@legacyStrategyBadge": {
+    "description": "Badge showing an experimental legacy pairing strategy identifier such as S1, S2, or S3.",
+    "placeholders": {
+      "strategy": {
+        "type": "String"
+      }
+    }
+  }
 }

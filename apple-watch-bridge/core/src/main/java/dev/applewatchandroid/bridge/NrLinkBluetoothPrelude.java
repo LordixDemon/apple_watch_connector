@@ -12,13 +12,13 @@ import java.util.Base64;
  * Apple's length-delimited parser, while requiring the UUID and flags
  * fields used for role election.</p>
  */
-final class NrLinkBluetoothPrelude {
-    static final int VERSION = 1;
-    static final int EXACT_ENCODED_LENGTH = 38;
-    static final int UUID_LENGTH = 16;
+public final class NrLinkBluetoothPrelude {
+    public static final int VERSION = 1;
+    public static final int EXACT_ENCODED_LENGTH = 38;
+    public static final int UUID_LENGTH = 16;
 
-    static final int FLAG_COMPANION_APL = 1;
-    static final int FLAG_USES_TLS = 1 << 1;
+    public static final int FLAG_COMPANION_APL = 1;
+    public static final int FLAG_USES_TLS = 1 << 1;
     /** watchOS 27+ bilateral capability bit; inactive unless both peers advertise it. */
     static final int FLAG_MULTIPLEXED_AS_FOR_NWSC = 1 << 2;
     static final int KNOWN_REMOTE_FLAGS =
@@ -52,7 +52,7 @@ final class NrLinkBluetoothPrelude {
     private NrLinkBluetoothPrelude() {
     }
 
-    enum PairingState {
+    public enum PairingState {
         INVALID(0),
         PAIR_WITH_OOB_KEY(10),
         PAIR_WITH_IDS_KEYS(11),
@@ -66,11 +66,11 @@ final class NrLinkBluetoothPrelude {
             this.wireValue = wireValue;
         }
 
-        int wireValue() {
+        public int wireValue() {
             return wireValue;
         }
 
-        static PairingState fromWireValue(int value) {
+        public static PairingState fromWireValue(int value) {
             for (PairingState state : values()) {
                 if (state.wireValue == value) {
                     return state;
@@ -81,7 +81,7 @@ final class NrLinkBluetoothPrelude {
         }
     }
 
-    enum LocalRole {
+    public enum LocalRole {
         INITIATOR,
         RESPONDER
     }
@@ -120,7 +120,7 @@ final class NrLinkBluetoothPrelude {
                 flags);
     }
 
-    static byte[] encode(
+    public static byte[] encode(
             PairingState state,
             byte[] localUuid,
             int flags) {
@@ -163,7 +163,7 @@ final class NrLinkBluetoothPrelude {
         return output;
     }
 
-    static Parsed parse(byte[] encoded) {
+    public static Parsed parse(byte[] encoded) {
         if (encoded == null
                 || encoded.length
                 < HEADER_LENGTH + CHECKSUM_LENGTH) {
@@ -243,7 +243,7 @@ final class NrLinkBluetoothPrelude {
                 flags);
     }
 
-    static LocalRole electLocalRole(
+    public static LocalRole electLocalRole(
             byte[] localUuid,
             byte[] remoteUuid) {
         requireUuid(localUuid, "Local UUID");
@@ -260,7 +260,7 @@ final class NrLinkBluetoothPrelude {
                 : LocalRole.INITIATOR;
     }
 
-    static PairingState reconcile(
+    public static PairingState reconcile(
             PairingState local,
             PairingState remote) {
         if (local == null || remote == null) {
@@ -393,10 +393,10 @@ final class NrLinkBluetoothPrelude {
         bytes[offset + 1] = (byte) value;
     }
 
-    static final class Parsed {
-        final int version;
-        final PairingState state;
-        final int flags;
+    public static final class Parsed {
+        public final int version;
+        public final PairingState state;
+        public final int flags;
         private final byte[] uuid;
 
         private Parsed(
@@ -411,7 +411,7 @@ final class NrLinkBluetoothPrelude {
             Arrays.fill(uuid, (byte) 0);
         }
 
-        byte[] uuid() {
+        public byte[] uuid() {
             return uuid.clone();
         }
 

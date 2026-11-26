@@ -1,5 +1,7 @@
 package dev.applewatchandroid.bridge;
 
+import dev.applewatchandroid.bridge.spi.StrategyPolicy;
+
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -22,7 +24,11 @@ import static dev.applewatchandroid.bridge.ProtocolHost.*;
 final class DesktopProtocolHost {
     enum Mode { PAIR, RESUME, CONFIRM }
 
-    record ParsedArgs(Path helper, Mode mode, String confirmPairId, boolean experimentalLegacy) {}
+    record ParsedArgs(Path helper, Mode mode, String confirmPairId, StrategyPolicy strategyPolicy) {
+        boolean experimentalLegacy() {
+            return strategyPolicy.includesExperimental();
+        }
+    }
 
     interface Platform {
         String platformTag();
@@ -80,14 +86,20 @@ final class DesktopProtocolHost {
             if (args.length != 3) {
                 throw new IllegalArgumentException("Expected confirmed pairing ID");
             }
-            return new ParsedArgs(Path.of(args[0]), Mode.CONFIRM, args[2], false);
+            return new ParsedArgs(Path.of(args[0]), Mode.CONFIRM, args[2], StrategyPolicy.PRODUCTION_DEFAULT);
         }
-        boolean experimentalLegacy = false;
+        StrategyPolicy policy = StrategyPolicy.PRODUCTION_DEFAULT;
         if (args.length == 3) {
-            if (!args[1].equals("pair") || !"--experimental-legacy-pairing".equals(args[2])) {
+            if (!args[1].equals("pair")) {
                 throw new IllegalArgumentException("Unexpected mode arguments");
             }
-            experimentalLegacy = true;
+            if ("--experimental-legacy-pairing".equals(args[2])) {
+                policy = StrategyPolicy.ALL_WITH_EXPERIMENTAL;
+            } else if (args[2] != null && args[2].startsWith("--strategies=")) {
+                policy = StrategyPolicy.parseCsv(args[2].substring("--strategies=".length()));
+            } else {
+                throw new IllegalArgumentException("Unexpected mode arguments");
+            }
         } else if (args.length != 2) {
             throw new IllegalArgumentException("Unexpected mode arguments");
         }
@@ -95,7 +107,7 @@ final class DesktopProtocolHost {
                 Path.of(args[0]),
                 args[1].equals("resume") ? Mode.RESUME : Mode.PAIR,
                 null,
-                experimentalLegacy);
+                policy);
     }
 
     static void runMain(String[] args, Platform platform) throws Exception {
@@ -122,7 +134,7 @@ final class DesktopProtocolHost {
             runSession(
                     parsed.helper(),
                     parsed.mode() == Mode.RESUME,
-                    parsed.experimentalLegacy(),
+                    parsed.strategyPolicy(),
                     platform.openSecretStore(state.resolve("identity"), parsed.helper()),
                     platform);
         }
@@ -146,7 +158,7 @@ final class DesktopProtocolHost {
     private static void runSession(
             Path helper,
             boolean resume,
-            boolean experimentalLegacy,
+            StrategyPolicy strategyPolicy,
             DesktopSecretStore secrets,
             Platform platform) throws Exception {
         AtomicBoolean stop = new AtomicBoolean();
@@ -169,9 +181,10 @@ final class DesktopProtocolHost {
             ids.offer(installation.idsPublicBundle());
             String pair = resume ? restoreSession(secrets, restored) : null;
             COMPANION_DISCOVERY.set(!resume);
-            EXPERIMENTAL_LEGACY_PAIRING.set(experimentalLegacy && !resume);
-            if (EXPERIMENTAL_LEGACY_PAIRING.get()) {
-                log("[EXPERIMENTAL] Legacy Watch pairing (watchOS 1-9, strategies 1-3) enabled via CLI.");
+            StrategyPolicy effective = resume ? StrategyPolicy.PRODUCTION_DEFAULT : strategyPolicy;
+            setStrategyPolicy(effective);
+            if (effective.includesExperimental()) {
+                log("[EXPERIMENTAL] Pairing strategies enabled via CLI: strategies=" + effective.toCsv() + ".");
             }
             HalCommandReader.start(stop, pins, bonds, records, identities, ids, restored,
                     new LinkedBlockingQueue<>(1), outbound);

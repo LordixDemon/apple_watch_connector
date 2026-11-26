@@ -1,12 +1,32 @@
 import 'package:flutter/foundation.dart';
 import 'bluetooth_adapter.dart';
+import 'pairing_strategy.dart';
 import 'watch_features.dart';
 import 'watch_model_catalog.dart';
 
 final class DiscoveredWatch {
   final String token, productType, watchOs;
   final int rssi;
-  const DiscoveredWatch(this.token, this.productType, this.watchOs, this.rssi);
+  final int strategy;
+  final bool experimental;
+  final String? displayName;
+  final List<String> authStyles;
+
+  const DiscoveredWatch(
+    this.token,
+    this.productType,
+    this.watchOs,
+    this.rssi, {
+    this.strategy = 4,
+    this.experimental = false,
+    this.displayName,
+    this.authStyles = const ['PIN'],
+  });
+
+  String get name => WatchConnectionState.nameForProduct(productType);
+  String get effectiveName => displayName ?? name;
+  String get strategyBadge => PairingStrategyInfo.badgeFor(strategy);
+  bool get isLegacy => experimental || strategy < 4;
 
   @override
   bool operator ==(Object other) =>
@@ -15,17 +35,26 @@ final class DiscoveredWatch {
           token == other.token &&
           productType == other.productType &&
           watchOs == other.watchOs &&
-          rssi == other.rssi;
+          rssi == other.rssi &&
+          strategy == other.strategy &&
+          experimental == other.experimental &&
+          displayName == other.displayName &&
+          listEquals(authStyles, other.authStyles);
 
   @override
-  int get hashCode => Object.hash(token, productType, watchOs, rssi);
+  int get hashCode => Object.hash(
+    token,
+    productType,
+    watchOs,
+    rssi,
+    strategy,
+    experimental,
+    displayName,
+    Object.hashAll(authStyles),
+  );
 
   static DiscoveredWatch? parse(dynamic value) {
-    if (value is! Map ||
-        value['token'] is! String ||
-        value['productType'] is! String ||
-        value['watchOs'] is! String ||
-        value['rssi'] is! int) {
+    if (value is! Map || value['token'] is! String || value['rssi'] is! int) {
       return null;
     }
     final token = value['token'] as String;
@@ -34,11 +63,54 @@ final class DiscoveredWatch {
     ).hasMatch(token)) {
       return null;
     }
+    final rawProductType = value['productType'];
+    final rawWatchOs = value['watchOs'];
+    final rawDisplayName = value['displayName'];
+    if ((rawProductType != null && rawProductType is! String) ||
+        (rawWatchOs != null && rawWatchOs is! String) ||
+        (rawDisplayName != null && rawDisplayName is! String)) {
+      return null;
+    }
+    final rawStrategy = value['strategy'];
+    if (rawStrategy != null &&
+        (rawStrategy is! int || rawStrategy < 1 || rawStrategy > 4)) {
+      return null;
+    }
+    final rawExperimental = value['experimental'];
+    if (rawExperimental != null && rawExperimental is! bool) {
+      return null;
+    }
+    final productType = rawProductType as String? ?? '';
+    final watchOs = rawWatchOs as String? ?? '';
+    final trimmedDisplayName = (rawDisplayName as String?)?.trim();
+    final displayName =
+        trimmedDisplayName != null && trimmedDisplayName.isNotEmpty
+        ? trimmedDisplayName
+        : null;
+    if (productType.isEmpty && displayName == null && rawStrategy == null) {
+      return null;
+    }
+    final strategy = rawStrategy as int? ?? 4;
+    final experimental = rawExperimental as bool? ?? strategy < 4;
+    final rawAuthStyles = value['authStyles'];
+    List<String> authStyles = const ['PIN'];
+    if (rawAuthStyles is List) {
+      final parsed = List<String>.unmodifiable(
+        rawAuthStyles.whereType<String>().where((s) => s.isNotEmpty),
+      );
+      if (parsed.isNotEmpty) {
+        authStyles = parsed;
+      }
+    }
     return DiscoveredWatch(
       token,
-      value['productType'] as String,
-      value['watchOs'] as String,
+      productType,
+      watchOs,
       value['rssi'] as int,
+      strategy: strategy,
+      experimental: experimental,
+      displayName: displayName,
+      authStyles: authStyles,
     );
   }
 }
@@ -72,6 +144,8 @@ final class WatchConnectionState {
   final String challengeTitle, challengeMessage;
   final List<String> challengeFields;
   final List<DiscoveredWatch> discoveredWatches;
+  final List<PairingStrategyInfo> supportedStrategies;
+  final int? pairingStrategy;
   final List<BluetoothAdapter> bluetoothAdapters;
   final bool adapterSelectionAvailable,
       adapterSelectionBusy,
@@ -107,6 +181,8 @@ final class WatchConnectionState {
     this.challengeMessage = '',
     this.challengeFields = const [],
     this.discoveredWatches = const [],
+    this.supportedStrategies = const [],
+    this.pairingStrategy,
     this.bluetoothAdapters = const [],
     this.adapterSelectionAvailable = false,
     this.adapterSelectionBusy = false,
@@ -115,6 +191,22 @@ final class WatchConnectionState {
     this.adapterSelectionStatus = '',
     this.adapterSelectionError = '',
   });
+
+  static List<PairingStrategyInfo> _parseSupportedStrategies(Map data) {
+    final capabilities = data['capabilities'];
+    final rawList = capabilities is Map && capabilities['strategies'] is List
+        ? capabilities['strategies'] as List
+        : (data['supportedStrategies'] is List
+              ? data['supportedStrategies'] as List
+              : null);
+    if (rawList == null) return PairingStrategyInfo.defaults;
+    return List<PairingStrategyInfo>.unmodifiable(
+      rawList.map(PairingStrategyInfo.parse).whereType<PairingStrategyInfo>(),
+    );
+  }
+
+  static int? _parsePairingStrategy(dynamic value) =>
+      value is int && value >= 1 && value <= 4 ? value : null;
 
   factory WatchConnectionState.fromBridge(Map data) => WatchConnectionState(
     features: WatchFeatures.fromMap(
@@ -166,7 +258,11 @@ final class WatchConnectionState {
           .map(DiscoveredWatch.parse)
           .whereType<DiscoveredWatch>(),
     ),
+    supportedStrategies: _parseSupportedStrategies(data),
+    pairingStrategy: _parsePairingStrategy(data['pairingStrategy']),
   );
+
+  int? get pairedStrategy => pairingStrategy;
 
   bool get busy =>
       setupRunning || status == 'CONNECTING' || status == 'STOPPING';
@@ -293,8 +389,10 @@ final class WatchConnectionState {
           selectedAdapterId == other.selectedAdapterId &&
           adapterSelectionStatus == other.adapterSelectionStatus &&
           adapterSelectionError == other.adapterSelectionError &&
+          pairingStrategy == other.pairingStrategy &&
           listEquals(challengeFields, other.challengeFields) &&
           listEquals(discoveredWatches, other.discoveredWatches) &&
+          listEquals(supportedStrategies, other.supportedStrategies) &&
           listEquals(bluetoothAdapters, other.bluetoothAdapters);
 
   static String nameForProduct(String product) =>

@@ -1,22 +1,34 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import '../models/pairing_strategy.dart';
 import '../models/watch_connection_state.dart';
+import '../services/settings_storage.dart';
 import '../services/watch_bridge_service.dart';
 import '../services/companion_platform.dart';
 
 /// Native observations own state; command receipts cannot complete pairing or connect a device.
 final class WatchConnectionProvider extends ChangeNotifier {
   final WatchBridgeService _bridge;
+  final SettingsStorage? _storage;
   late final StreamSubscription<WatchConnectionState> _subscription;
   late WatchConnectionState _state;
   late final ValueNotifier<String> _journal;
   bool _disposed = false, _sending = false;
+  bool _includeLegacyStrategies;
   String? _receipt;
   int _progressRevision = 0;
 
-  WatchConnectionProvider({required WatchBridgeService bridge})
-    : _bridge = bridge {
+  WatchConnectionProvider({
+    required WatchBridgeService bridge,
+    SettingsStorage? storage,
+    bool? includeLegacyStrategies,
+  }) : _bridge = bridge,
+       _storage = storage,
+       _includeLegacyStrategies =
+           includeLegacyStrategies ??
+           storage?.loadIncludeLegacyStrategies() ??
+           false {
     _state = bridge.connectionState;
     _journal = ValueNotifier<String>(_state.journal);
     _subscription = bridge.connectionStream.listen((value) {
@@ -40,6 +52,22 @@ final class WatchConnectionProvider extends ChangeNotifier {
   CompanionPlatform get platform => _bridge.platform;
   bool get sending => _sending;
   String? get receipt => _receipt;
+  bool get includeLegacyStrategies => _includeLegacyStrategies;
+  bool get includeLegacyWatches => _includeLegacyStrategies;
+  List<int> get enabledStrategies =>
+      PairingStrategyInfo.idsFor(includeLegacy: _includeLegacyStrategies);
+
+  Future<void> setIncludeLegacyStrategies(bool value) async {
+    if (_disposed || _includeLegacyStrategies == value) return;
+    _includeLegacyStrategies = value;
+    notifyListeners();
+    if (_storage != null) {
+      await _storage.saveIncludeLegacyStrategies(value);
+    }
+  }
+
+  Future<void> setIncludeLegacyWatches(bool value) =>
+      setIncludeLegacyStrategies(value);
 
   Future<String> command(String method, [Map<String, dynamic>? args]) async {
     if (_disposed || _sending) return 'BUSY';
@@ -90,16 +118,25 @@ final class WatchConnectionProvider extends ChangeNotifier {
       _state.canResumeSetup && _state.pairId == pairId
       ? command('resumeSetup')
       : Future.value('REJECTED');
-  Future<String> discover() => _state.canDiscover
-      ? command('discoverWatches')
+  Future<String> discover({List<int>? strategies}) => _state.canDiscover
+      ? command('discoverWatches', {
+          'strategies': strategies != null && strategies.isNotEmpty
+              ? List<int>.of(strategies)
+              : enabledStrategies,
+        })
       : Future.value('REJECTED');
   Future<String> selectWatch(String token) =>
       _state.setupPhase == 'DISCOVERING' &&
           _state.discoveredWatches.any((watch) => watch.token == token)
       ? command('selectDiscoveredWatch', {'discoveryToken': token})
       : Future.value('REJECTED');
-  Future<String> pair() =>
-      _state.canPair ? command('beginPairing') : Future.value('REJECTED');
+  Future<String> pair({List<int>? strategies}) => _state.canPair
+      ? command('beginPairing', {
+          'strategies': strategies != null && strategies.isNotEmpty
+              ? List<int>.of(strategies)
+              : enabledStrategies,
+        })
+      : Future.value('REJECTED');
   Future<String> pairOptically(String token, {required String? previousPair}) {
     if (!platform.opticalPairing ||
         !_state.bridgeAvailable ||

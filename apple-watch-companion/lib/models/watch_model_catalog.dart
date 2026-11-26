@@ -11,7 +11,10 @@ final class WatchModelCatalog {
       _models[product]?.name ??
       (product.isEmpty
           ? Strings.current.appleWatch
-          : '${Strings.current.appleWatch} ($product)');
+          : (product.startsWith('Apple Watch') ||
+                    product.startsWith(Strings.current.appleWatch)
+                ? product
+                : '${Strings.current.appleWatch} ($product)'));
 
   static String caseSizeForProduct(String product) =>
       _models[product]?.caseSize ?? '—';

@@ -1791,4 +1791,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get watchConnectionSubtitle => '配对、重连以及查看 Bridge 连接状态';
+
+  @override
+  String get includeLegacyWatches => '包含旧款 Apple Watch (watchOS 1–9)';
+
+  @override
+  String get includeLegacyWatchesSubtitle => '实验性支持旧款手表的配对策略 1–3。';
+
+  @override
+  String legacyStrategyBadge(String strategy) {
+    return '旧版 $strategy';
+  }
 }

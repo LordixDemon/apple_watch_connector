@@ -339,6 +339,32 @@ class WatchConnectionScreen extends StatelessWidget {
                 ],
               ),
             ),
+            if (state.bridgeAvailable &&
+                !state.hasPair &&
+                !state.connected &&
+                !state.bluetoothLink &&
+                !state.setupRunning &&
+                !state.pinRequired &&
+                state.challengeId == null &&
+                (state.discoveryAvailable || state.pairingAvailable))
+              IosListSection(
+                children: [
+                  IosListTile(
+                    title: s.includeLegacyWatches,
+                    subtitle: s.includeLegacyWatchesSubtitle,
+                    showChevron: false,
+                    trailing: CupertinoSwitch(
+                      key: const ValueKey('include-legacy-strategies-switch'),
+                      value: connection.includeLegacyStrategies,
+                      activeTrackColor: IosColors.systemOrange,
+                      onChanged: enabled
+                          ? (value) =>
+                                connection.setIncludeLegacyStrategies(value)
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
             IosListSection(
               children: [
                 if (connection.platform.opticalPairing)

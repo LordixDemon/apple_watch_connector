@@ -1,5 +1,11 @@
 package dev.applewatchandroid.bridge;
 
+import dev.applewatchandroid.bridge.strategy.PairingStrategy;
+import dev.applewatchandroid.bridge.strategy.ReconnectOutcome;
+import dev.applewatchandroid.bridge.strategy.StrategyRegistry;
+import dev.applewatchandroid.bridge.strategy.StrategySessionContext;
+import dev.applewatchandroid.bridge.transport.L2capChannelMux;
+
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Locale;
@@ -169,6 +175,11 @@ final class PairedWatchReconnectFlow {
             }
         }
 
+        if (session.activePairingSessionRecord != null
+                && session.activePairingSessionRecord.isLegacyStrategy()) {
+            return reconnectLegacyWatch(session.activePairingSessionRecord);
+        }
+
         byte[] ltk = session.activeLongTermKey;
         if (ltk == null && session.activePairingSessionRecord != null && session.activePairingSessionRecord.bluetoothBond() != null) {
             try {
@@ -184,7 +195,19 @@ final class PairedWatchReconnectFlow {
             } catch (InterruptedException ignored) {}
             log("[WatchHal] PAIRED RECONNECT: starting LE link encryption with stored LTK...");
             try {
-                session.startLeEncryption(ltk);
+                byte[] rand = session.activePairingSessionRecord != null
+                        && !session.activePairingSessionRecord.smpSecureConnections()
+                        ? session.activePairingSessionRecord.smpRand()
+                        : new byte[8];
+                int ediv = session.activePairingSessionRecord != null
+                        && !session.activePairingSessionRecord.smpSecureConnections()
+                        ? session.activePairingSessionRecord.smpEdiv()
+                        : 0;
+                try {
+                    session.startLeEncryption(rand, ediv, ltk);
+                } finally {
+                    HalTransportSession.wipe(rand);
+                }
                 log("[WatchHal] PAIRED RECONNECT: LE link encryption active!");
             } catch (HostException encErr) {
                 log("[WatchHal] PAIRED RECONNECT: Encryption failed on candidate ("
@@ -567,6 +590,56 @@ final class PairedWatchReconnectFlow {
         }
         throw new HostException(
                 "Timed out waiting for paired ordinary Class-D/Class-C registration");
+        }
+    }
+
+    private boolean reconnectLegacyWatch(PairingSessionRecord restored) throws Exception {
+        StrategyRegistry registry = HalHciTransportAdapter.createSessionRegistry();
+        PairingStrategy strategy = registry.forRecord(restored);
+        HalHciTransportAdapter hciAdapter = new HalHciTransportAdapter(session);
+        log("PAIRING_STRATEGY_V1:" + restored.pairingStrategy().wireId());
+        try (L2capChannelMux mux = new L2capChannelMux(hciAdapter);
+             StrategySessionContext ctx = HalHciTransportAdapter.createContext(
+                     session,
+                     restored.pairingStrategy(),
+                     mux,
+                     null,
+                     restored.peerProductType(),
+                     restored.peerBuildVersion(),
+                     LEGACY_POST_SMP_DIAGNOSTIC_WINDOW_MS)) {
+            ReconnectOutcome outcome = strategy.reconnect(ctx, restored);
+            if (mux.wasDisconnected()) {
+                session.connectionHandle = -1;
+            }
+            if (outcome.reconnected()) {
+                session.legacyPairingCompleted = true;
+                log(String.format(
+                        Locale.US,
+                        "[EXPERIMENTAL LEGACY] PAIRED RECONNECT PASS: strategy=S%d link=%s detail=%s.",
+                        outcome.strategyId().wireId(),
+                        outcome.idsLinkKind(),
+                        outcome.detail()));
+                return true;
+            }
+            if (outcome.setupOnly()) {
+                if (session.operationalPairingId != null) {
+                    throw new HostException(
+                            "Confirmed legacy pair advertises setup only; preserving keys and refusing automatic fresh pairing");
+                }
+                log("[EXPERIMENTAL LEGACY] PAIRED RECONNECT: Watch advertises setup only; clearing stale record.");
+                session.disconnectBeforeFreshPairing();
+                if (session.activePairingSessionRecord != null) {
+                    session.activePairingSessionRecord.destroy();
+                    session.activePairingSessionRecord = null;
+                }
+                return false;
+            }
+            log(String.format(
+                    Locale.US,
+                    "[EXPERIMENTAL LEGACY] PAIRED RECONNECT INCOMPLETE: strategy=S%d detail=%s.",
+                    outcome.strategyId().wireId(),
+                    outcome.detail()));
+            return false;
         }
     }
 

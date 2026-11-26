@@ -50,7 +50,9 @@ final class LinuxSecretStore implements DesktopSecretStore {
         boolean ownerConfirmed = activated && id.equals(ownerConfirmedPair());
         String json = "{\"pairId\":\"" + id + "\",\"productType\":\"" + product
                 + "\",\"activationConfirmed\":" + activated + ",\"protocolVerified\":" + verified
-                + ",\"ownerConfirmed\":" + ownerConfirmed + "}";
+                + ",\"ownerConfirmed\":" + ownerConfirmed
+                + ",\"pairingStrategy\":" + pair.pairingStrategy().wireId()
+                + ",\"idsLinkKind\":" + pair.idsLinkKind().wireId() + "}";
         atomicWrite(directory.resolve("pair-public.json"), json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
     public void store(String name, byte[] bytes) throws Exception {

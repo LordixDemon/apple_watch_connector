@@ -559,5 +559,8 @@
   "jumpToBottom": "Вниз",
   "copiedToClipboard": "Скопировано",
   "noMatchingJournalLines": "Совпадающих строк не найдено",
-  "watchConnectionSubtitle": "Сопряжение, переподключение и статус Bridge"
+  "watchConnectionSubtitle": "Сопряжение, переподключение и статус Bridge",
+  "includeLegacyWatches": "Старые часы Apple Watch (watchOS 1–9)",
+  "includeLegacyWatchesSubtitle": "Экспериментальная поддержка стратегий 1–3 для ранних моделей.",
+  "legacyStrategyBadge": "Устаревшая {strategy}"
 }

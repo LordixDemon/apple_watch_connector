@@ -3466,6 +3466,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pair, reconnect, and check bridge link status'**
   String get watchConnectionSubtitle;
+
+  /// Opt-in toggle to include experimental pairing strategies for legacy Apple Watch models.
+  ///
+  /// In en, this message translates to:
+  /// **'Include Legacy Watches (watchOS 1–9)'**
+  String get includeLegacyWatches;
+
+  /// Subtitle explaining the experimental legacy Apple Watch pairing strategies toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Experimental support for older Apple Watch models (Strategies 1–3).'**
+  String get includeLegacyWatchesSubtitle;
+
+  /// Badge showing an experimental legacy pairing strategy identifier such as S1, S2, or S3.
+  ///
+  /// In en, this message translates to:
+  /// **'Legacy {strategy}'**
+  String legacyStrategyBadge(String strategy);
 }
 
 class _AppLocalizationsDelegate

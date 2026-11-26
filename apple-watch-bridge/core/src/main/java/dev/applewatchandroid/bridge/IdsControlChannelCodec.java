@@ -9,8 +9,8 @@ import java.util.UUID;
 /**
  * iOS 26.6 IDS direct-IPsec control-channel wire codec.
  */
-final class IdsControlChannelCodec {
-    static final int TYPE_HELLO = 0x01;
+public final class IdsControlChannelCodec {
+    public static final int TYPE_HELLO = 0x01;
     static final int TYPE_SETUP_CHANNEL = 0x02;
     static final int TYPE_CLOSE_CHANNEL = 0x03;
     static final int TYPE_COMPRESSION_REQUEST = 0x04;
@@ -40,25 +40,25 @@ final class IdsControlChannelCodec {
     private IdsControlChannelCodec() {
     }
 
-    static byte[] encodeFramed(
+    public static byte[] encodeFramed(
             Message message) {
         return IdsControlChannelWireCodec.encodeFramed(
                 message);
     }
 
-    static byte[] encodePayload(
+    public static byte[] encodePayload(
             Message message) {
         return IdsControlChannelWireCodec.encodePayload(
                 message);
     }
 
-    static Message decodeFramed(
+    public static Message decodeFramed(
             byte[] frame) {
         return IdsControlChannelWireCodec.decodeFramed(
                 frame);
     }
 
-    static Message decodePayload(
+    public static Message decodePayload(
             byte[] payload) {
         return IdsControlChannelWireCodec.decodePayload(
                 payload);
@@ -131,8 +131,8 @@ final class IdsControlChannelCodec {
         return false;
     }
 
-    static abstract class Message {
-        final int type;
+    public static abstract class Message {
+        public final int type;
         private boolean destroyed;
 
         Message(
@@ -140,7 +140,7 @@ final class IdsControlChannelCodec {
             this.type = type;
         }
 
-        final void destroy() {
+        public final void destroy() {
             if (destroyed) {
                 return;
             }
@@ -152,21 +152,21 @@ final class IdsControlChannelCodec {
         }
     }
 
-    static final class HelloMessage extends Message {
-        final String controlChannelVersion;
-        final String productName;
-        final String productVersion;
-        final String productBuildVersion;
-        final String model;
-        final long pairingProtocolVersion;
-        final long minCompatibilityVersion;
-        final long maxCompatibilityVersion;
-        final UUID instanceId;
-        final UUID deviceUniqueId;
-        final long capabilityFlags;
-        final int serviceMinCompatibilityVersion;
+    public static final class HelloMessage extends Message {
+        public final String controlChannelVersion;
+        public final String productName;
+        public final String productVersion;
+        public final String productBuildVersion;
+        public final String model;
+        public final long pairingProtocolVersion;
+        public final long minCompatibilityVersion;
+        public final long maxCompatibilityVersion;
+        public final UUID instanceId;
+        public final UUID deviceUniqueId;
+        public final long capabilityFlags;
+        public final int serviceMinCompatibilityVersion;
 
-        HelloMessage(
+        public HelloMessage(
                 String controlChannelVersion,
                 String productName,
                 String productVersion,

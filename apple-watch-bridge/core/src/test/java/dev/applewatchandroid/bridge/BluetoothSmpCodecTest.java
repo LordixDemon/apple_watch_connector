@@ -18,6 +18,20 @@ public final class BluetoothSmpCodecTest {
                         0x10, 0x07, 0x07
                 },
                 request.encode());
+
+        // Legacy requests omit BT 5.1+ CT2 (0x20) so BT 4.0-4.2 Watches do not reject.
+        assertArrayEquals(
+                new byte[]{0x01, 0x02, 0x00, 0x0d, 0x10, 0x07, 0x07},
+                BluetoothSmpCodec.createLegacyPasskeyPairingRequest().encode());
+        assertArrayEquals(
+                new byte[]{0x01, 0x04, 0x01, 0x0d, 0x10, 0x07, 0x07},
+                BluetoothSmpCodec.createLegacyOobPairingRequest().encode());
+        assertArrayEquals(
+                new byte[]{0x01, 0x02, 0x00, 0x05, 0x10, 0x07, 0x07},
+                BluetoothSmpCodec.createLegacyNonScPasskeyPairingRequest().encode());
+        assertArrayEquals(
+                new byte[]{0x01, 0x01, 0x00, 0x0d, 0x10, 0x07, 0x07},
+                BluetoothSmpCodec.createNumericComparisonPairingRequest(false).encode());
     }
 
     @Test

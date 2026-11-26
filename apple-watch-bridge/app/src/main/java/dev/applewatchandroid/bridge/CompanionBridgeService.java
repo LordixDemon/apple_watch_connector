@@ -292,6 +292,7 @@ public final class CompanionBridgeService extends Service implements BridgeIpcDi
         state.putAll(CompanionSessionState.snapshot());
         state.putBoolean("bluetoothPermission", checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
                 == PackageManager.PERMISSION_GRANTED);
+        state.putIntArray("supportedStrategies", new int[]{4, 3, 2, 1});
         state.putLong("observedAt", System.currentTimeMillis());
         String pair = OperationalWatchService.currentPairing();
         UUID epoch = OperationalWatchService.readyEpoch();
@@ -429,8 +430,21 @@ public final class CompanionBridgeService extends Service implements BridgeIpcDi
         Bundle observed = CompanionSessionState.snapshot();
         if ("beginOpticalPairing".equals(method) || "replacePairOptically".equals(method)) {
             byte[] payload = data.getByteArray("opticalCode");
-            try (OpticalPairingCode ignored = OpticalPairingCode.parse(payload)) { /* Validate before starting foreground setup. */ }
-            catch (IllegalArgumentException invalid) {
+            boolean allowLegacyOptical = allowsExperimentalStrategies(data);
+            boolean valid = false;
+            try (OpticalPairingCode ignored = OpticalPairingCode.parse(payload)) {
+                valid = true;
+            } catch (IllegalArgumentException modernInvalid) {
+                if (allowLegacyOptical) {
+                    try (LegacyWatchPairingCodec.LegacyOpticalCode ignored =
+                                 LegacyWatchPairingCodec.LegacyOpticalCode.parse(payload)) {
+                        valid = true;
+                    } catch (IllegalArgumentException legacyInvalid) {
+                        valid = false;
+                    }
+                }
+            }
+            if (!valid) {
                 if (payload != null) java.util.Arrays.fill(payload, (byte) 0);
                 reply(client, RESPONSE, response(id, "REJECTED"));
                 return true;
@@ -482,6 +496,19 @@ public final class CompanionBridgeService extends Service implements BridgeIpcDi
             if (payload != null) Arrays.fill(payload, (byte) 0);
             data.remove("opticalCode");
         }
+    }
+
+    private static boolean allowsExperimentalStrategies(Bundle data) {
+        int[] strategies = data.getIntArray("strategies");
+        if (strategies == null) {
+            return false;
+        }
+        for (int strategy : strategies) {
+            if (strategy >= 1 && strategy <= 3) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Bundle response(String id, String status) {

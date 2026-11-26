@@ -1,5 +1,7 @@
 package dev.applewatchandroid.bridge;
 
+import dev.applewatchandroid.bridge.spi.StrategyPolicy;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,7 +40,7 @@ final class HalCommandReader {
                             try (OpticalPairingCode ignored = OpticalPairingCode.parse(code)) {
                                 if (opticalCodes.offer(code)) code = null;
                             } catch (IllegalArgumentException modernInvalid) {
-                                if (!EXPERIMENTAL_LEGACY_PAIRING.get()) {
+                                if (!effectiveStrategyPolicy().includesExperimental()) {
                                     throw modernInvalid;
                                 }
                                 try (LegacyWatchPairingCodec.LegacyOpticalCode ignored =
@@ -50,14 +52,26 @@ final class HalCommandReader {
                         finally { if (code != null) Arrays.fill(code, (byte) 0); }
                         continue;
                     }
+                    if (line.startsWith("PAIRING_STRATEGIES_V1:")) {
+                        try {
+                            StrategyPolicy policy = StrategyPolicy.parseCsv(
+                                    line.substring("PAIRING_STRATEGIES_V1:".length()).trim());
+                            setStrategyPolicy(policy);
+                            log("PAIRING STRATEGIES UPDATED: strategies=" + policy.toCsv()
+                                    + " experimental=" + policy.includesExperimental() + ".");
+                        } catch (IllegalArgumentException invalid) {
+                            log("PAIRING STRATEGIES REJECTED: " + safeMessage(invalid));
+                        }
+                        continue;
+                    }
                     if ("EXPERIMENTAL_LEGACY_PAIRING_V1:1".equals(line.trim())) {
-                        EXPERIMENTAL_LEGACY_PAIRING.set(true);
+                        setStrategyPolicy(StrategyPolicy.ALL_WITH_EXPERIMENTAL);
                         log("[EXPERIMENTAL] Legacy Watch pairing (watchOS 1-9, strategies 1-3) enabled; "
                                 + "modern Strategy 4 remains default priority.");
                         continue;
                     }
                     if ("EXPERIMENTAL_LEGACY_PAIRING_V1:0".equals(line.trim())) {
-                        EXPERIMENTAL_LEGACY_PAIRING.set(false);
+                        setStrategyPolicy(StrategyPolicy.PRODUCTION_DEFAULT);
                         log("[EXPERIMENTAL] Legacy Watch pairing disabled.");
                         continue;
                     }

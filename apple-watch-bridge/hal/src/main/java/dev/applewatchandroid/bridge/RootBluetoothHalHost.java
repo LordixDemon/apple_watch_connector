@@ -79,10 +79,11 @@ public final class RootBluetoothHalHost extends ProtocolHost {
             validateInvocation(args);
             NativeFacePackageAccess.installPlatformPreparer(AndroidNativeFacePackageAccess::prepare);
             HalHostArguments invocation = HalHostArguments.parse(args);
-            EXPERIMENTAL_LEGACY_PAIRING.set(invocation.experimentalLegacyPairing);
-            if (invocation.experimentalLegacyPairing) {
-                log("[EXPERIMENTAL] Legacy Watch pairing (watchOS 1-9, strategies 1-3) enabled via CLI; "
-                        + "modern Strategy 4 remains default priority.");
+            setStrategyPolicy(invocation.strategyPolicy);
+            if (invocation.strategyPolicy.includesExperimental()) {
+                log("[EXPERIMENTAL] Pairing strategies enabled via CLI: strategies="
+                        + invocation.strategyPolicy.toCsv()
+                        + "; modern Strategy 4 remains highest priority.");
             }
             operationalMode = invocation.operationalPairing != null;
             ownershipFile = new java.io.RandomAccessFile("/data/local/tmp/apple-watch-bridge-hal.lock", "rw");
@@ -144,6 +145,9 @@ public final class RootBluetoothHalHost extends ProtocolHost {
                         + "or activation material was created.");
             } else if (invocation.operationalPairing != null) {
                 log("RESULT: STOPPED — operational session ended; setup replay attempted=false.");
+            } else if (session.legacyPairingCompleted()) {
+                log("RESULT: PASS — [EXPERIMENTAL LEGACY] Apple Watch legacy pairing/reconnect milestone completed "
+                        + "(SMP bond + AWP2 session record persisted; secret bytes logged=false).");
             } else if (commitAuthorized && (!session.setupCompleted())) {
                 exitStatus = 2;
                 log("RESULT: INCOMPLETE — transport returned before verified Watch setup and reconnect completion.");

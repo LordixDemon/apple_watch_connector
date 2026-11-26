@@ -1,5 +1,8 @@
 package dev.applewatchandroid.bridge;
 
+import dev.applewatchandroid.bridge.spi.IdsLinkKind;
+import dev.applewatchandroid.bridge.spi.PairingStrategyId;
+
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
@@ -11,9 +14,11 @@ import java.util.UUID;
  * authentication material, so this class deliberately has no textual
  * formatter. All byte-array accessors return defensive copies.</p>
  */
-final class PairingSessionRecord {
+public final class PairingSessionRecord {
     static final int FORMAT_VERSION = 2;
     static final int MAX_SERIALIZED_LENGTH = 16 * 1024;
+    static final int MAX_STRATEGY_EXTENSION_LENGTH = 2048;
+    static final int SMP_SECURITY_PARAMS_LENGTH = 11;
 
     static final byte[] MAGIC =
             new byte[]{'A', 'W', 'P', '2'};
@@ -62,10 +67,18 @@ final class PairingSessionRecord {
     static final int FIELD_PEER_SPS_METADATA = 42;
     static final int FIELD_OBSERVED_PEER_MAXIMUM = 43;
     static final int FIELD_OBSERVED_PEER_BUILD = 44;
+    /** Optional uint8 pairing strategy wire ID (1..4); absent defaults to Strategy 4. */
+    static final int FIELD_PAIRING_STRATEGY = 45;
+    /** Optional uint8 IDS link kind wire ID (1..3); absent defaults to NetworkRelay ESP. */
+    static final int FIELD_IDS_LINK_KIND = 46;
+    /** Optional 11-byte SMP security parameters: scFlag(1) | edivBE(2) | rand(8) for LE Legacy SC=0 reconnect. */
+    static final int FIELD_SMP_SECURITY_PARAMS = 47;
+    /** Optional bounded (<= 2048 bytes) strategy-specific extension payload. */
+    static final int FIELD_STRATEGY_EXTENSION = 48;
 
     static final int MAX_TEXT_BYTES = 1024;
 
-    enum DurableState {
+    public enum DurableState {
         PAIRING_MATERIAL_PERSISTED(1),
         SMP_BONDED_RAW(2),
         STOCK_BOND_IMPORTED(3),
@@ -159,6 +172,12 @@ final class PairingSessionRecord {
     byte[] peerSpsMetadata;
     Integer observedPeerMaximum;
     String observedPeerBuild;
+    PairingStrategyId pairingStrategy = PairingStrategyId.NETWORK_RELAY_S4;
+    IdsLinkKind idsLinkKind = IdsLinkKind.NETWORK_RELAY_ESP;
+    boolean smpSecureConnections = true;
+    int smpEdiv;
+    byte[] smpRand;
+    byte[] strategyExtension;
 
     PairingSessionRecord(
             byte[] generationUuid,
@@ -193,6 +212,88 @@ final class PairingSessionRecord {
             String nrUuid,
             String localIdsDeviceUuid,
             String remoteInstanceUuid) {
+        this(
+                generationUuid,
+                state,
+                transitionCounter,
+                modernPairing,
+                addressesConfirmed,
+                idsAuthConsumed,
+                isPairedCommitIntentPersisted,
+                localRole,
+                bluetoothBond,
+                pendingLocalC547,
+                pendingRemoteC547,
+                pendingIdsAuthData,
+                localNetworkMaterial,
+                remoteIdentity,
+                remoteClassD,
+                remoteClassC,
+                initiatorClassDAddress,
+                responderClassDAddress,
+                initiatorClassCAddress,
+                responderClassCAddress,
+                networkRelayVersion,
+                deviceType,
+                alwaysOnWifi,
+                deviceName,
+                buildVersion,
+                idsDeviceId,
+                productType,
+                boardId,
+                bluetoothCbUuid,
+                nrUuid,
+                localIdsDeviceUuid,
+                remoteInstanceUuid,
+                PairingStrategyId.NETWORK_RELAY_S4,
+                IdsLinkKind.NETWORK_RELAY_ESP,
+                true,
+                0,
+                null,
+                null,
+                true);
+    }
+
+    PairingSessionRecord(
+            byte[] generationUuid,
+            DurableState state,
+            long transitionCounter,
+            boolean modernPairing,
+            boolean addressesConfirmed,
+            boolean idsAuthConsumed,
+            boolean isPairedCommitIntentPersisted,
+            NrLinkBluetoothPrelude.LocalRole localRole,
+            byte[] bluetoothBond,
+            byte[] pendingLocalC547,
+            byte[] pendingRemoteC547,
+            byte[] pendingIdsAuthData,
+            byte[] localNetworkMaterial,
+            byte[] remoteIdentity,
+            byte[] remoteClassD,
+            byte[] remoteClassC,
+            byte[] initiatorClassDAddress,
+            byte[] responderClassDAddress,
+            byte[] initiatorClassCAddress,
+            byte[] responderClassCAddress,
+            int networkRelayVersion,
+            int deviceType,
+            boolean alwaysOnWifi,
+            String deviceName,
+            String buildVersion,
+            String idsDeviceId,
+            String productType,
+            String boardId,
+            String bluetoothCbUuid,
+            String nrUuid,
+            String localIdsDeviceUuid,
+            String remoteInstanceUuid,
+            PairingStrategyId pairingStrategy,
+            IdsLinkKind idsLinkKind,
+            boolean smpSecureConnections,
+            int smpEdiv,
+            byte[] smpRand,
+            byte[] strategyExtension,
+            boolean validateImmediately) {
         this.generationUuid = PairingSessionRecordCodec.cloneOrNull(generationUuid);
         this.state = state;
         this.transitionCounter = transitionCounter;
@@ -232,7 +333,84 @@ final class PairingSessionRecord {
         this.nrUuid = nrUuid;
         this.localIdsDeviceUuid = localIdsDeviceUuid;
         this.remoteInstanceUuid = remoteInstanceUuid;
-        validate();
+        this.pairingStrategy = pairingStrategy == null ? PairingStrategyId.NETWORK_RELAY_S4 : pairingStrategy;
+        this.idsLinkKind = idsLinkKind == null ? IdsLinkKind.NETWORK_RELAY_ESP : idsLinkKind;
+        this.smpSecureConnections = smpSecureConnections;
+        this.smpEdiv = smpEdiv;
+        this.smpRand = PairingSessionRecordCodec.cloneOrNull(smpRand);
+        this.strategyExtension = PairingSessionRecordCodec.cloneOrNull(strategyExtension);
+        if (validateImmediately) {
+            validate();
+        }
+    }
+
+    /**
+     * Creates a durable AWP2 pairing record for a legacy Apple Watch (Strategies 1, 2, or 3)
+     * immediately after BLE SMP bonding succeeds, retaining {@code SC=0} {@code EDIV}/{@code Rand}
+     * so future reconnects re-encrypt and dispatch automatically to the saved strategy.
+     */
+    public static PairingSessionRecord createLegacyBonded(
+            byte[] generationUuid,
+            PairingStrategyId strategy,
+            IdsLinkKind idsLinkKind,
+            byte[] bluetoothBond,
+            boolean smpSecureConnections,
+            int smpEdiv,
+            byte[] smpRand,
+            String deviceName,
+            String buildVersion,
+            String productType,
+            String bluetoothCbUuid,
+            String nrUuid,
+            String localIdsDeviceUuid,
+            byte[] strategyExtension) {
+        if (strategy == null || !strategy.isExperimental()) {
+            throw new IllegalArgumentException("Legacy bonded record requires Strategy 1, 2, or 3");
+        }
+        if (idsLinkKind == null) {
+            throw new IllegalArgumentException("Legacy bonded record requires an IDS link kind");
+        }
+        byte[] effectiveRand = smpRand != null ? smpRand : new byte[8];
+        return new PairingSessionRecord(
+                generationUuid,
+                DurableState.SMP_BONDED_RAW,
+                1,
+                false,
+                false,
+                false,
+                false,
+                null,
+                bluetoothBond,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                0,
+                0,
+                false,
+                deviceName != null && !deviceName.isBlank() ? deviceName : "Apple Watch (Legacy S" + strategy.wireId() + ")",
+                buildVersion != null && !buildVersion.isBlank() ? buildVersion : strategy.watchOsRange(),
+                null,
+                productType,
+                null,
+                bluetoothCbUuid,
+                nrUuid,
+                localIdsDeviceUuid,
+                null,
+                strategy,
+                idsLinkKind,
+                smpSecureConnections,
+                smpEdiv,
+                effectiveRand,
+                strategyExtension,
+                true);
     }
 
     static PairingSessionRecord createPreSmp(
@@ -330,13 +508,103 @@ final class PairingSessionRecord {
         }
     }
 
-    static PairingSessionRecord parse(byte[] serialized) {
+    public static PairingSessionRecord parse(byte[] serialized) {
         return PairingSessionRecordCodec.parse(serialized);
     }
 
-    byte[] serialize() {
+    public byte[] serialize() {
         requireLive();
         return PairingSessionRecordCodec.serialize(this);
+    }
+
+    public PairingStrategyId pairingStrategy() {
+        requireLive();
+        return pairingStrategy;
+    }
+
+    public IdsLinkKind idsLinkKind() {
+        requireLive();
+        return idsLinkKind;
+    }
+
+    public boolean smpSecureConnections() {
+        requireLive();
+        return smpSecureConnections;
+    }
+
+    public int smpEdiv() {
+        requireLive();
+        return smpEdiv;
+    }
+
+    public byte[] smpRand() {
+        requireLive();
+        return smpRand == null ? new byte[8] : smpRand.clone();
+    }
+
+    public byte[] strategyExtension() {
+        requireLive();
+        return PairingSessionRecordCodec.cloneOrNull(strategyExtension);
+    }
+
+    public boolean isLegacyStrategy() {
+        requireLive();
+        return pairingStrategy.isExperimental();
+    }
+
+    public PairingSessionRecord withLegacyProgress(
+            DurableState targetState,
+            IdsLinkKind updatedLinkKind,
+            String updatedProductType,
+            String updatedBuildVersion,
+            byte[] updatedStrategyExtension) {
+        requireLive();
+        if (!pairingStrategy.isExperimental()) {
+            throw new IllegalStateException("Legacy progress update requires a legacy strategy record");
+        }
+        if (targetState == null || targetState.wireValue() < DurableState.SMP_BONDED_RAW.wireValue()) {
+            throw new IllegalArgumentException("Legacy progress state must be >= SMP_BONDED_RAW");
+        }
+        return new PairingSessionRecord(
+                generationUuid,
+                targetState,
+                Math.addExact(transitionCounter, 1),
+                false,
+                addressesConfirmed,
+                targetState.wireValue() >= DurableState.IDS_CONTROL_READY.wireValue() || idsAuthConsumed,
+                false,
+                localRole,
+                bluetoothBond,
+                null,
+                null,
+                null,
+                localNetworkMaterial,
+                remoteIdentity,
+                remoteClassD,
+                remoteClassC,
+                initiatorClassDAddress,
+                responderClassDAddress,
+                initiatorClassCAddress,
+                responderClassCAddress,
+                networkRelayVersion,
+                deviceType,
+                alwaysOnWifi,
+                deviceName,
+                updatedBuildVersion != null && !updatedBuildVersion.isBlank() ? updatedBuildVersion : buildVersion,
+                idsDeviceId,
+                updatedProductType != null && !updatedProductType.isBlank() ? updatedProductType : productType,
+                boardId,
+                bluetoothCbUuid,
+                nrUuid,
+                localIdsDeviceUuid,
+                null,
+                pairingStrategy,
+                updatedLinkKind != null ? updatedLinkKind : idsLinkKind,
+                smpSecureConnections,
+                smpEdiv,
+                smpRand,
+                updatedStrategyExtension != null ? updatedStrategyExtension : strategyExtension,
+                true);
     }
 
     void validate() {
@@ -837,12 +1105,12 @@ final class PairingSessionRecord {
         return next;
     }
 
-    DurableState state() {
+    public DurableState state() {
         requireLive();
         return state;
     }
 
-    long transitionCounter() {
+    public long transitionCounter() {
         requireLive();
         return transitionCounter;
     }
@@ -974,7 +1242,7 @@ final class PairingSessionRecord {
         return PairingSessionRecordCodec.cloneOrNull(pendingIdsAuthData);
     }
 
-    byte[] bluetoothBond() {
+    public byte[] bluetoothBond() {
         requireLive();
         return PairingSessionRecordCodec.cloneOrNull(bluetoothBond);
     }
@@ -1023,7 +1291,7 @@ final class PairingSessionRecord {
         return PairingSessionRecordCodec.cloneOrNull(remoteClassC);
     }
 
-    void destroy() {
+    public void destroy() {
         if (destroyed) {
             return;
         }
@@ -1041,6 +1309,8 @@ final class PairingSessionRecord {
         PairingSessionRecordCodec.wipe(initiatorClassCAddress);
         PairingSessionRecordCodec.wipe(responderClassCAddress);
         PairingSessionRecordCodec.wipe(peerSpsMetadata);
+        PairingSessionRecordCodec.wipe(smpRand);
+        PairingSessionRecordCodec.wipe(strategyExtension);
         destroyed = true;
     }
 
@@ -1122,7 +1392,14 @@ final class PairingSessionRecord {
                 bluetoothCbUuid,
                 nrUuid,
                 localIdsDeviceUuid,
-                remoteInstanceUuid);
+                remoteInstanceUuid,
+                pairingStrategy,
+                idsLinkKind,
+                smpSecureConnections,
+                smpEdiv,
+                smpRand,
+                strategyExtension,
+                true);
         copied.observedSetupEvidence = observedSetupEvidence
                 && newState.wireValue() >= DurableState.ACTIVATION_CONFIRMED.wireValue();
         copied.idsDeviceInfoExchanged = idsDeviceInfoExchanged

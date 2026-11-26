@@ -1898,4 +1898,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get watchConnectionSubtitle =>
       'Pair, reconnect, and check bridge link status';
+
+  @override
+  String get includeLegacyWatches => 'Include Legacy Watches (watchOS 1–9)';
+
+  @override
+  String get includeLegacyWatchesSubtitle =>
+      'Experimental support for older Apple Watch models (Strategies 1–3).';
+
+  @override
+  String legacyStrategyBadge(String strategy) {
+    return 'Legacy $strategy';
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import '../l10n/strings.dart';
+import '../models/pairing_strategy.dart';
 import '../models/watch_connection_state.dart';
 import '../theme/ios_colors.dart';
 import '../theme/companion_spacing.dart';
@@ -75,6 +76,35 @@ class WatchConnectionCard extends StatelessWidget {
                       style: const TextStyle(
                         color: IosColors.secondaryLabel,
                         fontSize: 13,
+                      ),
+                    ),
+                  ),
+                if (state.pairingStrategy != null &&
+                    state.pairingStrategy! < 4 &&
+                    (state.hasPair ||
+                        state.setupRunning ||
+                        state.bluetoothLink ||
+                        state.connected))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: IosColors.systemOrange.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        s.legacyStrategyBadge(
+                          PairingStrategyInfo.badgeFor(state.pairingStrategy!),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: IosColors.systemOrange,
+                        ),
                       ),
                     ),
                   ),

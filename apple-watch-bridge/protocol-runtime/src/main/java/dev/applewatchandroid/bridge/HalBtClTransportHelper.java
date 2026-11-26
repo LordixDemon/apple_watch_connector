@@ -1,14 +1,21 @@
 package dev.applewatchandroid.bridge;
 
-import java.security.SecureRandom;
+import dev.applewatchandroid.bridge.spi.PairingStrategyId;
+import dev.applewatchandroid.bridge.strategy.PairingOutcome;
+import dev.applewatchandroid.bridge.strategy.PairingStrategy;
+import dev.applewatchandroid.bridge.strategy.StrategyRegistry;
+import dev.applewatchandroid.bridge.strategy.StrategySessionContext;
+import dev.applewatchandroid.bridge.transport.L2capChannelMux;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 import static dev.applewatchandroid.bridge.ProtocolHost.*;
 
 /**
- * Legacy BT_CL signaling wait loops, experimental legacy pairing bridge, and
+ * Legacy BT_CL signaling wait loops, modular strategy pairing dispatch, and
  * post-SMP validation extracted from {@link HalTransportSession}.
  */
 final class HalBtClTransportHelper {
@@ -19,52 +26,47 @@ final class HalBtClTransportHelper {
     }
 
     void runExperimentalLegacyPairing(HciCodec.AdvertisingReport target) throws Exception {
-        LegacyPairingRunner runner = new LegacyPairingRunner(new LegacyPairingRunner.Transport() {
-            @Override public int connectionHandle() { return session.connectionHandle; }
-            @Override public int peerAddressType() { return session.peerConnectionAddressType; }
-            @Override public byte[] peerAddress() { return session.peerConnectionAddress; }
-            @Override public BluetoothLocalIdentity localIdentity() { return session.localIdentity; }
-            @Override public void checkStop() throws Exception { session.checkStop(); }
-            @Override public void sendL2cap(int cid, byte[] payload, String label) throws Exception {
-                session.sendL2cap(cid, payload, label);
+        PairingStrategyId strategyId = session.activeSelectedStrategy;
+        if (strategyId == null || !strategyId.isExperimental()) {
+            int fallbackId = target != null && target.legacySetup != null
+                    ? target.legacySetup.effectiveStrategy()
+                    : PairingStrategyId.DIRECT_IPSEC_S3.wireId();
+            strategyId = PairingStrategyId.fromWireId(fallbackId);
+            if (strategyId == null || !strategyId.isExperimental()) {
+                strategyId = PairingStrategyId.DIRECT_IPSEC_S3;
             }
-            @Override public HalTransportSession.Packet nextPacket(long deadlineMs) throws Exception {
-                return session.nextPacket(deadlineMs);
-            }
-            @Override public HciCodec.L2capPdu reassembleAcl(byte[] acl) {
-                return session.aclReassembler.accept(acl);
-            }
-            @Override public byte[] handlePeerAttRequest(byte[] request) throws Exception {
-                if (request == null || request.length == 0) {
-                    return null;
-                }
-                int op = request[0] & 0xff;
-                if (op == 0x02 || op == 0x04 || op == 0x08 || op == 0x0A || op == 0x10) {
-                    return HalGattServer.handleRequest(request);
-                }
-                return null;
-            }
-            @Override public void startLeEncryption(byte[] rand, int ediv, byte[] longTermKey) throws Exception {
-                session.startLeEncryption(rand, ediv, longTermKey);
-            }
-            @Override public char[] pollPinInput() { return session.pinInputs.poll(); }
-            @Override public void persistBondSecretOrFail(byte[] bondSecretRecord) throws Exception {
-                session.persistBondSecretOrFail(bondSecretRecord);
-            }
-        }, new SecureRandom());
-        try {
-            LegacyPairingRunner.LegacyPairingResult result = runner.run(target, session.pairingIke.legacyOpticalPairing);
-            log("[EXPERIMENTAL LEGACY] RUNNER COMPLETE: strategy=" + result.strategy
-                    + " sc=" + result.secureConnections
-                    + " bondPersisted=" + result.bondPersisted
-                    + " commonServices=" + result.commonServices
-                    + " terminusReconciled=" + result.terminusReconciledState
-                    + " idsBtLinkOpened=" + result.idsBtLinkOpened
-                    + " idsFrames=" + result.idsBtLinkFramesDecoded
-                    + "; physical legacy Watch verification remains experimental.");
-        } finally {
-            if (runner.wasDisconnected()) {
+        }
+        StrategyRegistry registry = HalHciTransportAdapter.createSessionRegistry();
+        PairingStrategy strategy = registry.requireEnabled(strategyId, effectiveStrategyPolicy());
+        byte[] opticalKey = session.pairingIke.legacyOpticalPairing != null
+                ? session.pairingIke.legacyOpticalPairing.oobKey()
+                : null;
+        String productType = target != null && target.legacySetup != null ? target.legacySetup.productType : null;
+        String watchOs = target != null && target.legacySetup != null ? target.legacySetup.systemVersion : null;
+        HalHciTransportAdapter hciAdapter = new HalHciTransportAdapter(session);
+        try (L2capChannelMux mux = new L2capChannelMux(hciAdapter);
+             StrategySessionContext ctx = HalHciTransportAdapter.createContext(
+                     session, strategyId, mux, opticalKey, productType, watchOs,
+                     LEGACY_POST_SMP_DIAGNOSTIC_WINDOW_MS)) {
+            log("PAIRING_STRATEGY_V1:" + strategyId.wireId());
+            PairingOutcome outcome = strategy.pair(ctx);
+            session.legacyPairingCompleted = outcome.bondPersisted() && outcome.sessionRecordPersisted();
+            log("[EXPERIMENTAL LEGACY] STRATEGY COMPLETE: strategy=S" + outcome.strategyId().wireId()
+                    + " sc=" + outcome.secureConnections()
+                    + " link=" + outcome.idsLinkKind()
+                    + " bondPersisted=" + outcome.bondPersisted()
+                    + " sessionPersisted=" + outcome.sessionRecordPersisted()
+                    + " commonServices=" + outcome.commonServices()
+                    + " terminusReconciled=" + outcome.terminusReconciledState()
+                    + " idsLinkOpened=" + outcome.idsLinkOpened()
+                    + " idsFrames=" + outcome.idsFramesObserved()
+                    + "; secret/key/PIN bytes logged=false.");
+            if (mux.wasDisconnected()) {
                 session.connectionHandle = -1;
+            }
+        } finally {
+            if (opticalKey != null) {
+                Arrays.fill(opticalKey, (byte) 0);
             }
             if (session.pairingIke.legacyOpticalPairing != null) {
                 session.pairingIke.legacyOpticalPairing.close();

@@ -165,10 +165,29 @@ mixin BridgeCommands {
     return (status: 'UNAVAILABLE', requestId: null);
   }
 
-  /// Queue receipt only. Actual device info arrives separately on deviceStream.
-  Future<String> refreshDeviceInfo() async {
+  /// Queue receipt only. Initiates nearby Watch discovery with optional strategy IDs.
+  Future<String> discoverWatches({List<int>? strategies}) =>
+      _invokeReceiptStatus(
+        'discoverWatches',
+        strategies != null && strategies.isNotEmpty
+            ? {'strategies': List<int>.of(strategies)}
+            : null,
+      );
+
+  /// Queue receipt only. Initiates pairing with optional strategy IDs.
+  Future<String> beginPairing({List<int>? strategies}) => _invokeReceiptStatus(
+    'beginPairing',
+    strategies != null && strategies.isNotEmpty
+        ? {'strategies': List<int>.of(strategies)}
+        : null,
+  );
+
+  Future<String> _invokeReceiptStatus(
+    String method, [
+    Map<String, dynamic>? args,
+  ]) async {
     try {
-      final receipt = await invokeBridgeMethod('refreshWatchState');
+      final receipt = await invokeBridgeMethod(method, args);
       return receipt is Map && receipt['status'] is String
           ? receipt['status'] as String
           : 'UNAVAILABLE';
@@ -178,6 +197,10 @@ mixin BridgeCommands {
       return 'UNAVAILABLE';
     }
   }
+
+  /// Queue receipt only. Actual device info arrives separately on deviceStream.
+  Future<String> refreshDeviceInfo() =>
+      _invokeReceiptStatus('refreshWatchState');
 
   /// Queue receipt only; inventory changes only on a committed Watch observation.
   Future<String> refreshFaceCollection() async {

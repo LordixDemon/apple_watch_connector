@@ -71,6 +71,8 @@ final class CompanionSessionState {
                 result.putBoolean("hasPair", true);
                 result.putString("pairId", pair);
                 result.putString("pairState", record.state().name());
+                result.putInt("pairingStrategy", record.pairingStrategy().wireId());
+                result.putInt("idsLinkKind", record.idsLinkKind().wireId());
                 if (record.peerProductType() != null) result.putString("productType", record.peerProductType());
                 if (record.peerBuildVersion() != null) result.putString("buildVersion", record.peerBuildVersion());
                 String confirmed = context.getSharedPreferences("watch_operating_mode", Context.MODE_PRIVATE)

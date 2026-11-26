@@ -100,6 +100,12 @@ internal class CompanionFlutterBridge(private val activity: Activity, engine: Fl
                 call.argument<String>(key)?.let { putString(key, it) }
             }
             call.argument<Boolean>("value")?.let { putBoolean("value", it) }
+            call.argument<List<*>>("strategies")?.let { raw ->
+                val ints = raw.mapNotNull { (it as? Number)?.toInt() }
+                if (ints.size == raw.size && ints.isNotEmpty() && ints.size <= 4) {
+                    putIntArray("strategies", ints.toIntArray())
+                }
+            }
             call.argument<List<String>>("faceIds")?.let { putStringArrayList("faceIds", ArrayList(it)) }
             if (call.method == "setNativePigmentVisibility") {
                 putDouble("sourceTimestamp", call.argument<Double>("sourceTimestamp")!!)
