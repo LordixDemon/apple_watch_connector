@@ -94,6 +94,38 @@ final class LinuxIdentityStore {
         } finally { Arrays.fill(record, (byte) 0); }
     }
 
+    byte[] encryptHealthData(byte[] plaintext, byte[] peerPublicIdentity) throws Exception {
+        byte[] record = secrets.load(IDS_RECORD);
+        try (IdsMessageProtectionIdentity identity = openIdsIdentity(record)) {
+            return identity.encryptClassA(plaintext, peerPublicIdentity, random);
+        } finally { Arrays.fill(record, (byte) 0); }
+    }
+
+    byte[] decryptHealthData(byte[] encrypted, byte[] peerPublicIdentity) throws Exception {
+        byte[] record = secrets.load(IDS_RECORD);
+        try (IdsMessageProtectionIdentity identity = openIdsIdentity(record)) {
+            return identity.decryptClassA(encrypted, peerPublicIdentity);
+        } finally { Arrays.fill(record, (byte) 0); }
+    }
+
+    private static IdsMessageProtectionIdentity openIdsIdentity(byte[] record) throws Exception {
+        if (record.length < 16 || record.length > 96 * 1024) throw new IOException("Invalid IDS installation record");
+        ByteBuffer input = ByteBuffer.wrap(record);
+        if (input.getInt() != MAGIC) throw new IOException("Unsupported IDS installation record");
+        int publicLength = input.getInt(), keyLength = input.getInt(), privateLength = input.getInt();
+        if (publicLength <= 0 || publicLength > 32 * 1024 || keyLength != 32
+                || privateLength <= 0 || privateLength > 32 * 1024
+                || publicLength + keyLength + privateLength != input.remaining()) {
+            throw new IOException("Invalid IDS installation lengths");
+        }
+        byte[] key = new byte[keyLength], privateRecord = new byte[privateLength];
+        input.position(input.position() + publicLength);
+        input.get(key).get(privateRecord);
+        try {
+            return IdsMessageProtectionIdentity.open(privateRecord, new SecretKeySpec(key, "AES"));
+        } finally { wipe(key, privateRecord); }
+    }
+
     static byte[] validatedPublicBundle(byte[] record) throws Exception {
         if (record.length < 16 || record.length > 96 * 1024) throw new IOException("Invalid IDS installation record");
         ByteBuffer input = ByteBuffer.wrap(record);

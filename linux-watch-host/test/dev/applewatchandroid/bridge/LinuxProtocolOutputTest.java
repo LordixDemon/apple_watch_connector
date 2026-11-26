@@ -55,6 +55,37 @@ public final class LinuxProtocolOutputTest {
             if (Files.size(root.resolve("small.log")) > 10 || !Files.exists(root.resolve("protocol.previous.log"))) {
                 throw new AssertionError("Journal rotation failed");
             }
+            // Verify LinuxHealthController consumes private Health IPC frames while preserving
+            // BridgeApplicationEventCodec projection to stdout for Rust/Flutter.
+            stop.set(false);
+            ByteArrayOutputStream healthOut = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(healthOut, true, StandardCharsets.UTF_8));
+            byte[] aboutBytes = new byte[]{0x28, 83, 0x30, 1}; // field 5 batteryCapacity=83, field 6 charging=true
+            byte[] appFrame;
+            try (var appEvent = new BridgeApplicationEventCodec.Event(
+                    NanoSystemSettingsDiagnostics.TOPIC,
+                    NanoSystemSettingsDiagnostics.ABOUT_RESPONSE,
+                    true,
+                    aboutBytes)) {
+                appFrame = BridgeApplicationEventCodec.encode(appEvent);
+            }
+            String appLine = BridgeApplicationEventCodec.PREFIX
+                    + BridgeBase64.encodeToString(appFrame, BridgeBase64.NO_WRAP);
+            LinuxIdentityStore idStore = new LinuxIdentityStore(secrets, new java.security.SecureRandom());
+            var outbound = new LinkedBlockingQueue<OutboundAppMessage>(4);
+            try (var health = new LinuxHealthController(root, secrets, idStore, outbound, stop);
+                 var output = new LinuxProtocolOutput(root.resolve("health-protocol.log"), secrets, bonds, records, stop, health)) {
+                System.out.println(HealthDataEventCodec.PREFIX + "PRIVATE_HEALTH_CIPHERTEXT");
+                System.out.println(appLine);
+            }
+            String healthVisible = healthOut.toString(StandardCharsets.UTF_8);
+            String healthJournal = Files.readString(root.resolve("health-protocol.log"));
+            if (healthVisible.contains("PRIVATE_HEALTH_CIPHERTEXT") || healthJournal.contains("PRIVATE_HEALTH_CIPHERTEXT")) {
+                throw new AssertionError("Private Health IPC leaked to stdout or journal");
+            }
+            if (!healthVisible.contains("DESKTOP_ABOUT_V1:") || !healthVisible.contains("\"batteryLevel\":83")) {
+                throw new AssertionError("BridgeApplicationEventCodec was swallowed instead of projected: " + healthVisible);
+            }
         } finally {
             System.setOut(console);
             try (var paths = Files.walk(root)) {

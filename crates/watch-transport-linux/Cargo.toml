@@ -20,5 +20,9 @@ name = "watch-linux-hci"
 path = "src/bin/hci.rs"
 
 [[bin]]
+name = "watch-linux-daemon"
+path = "src/bin/daemon.rs"
+
+[[bin]]
 name = "watch-windows-hci"
 path = "src/bin/windows_hci.rs"

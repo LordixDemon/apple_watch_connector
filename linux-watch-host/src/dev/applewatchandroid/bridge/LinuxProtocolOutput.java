@@ -23,10 +23,18 @@ final class LinuxProtocolOutput implements AutoCloseable {
     private final PrintStream filtered;
     private final Journal journal;
     private final DesktopApplicationEventProjector projector = new DesktopApplicationEventProjector();
+    private final LinuxHealthController health;
 
     LinuxProtocolOutput(Path path, DesktopSecretStore secrets, BlockingQueue<Boolean> bonds,
                         BlockingQueue<Boolean> records, AtomicBoolean stop) throws IOException {
+        this(path, secrets, bonds, records, stop, null);
+    }
+
+    LinuxProtocolOutput(Path path, DesktopSecretStore secrets, BlockingQueue<Boolean> bonds,
+                        BlockingQueue<Boolean> records, AtomicBoolean stop,
+                        LinuxHealthController health) throws IOException {
         previous = System.out;
+        this.health = health;
         journal = new Journal(path, 16 * 1024 * 1024);
         filtered = new PrintStream(new OutputStream() {
             private final ByteArrayOutputStream line = new ByteArrayOutputStream();
@@ -61,6 +69,10 @@ final class LinuxProtocolOutput implements AutoCloseable {
             }
             if ("BRIDGE_TRANSPORT_V1:DOWN".equals(text)) {
                 projector.reset();
+            }
+            if (health != null && health.handleLine(text)) {
+                // Consume raw Health IPC frames inside JVM without exposing key/ciphertext to stdout or journal.
+                return;
             }
             if (text.startsWith(BridgeApplicationEventCodec.PREFIX)) {
                 var projected = projector.project(

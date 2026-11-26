@@ -37,11 +37,15 @@ final class HealthSyncStateStore {
     static String sourceFor(UUID persistent) {
         return "com.apple.health."+persistent.toString().toUpperCase(Locale.ROOT);
     }
-    /** Exact current target only. Unknown firmware never inherits this version or identity contract. */
+    static boolean isSupportedProfile(String product, String build) {
+        return ("Watch7,5".equals(product) && "23S303".equals(build))
+                || ("Watch6,9".equals(product) && "23S620".equals(build));
+    }
+    /** Exact verified target profiles only. Unknown firmware never inherits this contract. */
     State initialize(UUID pair, UUID local, UUID peer, UUID nativePairing, String product, String build, Supplier<UUID> healthUuid) throws IOException {
         synchronized(LOCK) {
             if(pair==null || local==null || peer==null || local.equals(peer) || nativePairing==null || healthUuid==null
-                    || !"Watch7,5".equals(product) || !"23S303".equals(build)) throw new IllegalArgumentException("Unsupported Health profile");
+                    || !isSupportedProfile(product, build)) throw new IllegalArgumentException("Unsupported Health profile");
             State existing=read(pair,local,peer);
             if(existing!=null) {
                 if(!existing.registry.equals(nativePairing))throw new IOException("Native Health registry binding changed");

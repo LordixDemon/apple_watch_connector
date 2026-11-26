@@ -9,7 +9,7 @@ final class NativeHealthRegistryBinding {
                         HealthRegistryObservationCodec.Observation observation,UUID reservedRegistry,String authenticatedBuild) {
         observation.requireContext(pair,epoch,local,peer);
         if(reservedRegistry==null || reservedRegistry.getMostSignificantBits()==0 && reservedRegistry.getLeastSignificantBits()==0
-                || !"Watch7,5".equals(observation.product()) || !"23S303".equals(authenticatedBuild)
+                || !HealthSyncStateStore.isSupportedProfile(observation.product(), authenticatedBuild)
                 || observation.build()!=null && !authenticatedBuild.equals(observation.build())) {
             throw new IllegalArgumentException("Unsupported/conflicting native Health registry binding");
         }

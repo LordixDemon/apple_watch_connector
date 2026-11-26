@@ -653,6 +653,46 @@ impl LinuxBackend {
                 drop(state);
                 self.send("RETRY_ACTIVATION")
             }
+            Some(method @ ("sendBulletin" | "removeBulletin")) => {
+                // Local bulletin relay: payload is an already-encoded
+                // BulletinDistributorCodec request; the JVM decodes and
+                // validates it. QUEUED is a local queue receipt only.
+                let Some(payload) = request["payload"].as_str().filter(|p| bulletin_payload(p))
+                else {
+                    return json!({"status":"INVALID_REQUEST"});
+                };
+                if self.child.is_none() || !self.state.lock().unwrap().ready {
+                    return json!({"status":"WATCH_NOT_READY"});
+                }
+                let prefix = if method == "sendBulletin" {
+                    "SEND_BULLETIN"
+                } else {
+                    "REMOVE_BULLETIN"
+                };
+                self.send(&format!("{prefix}:{payload}"))
+            }
+            Some("bulletinStatus") => {
+                let state = self.state.lock().unwrap();
+                json!({"status":"OK","phase":state.phase,
+                    "watchReady":self.child.is_some() && state.ready})
+            }
+            Some("healthStatus") => {
+                let state = self.state.lock().unwrap();
+                let path = self.state_dir.join("health/health-latest.json");
+                let health: Value = std::fs::read_to_string(&path)
+                    .ok()
+                    .and_then(|s| serde_json::from_str(&s).ok())
+                    .unwrap_or(Value::Null);
+                json!({"status":"OK","phase":state.phase,
+                    "watchReady":self.child.is_some() && state.ready,
+                    "health":health})
+            }
+            Some("pullHealth") => {
+                if self.child.is_none() || !self.state.lock().unwrap().ready {
+                    return json!({"status":"WATCH_NOT_READY"});
+                }
+                self.send("PULL_HEALTH")
+            }
             Some("stop") => {
                 self.resume_after_stop = false;
                 if self.child.is_none() {
@@ -665,6 +705,16 @@ impl LinuxBackend {
             _ => json!({"status":"UNSUPPORTED_OPERATION"}),
         }
     }
+}
+/// Mirrors OperationalCommandPolicy: one stdin line of standard base64.
+fn bulletin_payload(payload: &str) -> bool {
+    let body = payload.trim_end_matches('=');
+    !body.is_empty()
+        && payload.len() <= 179_000
+        && payload.len() - body.len() <= 2
+        && body
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'+' || b == b'/')
 }
 impl Drop for LinuxBackend {
     fn drop(&mut self) {
@@ -743,6 +793,49 @@ mod tests {
         let state = backend.state.lock().unwrap();
         assert_eq!(state.phase, "IDLE");
         assert!(state.pair_id.is_some());
+    }
+
+    #[test]
+    fn bulletin_and_health_commands_require_ready_watch_and_valid_base64() {
+        let mut idle = LinuxBackend::new();
+        assert_eq!(
+            idle.command(json!({"method":"sendBulletin","payload":"AAEC"}))["status"],
+            "WATCH_NOT_READY"
+        );
+        assert_eq!(
+            idle.command(json!({"method":"pullHealth"}))["status"],
+            "WATCH_NOT_READY"
+        );
+        assert_eq!(
+            idle.command(json!({"method":"bulletinStatus"}))["watchReady"],
+            false
+        );
+        assert_eq!(
+            idle.command(json!({"method":"healthStatus"}))["status"],
+            "OK"
+        );
+        let mut backend = with_child(Command::new("/bin/sh").args([
+            "-c",
+            "read -r a; read -r b; test \"$a\" = SEND_BULLETIN:AAEC && test \"$b\" = PULL_HEALTH",
+        ]));
+        for bad in [json!(null), json!(""), json!("AA\nSTOP"), json!("A===")] {
+            assert_eq!(
+                backend.command(json!({"method":"sendBulletin","payload":bad}))["status"],
+                "INVALID_REQUEST"
+            );
+        }
+        assert_eq!(
+            backend.command(json!({"method":"sendBulletin","payload":"AAEC"}))["status"],
+            "QUEUED"
+        );
+        assert_eq!(
+            backend.command(json!({"method":"pullHealth"}))["status"],
+            "QUEUED"
+        );
+        let status = backend.child.as_mut().unwrap().wait().expect("child exits");
+        assert!(status.success());
+        backend.child = None;
+        backend.input = None;
     }
 
     #[test]

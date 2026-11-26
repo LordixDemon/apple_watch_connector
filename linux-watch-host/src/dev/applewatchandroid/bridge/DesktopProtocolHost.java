@@ -155,13 +155,15 @@ final class DesktopProtocolHost {
         BlockingQueue<byte[]> identities = new LinkedBlockingQueue<>(1), ids = new LinkedBlockingQueue<>(1),
                 restored = new LinkedBlockingQueue<>(1);
         BlockingQueue<OutboundAppMessage> outbound = new LinkedBlockingQueue<>(32);
-        try (LinuxProtocolOutput output = new LinuxProtocolOutput(
-                BridgePaths.files().resolve("protocol.log"), secrets, bonds, records, stop)) {
+        LinuxIdentityStore installation = new LinuxIdentityStore(secrets, new SecureRandom());
+        try (LinuxHealthController health = new LinuxHealthController(
+                     BridgePaths.files(), secrets, installation, outbound, stop);
+             LinuxProtocolOutput output = new LinuxProtocolOutput(
+                     BridgePaths.files().resolve("protocol.log"), secrets, bonds, records, stop, health)) {
             log("DESKTOP PROTOCOL RUNTIME: platform=" + platform.platformTag()
                     + " jarSha12=" + currentProtocolFingerprint()
                     + " smpTimeoutMs=" + SMP_RESPONSE_TIMEOUT_MS
                     + " leLinkNegotiation=2M+DLE.");
-            LinuxIdentityStore installation = new LinuxIdentityStore(secrets, new SecureRandom());
             RootWifiNetworkReader.installPlatformReader(platform.wifiReader());
             identities.offer(installation.bluetoothRecord());
             ids.offer(installation.idsPublicBundle());

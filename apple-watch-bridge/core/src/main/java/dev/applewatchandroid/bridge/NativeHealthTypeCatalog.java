@@ -11,7 +11,7 @@ final class NativeHealthTypeCatalog {
     private NativeHealthTypeCatalog() { }
     /** Preserve full-width code; holes/foreign builds are unknown, never narrowed or defaulted. */
     static Definition lookup(String build,Long code) {
-        if(!BUILD.equals(build) || code==null || code<0 || code>=TYPES.length)return null;
+        if((!BUILD.equals(build) && !"23S620".equals(build)) || code==null || code<0 || code>=TYPES.length)return null;
         return TYPES[code.intValue()];
     }
     private static final Definition[] TYPES=new Definition[342];

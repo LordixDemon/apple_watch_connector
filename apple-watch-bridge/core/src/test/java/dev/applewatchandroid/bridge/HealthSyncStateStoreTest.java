@@ -43,6 +43,10 @@ public final class HealthSyncStateStoreTest {
         assertThrows(IllegalArgumentException.class,()->store.initialize(PAIR,LOCAL,PEER,NATIVE,"Watch7,4","23S303",unused));
         assertThrows(IllegalArgumentException.class,()->store.initialize(PAIR,LOCAL,PEER,NATIVE,"Watch7,5","23S304",unused));
         assertNull(store.read(PAIR,LOCAL,PEER));
+        // Watch6,9 / 23S620 is also a verified Health profile.
+        var w69=store.initialize(PAIR,LOCAL,PEER,NATIVE,"Watch6,9","23S620",()->HEALTH);
+        assertEquals(NATIVE,w69.persistent());
+        assertNotNull(NativeHealthTypeCatalog.lookup("23S620",5L));
     }
     @Test public void corruptOversizedSymlinkAndTruncatedFilesNeverRegenerate() throws Exception {
         for(int kind=0;kind<4;kind++) {

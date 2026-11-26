@@ -376,6 +376,7 @@ class ProtocolHost {
         PENDING_REDRIVE_ACTIVATION.set(false);
         PENDING_FORCE_SETUP_OBSERVED.set(false);
         PENDING_RETRY_ACTIVATION.set(false);
+        healthPullHandler = null;
     }
 
     /**
@@ -466,6 +467,19 @@ class ProtocolHost {
                     values.get(index)));
         }
         return output.append(']').toString();
+    }
+
+    private static volatile Runnable healthPullHandler;
+
+    static void setHealthPullHandler(Runnable handler) {
+        healthPullHandler = handler;
+    }
+
+    static void triggerHealthPull() {
+        Runnable handler = healthPullHandler;
+        if (handler != null) {
+            handler.run();
+        }
     }
 
 }
