@@ -309,6 +309,7 @@ final class IdsModernSessionCoordinator
     synchronized Output sendClockFaceDeltaRequest(byte[] payload) { return appSender.sendClockFaceDeltaRequest(payload); }
     synchronized Output sendApplicationDataResponse(String topic, byte[] payload, String outgoingResponseIdentifier) { return appSender.sendApplicationDataResponse(topic, payload, outgoingResponseIdentifier); }
     synchronized Output sendApplicationDictionary(String topic, byte[] payload) { return appSender.sendApplicationDictionary(topic, payload); }
+    synchronized Output sendApplicationDictionaryWithExpiry(String topic, byte[] payload, long expirySeconds) { return appSender.sendApplicationDictionaryWithExpiry(topic, payload, expirySeconds); }
     synchronized String pendingApplicationFramesSummary() { return dataChannelEngine.pendingApplicationFramesSummary(); }
     synchronized boolean hasPendingApplicationFrames() { return dataChannelEngine.hasPendingApplicationFrames(); }
     synchronized Output flushPendingApplicationFrames() { return dataChannelEngine.flushPendingApplicationFrames(); }

@@ -191,12 +191,52 @@ final class ModernIdsOutputProcessor {
                     } finally { HalTransportSession.wipe(dictionary); }
                 }
                 if (event.type == IdsModernSessionCoordinator.EventType.DATA_RECEIVED
+                        && AppSyncConduitCodec.TOPIC.equals(event.topic)) {
+                    byte[] appSyncPayload = event.payload();
+                    try {
+                        log("APPSYNC CONDUIT RX: " + AppSyncConduitCodec.describeInbound(appSyncPayload)
+                                + "; app names logged=false.");
+                    } finally { HalTransportSession.wipe(appSyncPayload); }
+                    if (!runner.appSyncDefaultAppsSent && runner.activeIdsBridge != null) {
+                        runner.appSyncDefaultAppsSent = true;
+                        long expiry = AppSyncConduitCodec.expiryForUnixMillis(System.currentTimeMillis());
+                        byte[][] messages = new byte[][]{
+                                AppSyncConduitCodec.encodeDefaultAppsList(),
+                                AppSyncConduitCodec.encodeSyncFinished()
+                        };
+                        for (byte[] message : messages) {
+                            try {
+                                NormalLinkIdsSessionBridge.Output sent =
+                                        runner.activeIdsBridge.sendApplicationDictionaryWithExpiry(
+                                                AppSyncConduitCodec.TOPIC, message, expiry);
+                                processModernIdsOutput(sent, remoteCid, "APPSYNC DEFAULT APPS TX");
+                                runner.flushPendingIdsFrames(remoteCid);
+                            } catch (Exception failure) {
+                                log("APPSYNC DEFAULT APPS TX deferred: " + safeMessage(failure));
+                            } finally {
+                                HalTransportSession.wipe(message);
+                            }
+                        }
+                        log("APPSYNC DEFAULT APPS TX: announced "
+                                + AppSyncConduitCodec.DEFAULT_WATCH_APPS.size()
+                                + " default Apple Watch apps (T=30, T=34).");
+                    }
+                }
+                if (event.type == IdsModernSessionCoordinator.EventType.DATA_RECEIVED
                         && SoftwareUpdateCodec.TOPIC.equals(event.topic) && runner.softwareUpdate != null
                         && runner.operationalSnapshotPublished) {
                     byte[] updatePayload = event.payload();
                     try {
-                        if (runner.softwareUpdate.receive(updatePayload, event.peerResponseIdentifier, System.currentTimeMillis()))
+                        if (runner.softwareUpdate.receive(updatePayload, event.peerResponseIdentifier, System.currentTimeMillis())) {
+                            if (runner.softwareUpdate.errorCode() != null) {
+                                log("SOFTWARE UPDATE ERROR: domain=" + runner.softwareUpdate.errorDomain()
+                                        + " code=" + runner.softwareUpdate.errorCode()
+                                        + (runner.softwareUpdate.errorDiagnostic() != null
+                                        ? " diagnostic=" + runner.softwareUpdate.errorDiagnostic() : "")
+                                        + "; native payload logged=false.");
+                            }
                             runner.appServices.publishSoftwareUpdate();
+                        }
                     } catch (IllegalArgumentException invalid) {
                         log("SOFTWARE UPDATE observation rejected; native payload logged=false.");
                     } finally { HalTransportSession.wipe(updatePayload); }

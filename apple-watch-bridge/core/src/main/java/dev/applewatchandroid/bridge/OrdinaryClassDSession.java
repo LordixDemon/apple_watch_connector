@@ -102,6 +102,14 @@ final class OrdinaryClassDSession implements AutoCloseable {
     private int acknowledgedApplicationServiceId = -1;
     private long lastApplicationServiceSendMillis;
     private int applicationServiceAttempts;
+    private byte[] pendingProxyIpv6;
+    private int pendingProxyPort;
+    private OrdinaryIkeInformational.ProxyNotifyRequest pendingProxyNotifyRequest;
+    private int acknowledgedProxyNotifyId = -1;
+    private long lastProxyNotifySendMillis;
+    private int proxyNotifyAttempts;
+    private boolean proxyNotifyAcknowledged;
+    private boolean proxyNotifyRetryLimitLogged;
 
     private OrdinaryChildSaCrypto.ChildSaKeys childSaKeys;
     private OrdinaryChildSaCrypto.EspSession espSession;
@@ -227,10 +235,7 @@ final class OrdinaryClassDSession implements AutoCloseable {
                     .HAS_COMPLETED_PAIRING)
                     || local.flags != 0
                     || (remote.flags
-                    & ~(NrLinkBluetoothPrelude
-                    .FLAG_COMPANION_APL
-                    | NrLinkBluetoothPrelude
-                    .FLAG_USES_TLS)) != 0
+                    & ~NrLinkBluetoothPrelude.KNOWN_REMOTE_FLAGS) != 0
                     || remote.usesTls()) {
                 throw new IllegalArgumentException(
                         "Prelude pair does not match the "
@@ -456,6 +461,10 @@ final class OrdinaryClassDSession implements AutoCloseable {
 
     Outbound requestIkeDelete() {
         requireReady();
+        if (pendingProxyNotifyRequest != null) {
+            pendingProxyNotifyRequest.destroy();
+            pendingProxyNotifyRequest = null;
+        }
         if (pendingUnlockRequest != null || pendingLinkDirectorRequest != null || pendingApplicationServiceRequest != null
                 || pendingDeleteMessageId >= 0) {
             throw new IllegalStateException("IKE Delete cannot start with another request pending");
@@ -558,6 +567,69 @@ final class OrdinaryClassDSession implements AutoCloseable {
         logLinkDirector("APPLICATION SERVICE DISCOVERY: request sent; attempt=" + applicationServiceAttempts
                 + "; keys/token/identifier logged=false; no snapshot or setup confirmation.");
         return new Outbound(Exchange.INFORMATIONAL, pendingApplicationServiceRequest.packet);
+    }
+
+    void enableProxyAnnouncement(byte[] ipv6Address, int port, java.util.function.Consumer<String> logger) {
+        requireLive();
+        if (ipv6Address == null || ipv6Address.length != 16 || port < 1 || port > 65535) {
+            throw new IllegalArgumentException("Invalid ProxyNotify configuration");
+        }
+        wipe(pendingProxyIpv6);
+        pendingProxyIpv6 = ipv6Address.clone();
+        pendingProxyPort = port;
+        proxyNotifyAcknowledged = false;
+        proxyNotifyAttempts = 0;
+        proxyNotifyRetryLimitLogged = false;
+        if (pendingProxyNotifyRequest != null) {
+            pendingProxyNotifyRequest.destroy();
+            pendingProxyNotifyRequest = null;
+        }
+        if (linkDirectorLogger == null && logger != null) {
+            linkDirectorLogger = logger;
+        }
+    }
+
+    boolean proxyAnnouncementAcknowledged() {
+        return proxyNotifyAcknowledged;
+    }
+
+    Outbound pollProxyNotify(long nowMillis) {
+        requireLive();
+        if (!established() || pendingDeleteMessageId >= 0 || proxyNotifyAcknowledged
+                || pendingUnlockRequest != null || pendingLinkDirectorRequest != null
+                || pendingApplicationServiceRequest != null) {
+            return null;
+        }
+        if (pendingProxyNotifyRequest != null) {
+            if (nowMillis - lastProxyNotifySendMillis < 10_000L) return null;
+            if (proxyNotifyAttempts >= 6) {
+                if (!proxyNotifyRetryLimitLogged) {
+                    proxyNotifyRetryLimitLogged = true;
+                    logLinkDirector("PROXY NOTIFY TX: retry limit on " + dataClass
+                            + "; announcement unconfirmed; IDS retained.");
+                }
+                return null;
+            }
+        } else {
+            if (pendingProxyIpv6 == null) return null;
+            if (nextLocalRequestMessageId < 0) {
+                nextLocalRequestMessageId = localRole == NrLinkBluetoothPrelude.LocalRole.INITIATOR ? 3 : 0;
+            }
+            pendingProxyNotifyRequest = OrdinaryIkeInformational.createProxyNotifyRequest(
+                    random, localRole, activeKeys(), nextLocalRequestMessageId,
+                    pendingProxyIpv6, pendingProxyPort);
+            nextLocalRequestMessageId = incrementMessageId(nextLocalRequestMessageId);
+            wipe(pendingProxyIpv6);
+            pendingProxyIpv6 = null;
+            proxyNotifyAttempts = 0;
+            proxyNotifyRetryLimitLogged = false;
+        }
+        lastProxyNotifySendMillis = nowMillis;
+        proxyNotifyAttempts++;
+        logLinkDirector("PROXY NOTIFY TX: authenticated 0xC60D on " + dataClass
+                + " port=" + pendingProxyNotifyRequest.port + " attempt=" + proxyNotifyAttempts
+                + "; endpoint bytes logged=false.");
+        return new Outbound(Exchange.INFORMATIONAL, pendingProxyNotifyRequest.packet);
     }
 
     private void logLinkDirector(String message) {
@@ -830,6 +902,28 @@ final class OrdinaryClassDSession implements AutoCloseable {
                     localRole, activeKeys(), packet, pendingDeleteMessageId);
             logLinkDirector("IKE DELETE ACK: authenticated " + dataClass + " session closure; pairing keys retained.");
             return null;
+        }
+        if (pendingProxyNotifyRequest != null || acknowledgedProxyNotifyId >= 0) {
+            int respId = readInformationalMessageId(packet);
+            if ((packet[19] & IkeV2Codec.IKE_FLAG_RESPONSE) != 0) {
+                if (pendingProxyNotifyRequest != null && respId == pendingProxyNotifyRequest.messageId) {
+                    OrdinaryIkeInformational.authenticatePostConnectResponse(
+                            localRole, activeKeys(), packet, respId);
+                    acknowledgedProxyNotifyId = respId;
+                    proxyNotifyAcknowledged = true;
+                    int ackPort = pendingProxyNotifyRequest.port;
+                    pendingProxyNotifyRequest.destroy();
+                    pendingProxyNotifyRequest = null;
+                    logLinkDirector("PROXY NOTIFY ACK: authenticated " + dataClass
+                            + " IKE receipt for 0xC60D port=" + ackPort + ".");
+                    return null;
+                }
+                if (acknowledgedProxyNotifyId >= 0 && respId == acknowledgedProxyNotifyId) {
+                    OrdinaryIkeInformational.authenticatePostConnectResponse(
+                            localRole, activeKeys(), packet, respId);
+                    return null;
+                }
+            }
         }
         if (dataClass
                 != OrdinaryIkeAuth.DataClass.CLASS_D) {
@@ -1133,6 +1227,8 @@ final class OrdinaryClassDSession implements AutoCloseable {
         }
         if (pendingLinkDirectorRequest != null) pendingLinkDirectorRequest.destroy();
         if (pendingApplicationServiceRequest != null) pendingApplicationServiceRequest.destroy();
+        if (pendingProxyNotifyRequest != null) pendingProxyNotifyRequest.destroy();
+        wipe(pendingProxyIpv6);
         wipe(applicationServiceRequest);
         applicationServiceListener = null;
         linkDirectorLogger = null;

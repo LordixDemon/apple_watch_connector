@@ -8,7 +8,7 @@ import java.util.UUID;
 /** Read-only HealthDaemon23S303 objectData inspection; never adopts identities or advances anchors. */
 final class NativeHealthObjectCodec {
     private NativeHealthObjectCodec() { }
-    private static final int[] OPAQUE_COLLECTION_FIELDS={5,6,7,8,10,11,13,14,15,21,22,23,25,27,28,29,30};
+    private static final int[] OPAQUE_COLLECTION_FIELDS={6,7,8,10,11,13,14,15,21,22,23,25,27,28,29,30};
 
     /** Local observation index only: nil category/domain remain distinct from zero/empty, never adopted. */
     static byte[] defaultsObservationKey(Long category,String domain) {
@@ -31,7 +31,7 @@ final class NativeHealthObjectCodec {
             if(identifier.unknownFields()!=0 || identifier.string(1)!=null || entity==null)return null;
             if(entity==11)return NativeHealthChangesCodec.Schema.SOURCE;
             if(entity==13)return NativeHealthChangesCodec.Schema.DEVICE;
-            if(entity==2 || entity==4)return NativeHealthChangesCodec.Schema.OBJECT_COLLECTION;
+            if(entity==2 || entity==4 || entity==5)return NativeHealthChangesCodec.Schema.OBJECT_COLLECTION;
             if(entity==16 || entity==17)return NativeHealthChangesCodec.Schema.DOMAIN_DICTIONARY;
             return null;
         }
@@ -40,7 +40,7 @@ final class NativeHealthObjectCodec {
         return switch(type) {
             case 10 -> NativeHealthChangesCodec.Schema.SOURCE;
             case 12 -> NativeHealthChangesCodec.Schema.DEVICE;
-            case 1,2 -> NativeHealthChangesCodec.Schema.OBJECT_COLLECTION;
+            case 1,2,3 -> NativeHealthChangesCodec.Schema.OBJECT_COLLECTION;
             case 16,17 -> NativeHealthChangesCodec.Schema.DOMAIN_DICTIONARY;
             default -> null;
         };
@@ -67,15 +67,15 @@ final class NativeHealthObjectCodec {
             return new SampleHeader(parsed,sample.int64(2),sample.doubleValue(3),sample.doubleValue(4));
         } finally { if(uuid!=null)Arrays.fill(uuid,(byte)0); }
     }
-    record Counts(int categorySamples,int quantitySamples,int deletedSamples,int completeSampleHeaders,
-                  int opaqueChildren,int unknownFields) { }
+    record Counts(int categorySamples,int quantitySamples,int workoutSamples,int deletedSamples,
+                  int completeSampleHeaders,int opaqueChildren,int unknownFields) { }
 
     /** Counts nested records, not unique samples, clinical validity, grants or persisted measurements. */
     static Counts counts(NativeHealthChangesCodec.Node object) {
         if(object.schema!=NativeHealthChangesCodec.Schema.OBJECT_COLLECTION)
-            return new Counts(0,0,0,0,0,object.unknownFieldsDeep());
+            return new Counts(0,0,0,0,0,0,object.unknownFieldsDeep());
         int complete=0,opaque=0;
-        for(int field:new int[]{3,4,9})for(var value:object.children(field)) {
+        for(int field:new int[]{3,4,5,9})for(var value:object.children(field)) {
             var samples=value.children(1);
             if(!samples.isEmpty() && header(samples.get(0)).structurallyComplete())complete++;
         }
@@ -83,7 +83,7 @@ final class NativeHealthObjectCodec {
         byte[] generated=object.bytes(18);
         try { if(generated!=null)opaque++; }
         finally { if(generated!=null)Arrays.fill(generated,(byte)0); }
-        return new Counts(object.children(3).size(),object.children(4).size(),object.children(9).size(),
-                complete,opaque,object.unknownFieldsDeep());
+        return new Counts(object.children(3).size(),object.children(4).size(),object.children(5).size(),
+                object.children(9).size(),complete,opaque,object.unknownFieldsDeep());
     }
 }

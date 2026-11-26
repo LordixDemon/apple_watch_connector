@@ -508,6 +508,40 @@ final class IdsModernApplicationSender {
         return sendApplicationData(topic, payload, IdsSocketPairCodec.COMMAND_DICTIONARY);
     }
 
+    IdsModernSessionCoordinator.Output sendApplicationDictionaryWithExpiry(
+            String topic, byte[] payload, long expirySeconds) {
+        coord.requireUsable();
+        coord.requireControlReady();
+        if (NanoSystemSettingsDiagnostics.TOPIC.equals(topic)
+                || SysdiagnoseArchiveInventory.TOPIC.equals(topic)) {
+            throw new IllegalArgumentException("Diagnostics require a supported read-only Protobuf request");
+        }
+        IdsApplicationRoute route = IdsApplicationRoute.forTopic(topic);
+        IdsModernSessionCoordinator.DataState state = coord.requireJoinedDataState(route.serviceConnectorName.encode());
+        IdsModernSessionCoordinator.MessageMetadata metadata =
+                coord.applicationMessages.nextRequestExpectingPeerResponseWithExpiry(expirySeconds);
+        IdsServiceMapState.OutgoingRoute mapped = coord.control.serviceMap().routeOutgoing(topic);
+        IdsSocketPairCodec.DataMessage envelope = new IdsSocketPairCodec.DataMessage(
+                IdsSocketPairCodec.COMMAND_DICTIONARY, metadata.sequence, mapped.streamId,
+                metadata.flagsWithoutTopic | (mapped.includeTopic ? IdsSocketPairCodec.FLAG_HAS_TOPIC : 0),
+                metadata.peerResponseIdentifier, metadata.messageUuid, mapped.wireTopic(),
+                payload, metadata.expirySeconds);
+        byte[] frame = null;
+        IdsModernSessionCoordinator.OutputBuilder output = new IdsModernSessionCoordinator.OutputBuilder();
+        try {
+            frame = IdsSocketPairCodec.encodeData(envelope);
+            coord.dataChannelEngine.sendSocketPairFrame(state, frame, null, output);
+            output.events.add(IdsModernSessionCoordinator.SessionEvent.data(IdsModernSessionCoordinator.EventType.DATA_SENT,
+                    state.connection != null ? state.connection.connectionId : 0,
+                    state.service, topic, envelope));
+            coord.drainDeferredPackets(output);
+            return output.build();
+        } catch (RuntimeException failure) {
+            output.close();
+            throw coord.fail(failure);
+        } finally { IdsModernSessionCoordinator.wipe(frame); envelope.destroy(); }
+    }
+
     IdsModernSessionCoordinator.Output sendApplicationData(String topic, byte[] payload, int command) {
         return sendApplicationData(topic, payload, command, false);
     }

@@ -80,7 +80,7 @@ public final class HealthDefaultsInstrumentation extends Instrumentation {
                 } finally { SQLiteDatabase.deleteDatabase(untouched); }
             });
             probe("non-speculative and nonzero unknown sequence remain held",()-> {
-                for(byte[] flags:new byte[][]{new byte[0],join(vi(8,1),vi(7,1))}) {
+                for(byte[] flags:new byte[][]{new byte[0],join(vi(6,1),vi(7,1))}) {
                     try(var change=NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.CHANGE,
                             join(vi(1,16),flags,blob(4,dictionary("d",entry("held",0)))))) {
                         rejects(()->database.mirror(pair,local,peer,identity,"23S303",change,()->true));
@@ -90,7 +90,7 @@ public final class HealthDefaultsInstrumentation extends Instrumentation {
             });
             probe("protected and ordinary categories do not collide",()-> {
                 try(var change=NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.CHANGE,
-                        join(vi(1,17),vi(8,1),blob(4,join(vi(1,105),string(2,"d"),blob(3,entry("k",10,vi(3,99)))))))) {
+                        join(vi(1,17),vi(6,1),blob(4,join(vi(1,105),string(2,"d"),blob(3,entry("k",10,vi(3,99)))))))) {
                     var merged=database.mirror(pair,local,peer,identity,"23S303",change,()->true);require(merged.replaced()==1);
                 }
                 List<Long> numbers=new ArrayList<>();read(record->{ if(record.entry().key().equals("k"))numbers.add(record.entry().integerValue()); });
@@ -166,7 +166,7 @@ public final class HealthDefaultsInstrumentation extends Instrumentation {
     }
     private static void require(boolean condition) { if(!condition)throw new AssertionError("Probe assertion failed"); }
     private static NativeHealthChangesCodec.Node change(byte[]... dictionaries) {
-        var out=new ByteArrayOutputStream();out.writeBytes(join(vi(1,16),vi(8,1),vi(7,0)));
+        var out=new ByteArrayOutputStream();out.writeBytes(join(vi(1,16),vi(6,1),vi(7,0)));
         for(byte[] dictionary:dictionaries)out.writeBytes(blob(4,dictionary));return NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.CHANGE,out.toByteArray());
     }
     private static byte[] dictionary(String domain,byte[]... entries) {

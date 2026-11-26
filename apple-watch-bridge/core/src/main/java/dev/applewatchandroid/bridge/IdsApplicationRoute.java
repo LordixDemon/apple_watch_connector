@@ -30,6 +30,8 @@ final class IdsApplicationRoute {
             "com.apple.private.alloy.clockface.sync";
     static final String TIMEZONESYNC_SERVICE =
             "com.apple.private.alloy.timezonesync";
+    static final String APP_SYNC_CONDUIT_SERVICE =
+            "com.apple.private.alloy.appsyncconduit.v2";
 
     final String topic;
     final int idsPriority;
@@ -100,6 +102,7 @@ final class IdsApplicationRoute {
                         topic)
                 || WifiNetworkSyncCodec.TOPIC.equals(topic)
                 || SysdiagnoseArchiveInventory.TOPIC.equals(topic)
+                || APP_SYNC_CONDUIT_SERVICE.equals(topic)
                 || TELEPHONY_SERVICE.equals(
                         topic)) {
             return new IdsApplicationRoute(

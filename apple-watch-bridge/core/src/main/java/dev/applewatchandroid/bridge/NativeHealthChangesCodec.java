@@ -14,7 +14,7 @@ final class NativeHealthChangesCodec {
     enum Schema { CHANGE_SET, CHANGE, STATUS, ANCHOR, ENTITY_IDENTIFIER,
         AUTHORIZATION_REQUEST, AUTHORIZATION_RESPONSE, AUTHORIZATION_COMPLETE, ACTIVATION_RESTORE,
         SOURCE, DEVICE, SYNC_IDENTITY, PROVENANCE, HEALTH_OBJECT, SAMPLE,
-        CATEGORY_SAMPLE, QUANTITY_SAMPLE, QUANTITY_SERIES_DATUM, QUANTITY,
+        CATEGORY_SAMPLE, QUANTITY_SAMPLE, QUANTITY_SERIES_DATUM, QUANTITY, WORKOUT,
         METADATA_DICTIONARY, METADATA_PAIR, DOMAIN_DICTIONARY, TIMESTAMPED_PAIR,
         OBJECT_COLLECTION, DELETED_SAMPLE, VERSION_RANGE }
     private enum Kind { INT32, UINT32, INT64, BOOL, DOUBLE, BYTES, UTF8, REPEATED_BYTES,
@@ -160,6 +160,14 @@ final class NativeHealthChangesCodec {
                 case 2 -> new Field(Kind.UTF8);
                 default -> null;
             };
+            case WORKOUT -> switch(number) {
+                case 1 -> new Field(Kind.CHILD,Schema.SAMPLE);
+                case 2,7 -> new Field(Kind.INT64);
+                case 3,13 -> new Field(Kind.REPEATED_BYTES);
+                case 4,5,6,8,9,10,11 -> new Field(Kind.DOUBLE);
+                case 12 -> new Field(Kind.BYTES);
+                default -> null;
+            };
             case METADATA_DICTIONARY -> switch(number) {
                 case 1 -> new Field(Kind.REPEATED_CHILD,Schema.METADATA_PAIR);
                 default -> null;
@@ -191,11 +199,12 @@ final class NativeHealthChangesCodec {
                 case 2 -> new Field(Kind.CHILD,Schema.SOURCE);
                 case 3 -> new Field(Kind.REPEATED_CHILD,Schema.CATEGORY_SAMPLE);
                 case 4 -> new Field(Kind.REPEATED_CHILD,Schema.QUANTITY_SAMPLE);
+                case 5 -> new Field(Kind.REPEATED_CHILD,Schema.WORKOUT);
                 case 9 -> new Field(Kind.REPEATED_CHILD,Schema.DELETED_SAMPLE);
                 case 20 -> new Field(Kind.CHILD,Schema.PROVENANCE);
                 case 26 -> new Field(Kind.CHILD,Schema.SYNC_IDENTITY);
                 // Native length-delimited children retained opaque until their own schema is implemented.
-                case 5,6,7,8,10,11,13,14,15,21,22,23,25,27,28,29,30 -> new Field(Kind.REPEATED_BYTES);
+                case 6,7,8,10,11,13,14,15,21,22,23,25,27,28,29,30 -> new Field(Kind.REPEATED_BYTES);
                 case 18 -> new Field(Kind.BYTES);
                 default -> null;
             };

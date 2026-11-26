@@ -27,6 +27,7 @@ final class TimeSyncLinkCodec {
     private static final String KEY_SOURCE = "kTMLSLinkSourceKey";
     private static final String KEY_TIME_ZONE = "kTMLSLinkTimeZoneKey";
     private static final String SOURCE_DEVICE = "TMLSSourceDevice";
+    private static final String SOURCE_COMPUTED = "TMLSSourceComputed";
 
     private TimeSyncLinkCodec() {
     }
@@ -71,7 +72,7 @@ final class TimeSyncLinkCodec {
         time.put("kTMLSLinkTimeKey", unixMillis / 1000.0 - 978_307_200.0);
         time.put("kTMLSLinkRTCKey", nowNanos / 1_000_000_000.0);
         time.put("kTMLSLinkUncertaintyKey", 0.1);
-        time.put(KEY_SOURCE, SOURCE_DEVICE);
+        time.put(KEY_SOURCE, SOURCE_COMPUTED);
         time.put("kTMLSLinkReliableKey", false);
         return new byte[][] {AppleBinaryPropertyList.encode(conversion),
                 AppleBinaryPropertyList.encode(time)};

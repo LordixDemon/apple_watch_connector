@@ -31,8 +31,13 @@ public final class TimeSyncLinkCodecTest {
         assertEquals(1, TimeSyncLinkCodec.messageType(replies[1]));
         assertEquals(5.0, (Double) time.get("kTMLSLinkTimeKey"), 0);
         assertEquals(13.0, (Double) time.get("kTMLSLinkRTCKey"), 0);
-        assertEquals("TMLSSourceDevice", time.get("kTMLSLinkSourceKey"));
+        assertEquals("TMLSSourceComputed", time.get("kTMLSLinkSourceKey"));
         assertEquals(false, time.get("kTMLSLinkReliableKey"));
+        Map<?, ?> tz = (Map<?, ?>) AppleBinaryPropertyList.decode(
+                TimeSyncLinkCodec.sourceAndTimeZone("Europe/Rome"));
+        assertEquals(4, ((Number) tz.get("kTMLSLinkMsgKey")).intValue());
+        assertEquals("TMLSSourceDevice", tz.get("kTMLSLinkSourceKey"));
+        assertEquals("Europe/Rome", tz.get("kTMLSLinkTimeZoneKey"));
     }
 
     @Test

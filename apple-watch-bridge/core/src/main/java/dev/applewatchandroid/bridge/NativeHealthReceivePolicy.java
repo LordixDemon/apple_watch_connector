@@ -49,7 +49,7 @@ final class NativeHealthReceivePolicy {
             if(expectedSequence==null)return held(Reason.SEQUENCE_STATE_UNAVAILABLE);
             if(!sequence.equals(expectedSequence))return rejected(Reason.OUT_OF_ORDER,0x57a,entity,version);
         }
-        boolean speculative=Boolean.TRUE.equals(change.bool(8));
+        boolean speculative=Boolean.TRUE.equals(change.bool(6));
         if(speculative) {
             if(!entity.speculative)return rejected(Reason.UNSUPPORTED_SPECULATIVE,100,entity,version);
             // Native speculative branch does not construct or validate its range/required-anchor map.
@@ -82,7 +82,7 @@ final class NativeHealthReceivePolicy {
     }
     private static Plan applicable(NativeHealthChangesCodec.Node change,Entity entity,Version version,boolean speculative) {
         Long sequence=change.int64(7);
-        boolean done=Boolean.TRUE.equals(change.bool(6));
+        boolean done=Boolean.TRUE.equals(change.bool(8));
         // ARM64 ADD wraps a 64-bit sequence; retain exact signed bits, including overflow.
         Long next=sequence==null ? null : done ? Long.valueOf(0) : Long.valueOf(sequence+1);
         Long received=null,validated=null;

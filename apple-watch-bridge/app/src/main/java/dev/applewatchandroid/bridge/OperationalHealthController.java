@@ -295,8 +295,8 @@ final class OperationalHealthController implements AutoCloseable {
                                 for(var change:changes.children(1)) {
                                     objects+=change.byteCount(4); requiredAnchors+=change.children(5).size();
                                     log("HEALTH Changes metadata: objectType="+change.int32(1)+" objects="+change.byteCount(4)
-                                            +" dependencies="+change.children(5).size()+" complete="+change.bool(6)
-                                            +" speculative="+change.bool(8)+" entityIdentifierPresent="+!change.children(9).isEmpty()
+                                            +" dependencies="+change.children(5).size()+" speculative="+change.bool(6)
+                                            +" complete="+change.bool(8)+" entityIdentifierPresent="+!change.children(9).isEmpty()
                                             +" currentEpoch="+event.epoch.equals(host.epoch())+"; object values/anchors/identities logged=false.");
                                     inspectHealthObjects(change,event.epoch.equals(host.epoch()));
                                     if(change.byteCount(4)>0)observeHealthObjects(event,new NativeHealthIncomingPolicy.Message(
@@ -392,7 +392,7 @@ final class OperationalHealthController implements AutoCloseable {
                     +" currentEpoch="+epoch.equals(host.epoch())
                     +"; control plan only; entity data/anchors/sequence not accepted; values/identities logged=false.");
             if(plan!=null && plan.outcome()==NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION
-                    && Boolean.TRUE.equals(change.bool(8))
+                    && Boolean.TRUE.equals(change.bool(6))
                     && (plan.entity()==NativeHealthReceivePolicy.Entity.DEFAULTS || plan.entity()==NativeHealthReceivePolicy.Entity.PROTECTED_DEFAULTS)) {
                 try {
                     var defaults=new HealthDefaultsDatabase(host.context());
@@ -455,12 +455,13 @@ final class OperationalHealthController implements AutoCloseable {
             log("HEALTH Objects unsupported entity; encrypted inbox retained; no fallback/reply/anchors.");
             return;
         }
-        int decoded=0,invalid=0,categories=0,quantities=0,deleted=0,complete=0,opaque=0,unknown=0;
+        int decoded=0,invalid=0,categories=0,quantities=0,workouts=0,deleted=0,complete=0,opaque=0,unknown=0;
         for(int i=0;i<change.byteCount(4);i++) {
             byte[] data=change.bytesAt(4,i);
             try(var object=NativeHealthChangesCodec.decode(schema,data)) {
                 var counts=NativeHealthObjectCodec.counts(object);
                 decoded++;categories+=counts.categorySamples();quantities+=counts.quantitySamples();
+                workouts+=counts.workoutSamples();
                 deleted+=counts.deletedSamples();complete+=counts.completeSampleHeaders();
                 opaque+=counts.opaqueChildren();unknown+=counts.unknownFields();
                 if(schema==NativeHealthChangesCodec.Schema.DOMAIN_DICTIONARY) {
@@ -484,7 +485,8 @@ final class OperationalHealthController implements AutoCloseable {
             finally { wipe(data); }
         }
         log("HEALTH Objects read-only: schema="+schema+" decoded="+decoded+" invalid="+invalid
-                +" categoryRecords="+categories+" quantityRecords="+quantities+" deletionRecords="+deleted
+                +" categoryRecords="+categories+" quantityRecords="+quantities+" workoutRecords="+workouts
+                +" deletionRecords="+deleted
                 +" completeHeaders="+complete+" opaqueChildren="+opaque+" unknownFields="+unknown
                 +" currentEpoch="+currentEpoch+"; values/identities logged=false; database/anchors not committed.");
     }

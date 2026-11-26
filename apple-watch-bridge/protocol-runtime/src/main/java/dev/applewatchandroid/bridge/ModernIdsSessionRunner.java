@@ -25,6 +25,7 @@ final class ModernIdsSessionRunner {
     boolean operationalSnapshotPublished;
     SoftwareUpdateSession softwareUpdate;
     boolean healthPeerIdentityPublished;
+    boolean appSyncDefaultAppsSent;
     UUID clockFaceObservationEpoch;
     ClockFaceSyncReceiver retainedClockFaceReceiver;
     String retainedClockFacePair;
@@ -162,6 +163,7 @@ final class ModernIdsSessionRunner {
         if (softwareUpdate != null) softwareUpdate.close();
         softwareUpdate = null;
         healthPeerIdentityPublished = false;
+        appSyncDefaultAppsSent = false;
         bulletinTransport.reset();
         bulletinSettingsTransport.reset();
         session.postCommit.earlyInitialEvents.forEach(IdsModernSessionCoordinator.SessionEvent::close);
@@ -381,6 +383,9 @@ final class ModernIdsSessionRunner {
                             pipe,
                             ids);
             ids = null;
+            if (!"false".equalsIgnoreCase(System.getProperty("watch.internet.relay"))) {
+                bridge.enableInternetRelay(ProtocolHost::log);
+            }
             activeIdsBridge =
                     bridge;
             L2capErtmSession.diagnosticLogger =
@@ -714,7 +719,9 @@ final class ModernIdsSessionRunner {
             long sliceMs =
                     pendingNanoSetup
                             ? 80L
-                            : (!session.outboundAppMessages.isEmpty() ? 50L : 500L);
+                            : (activeIdsBridge != null && activeIdsBridge.hasActiveInternetRelayFlows()
+                            ? 25L
+                            : (!session.outboundAppMessages.isEmpty() ? 50L : 500L));
             long sliceDeadline = Math.min(deadline, BridgeClock.elapsedRealtime() + sliceMs);
             HciCodec.L2capPdu l2cap = null;
             try {

@@ -32,6 +32,7 @@ final class NormalLinkIdsSessionBridge
     private boolean closed;
     private List<NativeApplicationServiceDiscovery.Endpoint> nativeSnapshotEndpoints = List.of();
     private NativeQuicSession nativeQuic;
+    private WatchInternetRelaySession internetRelay;
 
     NormalLinkIdsSessionBridge(
             NormalLinkPipeSession normalLink,
@@ -135,6 +136,11 @@ final class NormalLinkIdsSessionBridge
     Output sendApplicationDictionary(String topic, byte[] payload) {
         requireUsable();
         return route(ids.sendApplicationDictionary(topic, payload));
+    }
+
+    Output sendApplicationDictionaryWithExpiry(String topic, byte[] payload, long expirySeconds) {
+        requireUsable();
+        return route(ids.sendApplicationDictionaryWithExpiry(topic, payload, expirySeconds));
     }
 
     Output sendClassDRequestWithClientAcknowledgement(NanoRegistryClassDCodec.ApplicationMessage message) {
@@ -338,7 +344,33 @@ final class NormalLinkIdsSessionBridge
         requireUsable();
         List<byte[]> frames = new ArrayList<>(normalLink.pollLinkDirectorAnnouncements(nowMillis));
         if (nativeQuic != null) frames.addAll(nativeQuic.poll(normalLink));
+        if (internetRelay != null) frames.addAll(internetRelay.poll(normalLink));
         return frames;
+    }
+
+    void enableInternetRelay(java.util.function.Consumer<String> log) {
+        requireUsable();
+        if (internetRelay != null) {
+            return;
+        }
+        byte[] localD = normalLink.localClassD();
+        try {
+            internetRelay = WatchInternetRelaySession.create(normalLink, log);
+            normalLink.enableProxyAnnouncement(localD, ShoesProxyCodec.PROXY_PORT, log);
+            log.accept("INTERNET RELAY: userspace Shoes proxy ready on port="
+                    + ShoesProxyCodec.PROXY_PORT + "; announcing 0xC60D on Class C.");
+        } finally {
+            wipe(localD);
+        }
+    }
+
+    boolean hasActiveInternetRelayFlows() {
+        return !poisoned && !closed && internetRelay != null && internetRelay.hasActiveFlows();
+    }
+
+    boolean proxyAnnouncementAcknowledged() {
+        requireUsable();
+        return normalLink.proxyAnnouncementAcknowledged();
     }
 
     void discoverNativeSnapshotService(NativeApplicationServiceDiscovery discovery,
@@ -429,6 +461,10 @@ final class NormalLinkIdsSessionBridge
             List<NormalLinkPipeSession.DeliveredIp> passthroughIp) {
         if (nativeQuic != null && nativeQuic.accept(packet)) {
             ertmFrames.addAll(nativeQuic.poll(normalLink));
+            return;
+        }
+        if (internetRelay != null && internetRelay.accept(packet)) {
+            ertmFrames.addAll(internetRelay.poll(normalLink));
             return;
         }
         byte[] icmpReply =
@@ -875,6 +911,7 @@ final class NormalLinkIdsSessionBridge
         closed = true;
         nativeSnapshotEndpoints = List.of();
         if (nativeQuic != null) { nativeQuic.close(); nativeQuic = null; }
+        if (internetRelay != null) { internetRelay.close(); internetRelay = null; }
         closeOwnedSessions();
     }
 

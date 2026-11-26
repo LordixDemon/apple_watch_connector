@@ -45,6 +45,45 @@ public final class OrdinaryIkeInformationalTest {
     }
 
     @Test
+    public void emitsAuthenticatedProxyNotify0xC60DWithIpv6PortAndCriteriaTlv() {
+        SecureRandom random = new SecureRandom();
+        IkeV2SessionCrypto.IkeSaKeys keys = testKeys();
+        byte[] endpoint = new byte[]{
+                (byte) 0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02
+        };
+        try {
+            for (NrLinkBluetoothPrelude.LocalRole sender : NrLinkBluetoothPrelude.LocalRole.values()) {
+                boolean initiator = sender == NrLinkBluetoothPrelude.LocalRole.INITIATOR;
+                OrdinaryIkeInformational.ProxyNotifyRequest req = OrdinaryIkeInformational.createProxyNotifyRequest(
+                        random, sender, keys, 3, endpoint, ShoesProxyCodec.PROXY_PORT);
+                try {
+                    var decrypted = IkeV2SessionCrypto.decryptProtectedPacketWithDirectionFlags(
+                            req.packet, keys.initiatorSpi, keys.responderSpi,
+                            initiator ? keys.skEi : keys.skEr,
+                            initiator ? IkeV2Codec.IKE_FLAG_INITIATOR : 0,
+                            IkeV2SessionCrypto.EXCHANGE_INFORMATIONAL, 3);
+                    assertEquals(IkeV2Codec.PAYLOAD_NOTIFY, decrypted.firstInnerPayload);
+                    // Notify header (8B) + IPv6 (16B) + port (2B) + NRTLV(51, 8, 1L) (11B) = 37 bytes
+                    assertEquals(37, decrypted.plaintext.length);
+                    assertEquals(0xc60d, ((decrypted.plaintext[6] & 0xff) << 8) | (decrypted.plaintext[7] & 0xff));
+                    org.junit.Assert.assertArrayEquals(endpoint, Arrays.copyOfRange(decrypted.plaintext, 8, 24));
+                    assertEquals(ShoesProxyCodec.PROXY_PORT,
+                            ((decrypted.plaintext[24] & 0xff) << 8) | (decrypted.plaintext[25] & 0xff));
+                    assertEquals(51, decrypted.plaintext[26] & 0xff);
+                    assertEquals(8, ((decrypted.plaintext[27] & 0xff) << 8) | (decrypted.plaintext[28] & 0xff));
+                    assertEquals(1, decrypted.plaintext[36] & 0xff);
+                    wipe(decrypted.plaintext);
+                } finally {
+                    req.destroy();
+                }
+            }
+        } finally {
+            keys.destroy();
+        }
+    }
+
+    @Test
     public void emitsAuthenticatedAnnouncementsForBothIkeRolesAndRejectsTampering() {
         SecureRandom random = new SecureRandom();
         IkeV2SessionCrypto.IkeSaKeys keys = testKeys();

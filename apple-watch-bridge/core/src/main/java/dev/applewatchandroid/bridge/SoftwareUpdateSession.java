@@ -24,6 +24,8 @@ final class SoftwareUpdateSession implements AutoCloseable {
     private String targetVersion, targetBuild, phase = "UNKNOWN";
     private Double progress;
     private Long error;
+    private String errorDomain, errorDiagnostic;
+    private int termsRequests;
     private boolean known, scanCompleted, stalled, installAttempted;
     private long observedAt;
 
@@ -99,9 +101,11 @@ final class SoftwareUpdateSession implements AutoCloseable {
                 if (!(message.get("ManagerState") instanceof Long state)) throw new IllegalArgumentException("Invalid native update state");
                 nextPhase = managerPhase(state);
             } else if (!Set.of("ScanResult", "DownloadProgress", "InstallResult", "InstallationCanProceed",
-                    "InstallationWillProceed", "UserDidAcceptTermsAndConditionsChanged", "ShowInstallError",
-                    "ShowDownloadandPrepareError", "ShowDuetConditions").contains(type == null ? "" : type)) return false;
-            Long nextError = SoftwareUpdateCodec.errorCode(message.get("Error"));
+                    "InstallationWillProceed", "UserDidAcceptTermsAndConditionsChanged", "DisplayTerms",
+                    "ShowInstallError", "ShowDownloadandPrepareError", "ShowDuetConditions")
+                    .contains(type == null ? "" : type)) return false;
+            SoftwareUpdateCodec.ErrorInfo nextErrorInfo = SoftwareUpdateCodec.errorInfo(message.get("Error"));
+            Long nextError = nextErrorInfo == null ? null : nextErrorInfo.code();
             if ((stateReply || "ScanResult".equals(type)) && !(message.get("Descriptor") instanceof byte[])
                     || message.containsKey("Descriptor") && !(message.get("Descriptor") instanceof byte[])
                     || message.containsKey("Download") && !(message.get("Download") instanceof byte[]))
@@ -113,6 +117,7 @@ final class SoftwareUpdateSession implements AutoCloseable {
             else if ("ScanResult".equals(type)) nextPhase = next == null ? "IDLE" : "AVAILABLE";
             else if ("InstallResult".equals(type)) nextPhase = "VERIFYING_RESTART";
             else if ("DownloadProgress".equals(type) && nextProgress != null) nextPhase = "DOWNLOADING_PREPARING";
+            if ("DisplayTerms".equals(type)) termsRequests++;
             if (stateReply) pendingQueries.remove(responseId.toUpperCase(java.util.Locale.ROOT));
             else pendingQueries.clear(); // An older query cannot roll back a newer native notification.
             if (next != null && installAttempted && !next.build().equals(targetBuild)) {
@@ -128,7 +133,10 @@ final class SoftwareUpdateSession implements AutoCloseable {
             }
             if (nextProgress != null) { progress = nextProgress.portion(); stalled = nextProgress.stalled(); }
             else if (stateReply) { progress = null; stalled = false; }
-            error = nextError; phase = nextPhase; known = true; observedAt = now;
+            error = nextError;
+            errorDomain = nextErrorInfo == null ? null : nextErrorInfo.domain();
+            errorDiagnostic = nextErrorInfo == null ? null : nextErrorInfo.diagnostic();
+            phase = nextPhase; known = true; observedAt = now;
             if ("ScanResult".equals(type) && nextError == null) scanCompleted = true;
             if (installAttempted && targetBuild != null && targetBuild.equals(installedBuild)) {
                 phase = "COMPLETE";
@@ -152,6 +160,10 @@ final class SoftwareUpdateSession implements AutoCloseable {
             default -> throw new IllegalArgumentException("Unknown native manager state");
         };
     }
+    String currentTermsText() { return descriptor == null ? null : descriptor.licenseTerms(); }
+    Long errorCode() { return error; }
+    String errorDomain() { return errorDomain; }
+    String errorDiagnostic() { return errorDiagnostic; }
     String json() {
         return "{\"pairId\":\"" + pair + "\",\"epoch\":\"" + epoch + "\",\"known\":" + known
                 + ",\"phase\":\"" + phase + "\",\"observedAt\":" + observedAt
@@ -161,7 +173,12 @@ final class SoftwareUpdateSession implements AutoCloseable {
                 + ",\"installedBuild\":" + quote(installedBuild) + ",\"downloadBytes\":" + number(descriptor == null ? -1 : descriptor.downloadBytes())
                 + ",\"requiredSpaceBytes\":" + number(descriptor == null ? -1 : descriptor.requiredSpaceBytes())
                 + ",\"progress\":" + progress + ",\"stalled\":" + stalled
-                + ",\"termsAccepted\":" + (descriptor != null && descriptor.termsAccepted()) + ",\"errorCode\":" + error + "}";
+                + ",\"termsAccepted\":" + (descriptor != null && descriptor.termsAccepted())
+                + ",\"termsAvailable\":" + (descriptor != null && descriptor.hasTerms())
+                + ",\"termsRequests\":" + termsRequests
+                + ",\"errorCode\":" + error
+                + ",\"errorDomain\":" + quote(errorDomain)
+                + ",\"errorDiagnostic\":" + quote(errorDiagnostic) + "}";
     }
     private static String quote(String value) { return value == null ? "null" : "\"" + value + "\""; }
     private static String number(long value) { return value < 0 ? "null" : Long.toString(value); }

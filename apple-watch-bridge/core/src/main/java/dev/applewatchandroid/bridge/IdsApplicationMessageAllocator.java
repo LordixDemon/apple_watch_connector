@@ -84,6 +84,16 @@ final class IdsApplicationMessageAllocator
                 null);
     }
 
+    synchronized IdsModernSessionCoordinator.MessageMetadata
+            nextRequestExpectingPeerResponseWithExpiry(long expirySeconds) {
+        return allocate(
+                IdsSocketPairCodec.FLAG_EXPECTS_PEER_RESPONSE
+                        | IdsSocketPairCodec.FLAG_HAS_EXPIRY,
+                null,
+                null,
+                expirySeconds);
+    }
+
     /** A durable APK Health session allocates its UUID before the HAL emits any packets. */
     synchronized IdsModernSessionCoordinator.MessageMetadata nextHealthRequest(UUID message) {
         requireOpen();
@@ -130,6 +140,10 @@ final class IdsApplicationMessageAllocator
     }
     private IdsModernSessionCoordinator.MessageMetadata allocate(
             int flags,String peerResponseIdentifier,String suppliedUuid) {
+        return allocate(flags,peerResponseIdentifier,suppliedUuid,null);
+    }
+    private IdsModernSessionCoordinator.MessageMetadata allocate(
+            int flags,String peerResponseIdentifier,String suppliedUuid,Long expirySeconds) {
         requireOpen();
         if (exhausted) {
             throw new IllegalStateException(
@@ -150,7 +164,7 @@ final class IdsApplicationMessageAllocator
                 messageUuid,
                 flags,
                 peerResponseIdentifier,
-                null,
+                expirySeconds,
                 null);
     }
 

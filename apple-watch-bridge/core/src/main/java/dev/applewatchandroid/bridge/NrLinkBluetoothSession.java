@@ -182,8 +182,7 @@ final class NrLinkBluetoothSession implements AutoCloseable {
                             + localState + " remote=" + remote.state);
         }
         if ((remote.flags
-                & ~(NrLinkBluetoothPrelude.FLAG_COMPANION_APL
-                | NrLinkBluetoothPrelude.FLAG_USES_TLS)) != 0) {
+                & ~NrLinkBluetoothPrelude.KNOWN_REMOTE_FLAGS) != 0) {
             throw new IllegalArgumentException(
                     "Normal-link prelude contains unknown flags");
         }

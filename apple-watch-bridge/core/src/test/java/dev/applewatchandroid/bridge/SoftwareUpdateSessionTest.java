@@ -173,4 +173,66 @@ public class SoftwareUpdateSessionTest {
             assertThrows(IllegalStateException.class, () -> session.prepare("UPDATE_INSTALL:24R365", NOW + 60002));
         }
     }
+
+    @Test public void extractsSubDocumentationLicenseTermsAndClassifiesNativeErrors() throws Exception {
+        byte[] htmlBytes = ("\uFEFF<!doctype html><html><head><title>Ignored</title><style>body{}</style></head>"
+                + "<body><script>bad()</script><h1>Apple Watch Terms</h1>"
+                + "<p>Read <a href=\"https://www.apple.com/legal\">Legal &amp; Terms</a> carefully.</p></body></html>")
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        List<Object> objects = new ArrayList<>();
+        objects.add("$null");
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("$class", new AppleBinaryPropertyList.Uid(2));
+        root.put("productVersion", new AppleBinaryPropertyList.Uid(3));
+        root.put("productBuildVersion", new AppleBinaryPropertyList.Uid(4));
+        root.put("downloadSize", 1000000L);
+        root.put("TotalRequiredFreeSpace", 2000000L);
+        root.put("userDidAcceptTermsAndConditions", false);
+        root.put("documentation", new AppleBinaryPropertyList.Uid(5));
+        objects.add(root);
+        objects.add(Map.of("$classname", "SUBDescriptor", "$classes", List.of("SUBDescriptor", "NSObject")));
+        objects.add("27.0.1");
+        objects.add("24R365");
+        Map<String, Object> doc = new LinkedHashMap<>();
+        doc.put("$class", new AppleBinaryPropertyList.Uid(6));
+        doc.put("licenseAgreement", new AppleBinaryPropertyList.Uid(7));
+        objects.add(doc);
+        objects.add(Map.of("$classname", "SUBDocumentation", "$classes", List.of("SUBDocumentation", "NSObject")));
+        objects.add(htmlBytes);
+        byte[] descriptorWithTerms = AppleBinaryPropertyList.encode(Map.of(
+                "$archiver", "NSKeyedArchiver", "$version", 100000L,
+                "$objects", objects, "$top", Map.of("root", new AppleBinaryPropertyList.Uid(1))));
+
+        try (var session = session(temporary.newFolder().toPath(), "23S303")) {
+            state(session, 3, descriptorWithTerms, NOW);
+            Map<?, ?> snap = snapshot(session);
+            assertEquals(Boolean.TRUE, snap.get("termsAvailable"));
+            String terms = session.currentTermsText();
+            assertNotNull(terms);
+            assertTrue(terms.contains("Apple Watch Terms"));
+            assertTrue(terms.contains("Legal & Terms (https://www.apple.com/legal)"));
+            assertFalse(terms.contains("bad()"));
+            assertFalse(terms.contains("Ignored"));
+
+            assertTrue(session.receive(AppleBinaryPropertyList.encode(Map.of("MessageType", "DisplayTerms")), null, NOW + 1));
+            assertEquals(1.0, ((Number) snapshot(session).get("termsRequests")).doubleValue(), 0.0);
+
+            byte[] subErr34 = archive("NSError", Map.of(
+                    "NSCode", 34L, "NSDomain", new AppleBinaryPropertyList.Uid(3)), "SUBError");
+            assertTrue(session.receive(AppleBinaryPropertyList.encode(Map.of(
+                    "MessageType", "ShowDownloadandPrepareError", "Error", subErr34)), null, NOW + 2));
+            Map<?, ?> errSnap = snapshot(session);
+            assertEquals("FAILED", errSnap.get("phase"));
+            assertEquals("SUBError", errSnap.get("errorDomain"));
+            assertEquals("Update requires companion update", errSnap.get("errorDiagnostic"));
+
+            byte[] maErr65 = archive("NSError", Map.of(
+                    "NSCode", 65L, "NSDomain", new AppleBinaryPropertyList.Uid(3)),
+                    "com.apple.MobileAssetError.Download");
+            var maInfo = SoftwareUpdateCodec.errorInfo(maErr65);
+            assertEquals("com.apple.MobileAssetError.Download", maInfo.domain());
+            assertEquals(65L, maInfo.code());
+            assertEquals("MADownloadNotConnectedToInternet", maInfo.diagnostic());
+        }
+    }
 }

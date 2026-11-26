@@ -529,6 +529,11 @@ final class Ipv6TcpStream
                 output);
     }
 
+    boolean hasPendingSend() {
+        requireUsable();
+        return segments.hasPendingSend();
+    }
+
     byte[] closeOutput() {
         requireUsable();
         if (segments.hasPendingSend()) {

@@ -19,6 +19,10 @@ final class NrLinkBluetoothPrelude {
 
     static final int FLAG_COMPANION_APL = 1;
     static final int FLAG_USES_TLS = 1 << 1;
+    /** watchOS 27+ bilateral capability bit; inactive unless both peers advertise it. */
+    static final int FLAG_MULTIPLEXED_AS_FOR_NWSC = 1 << 2;
+    static final int KNOWN_REMOTE_FLAGS =
+            FLAG_COMPANION_APL | FLAG_USES_TLS | FLAG_MULTIPLEXED_AS_FOR_NWSC;
 
     private static final byte[] MAGIC =
             "TERMINUS".getBytes(StandardCharsets.US_ASCII);
@@ -417,6 +421,10 @@ final class NrLinkBluetoothPrelude {
 
         boolean usesTls() {
             return (flags & FLAG_USES_TLS) != 0;
+        }
+
+        boolean multiplexedAsForNwsc() {
+            return (flags & FLAG_MULTIPLEXED_AS_FOR_NWSC) != 0;
         }
     }
 }

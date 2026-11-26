@@ -613,6 +613,28 @@ final class NormalLinkPipeSession implements AutoCloseable {
         classC.setApplicationServiceListener(listener);
     }
 
+    void enableProxyAnnouncement(byte[] ipv6Address, int port, java.util.function.Consumer<String> logger) {
+        requireUsable();
+        if (!registrationBarrierSatisfied()) throw new IllegalStateException("Normal registration is incomplete");
+        byte[] localD = localClassD();
+        byte[] localC = localClassC();
+        try {
+            if (!Arrays.equals(ipv6Address, localD) && !Arrays.equals(ipv6Address, localC)) {
+                throw new IllegalArgumentException("Proxy endpoint must match an established local tunnel address");
+            }
+            // Native senders prefer Class C for the 0xC60D ProxyNotify IKE exchange.
+            classC.enableProxyAnnouncement(ipv6Address, port, logger);
+        } finally {
+            wipe(localD);
+            wipe(localC);
+        }
+    }
+
+    boolean proxyAnnouncementAcknowledged() {
+        requireUsable();
+        return classC.proxyAnnouncementAcknowledged();
+    }
+
     List<byte[]> pollLinkDirectorAnnouncements(long nowMillis) {
         requireUsable();
         List<byte[]> outbound = new ArrayList<>();
@@ -620,6 +642,11 @@ final class NormalLinkPipeSession implements AutoCloseable {
                 || transport.outstandingCount() >= L2capErtmSession.TARGET_TX_WINDOW) return outbound;
         OrdinaryClassDSession.Outbound message = classD.pollLinkDirectorAnnouncement(nowMillis);
         if (message != null) addOrdinary(message, outbound);
+        if (!transport.transmitBlocked()
+                && transport.outstandingCount() < L2capErtmSession.TARGET_TX_WINDOW) {
+            OrdinaryClassDSession.Outbound proxyNotify = classC.pollProxyNotify(nowMillis);
+            if (proxyNotify != null) addOrdinary(proxyNotify, outbound);
+        }
         return outbound;
     }
 

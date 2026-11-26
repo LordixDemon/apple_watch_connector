@@ -80,12 +80,72 @@ public final class NativeHealthObjectCodecTest {
         }
     }
     @Test public void opaqueCollectionsAndNestedUnknownsAreCountedSeparately() {
-        byte[] original=hex("2a0300ff80 920100 a2010410016001 c2010100");
+        byte[] original=hex("320300ff80 920100 a2010410016001 c2010100");
         try(var collection=NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.OBJECT_COLLECTION,original)) {
             var counts=NativeHealthObjectCodec.counts(collection);
             assertEquals(2,counts.opaqueChildren());assertEquals(3,counts.unknownFields());
             assertArrayEquals(original,collection.original());
         }
+    }
+    @Test public void decodesWorkoutCollectionAndActivityLabelsWithIndoorWalkMetadata() {
+        try(var entityFive=read(NativeHealthChangesCodec.Schema.CHANGE,"4a021005");
+            var legacyThree=read(NativeHealthChangesCodec.Schema.CHANGE,"0803")) {
+            assertEquals(NativeHealthChangesCodec.Schema.OBJECT_COLLECTION,NativeHealthObjectCodec.schemaFor(entityFive));
+            assertEquals(NativeHealthChangesCodec.Schema.OBJECT_COLLECTION,NativeHealthObjectCodec.schemaFor(legacyThree));
+        }
+        // METADATA_PAIR: key="HKIndoorWorkout" (15B), int64(4)=1
+        byte[] indoorPair=hex("0a0f 484b496e646f6f72576f726b6f7574 2001");
+        byte[] metadataDict=tagBytes(1,indoorPair);
+        byte[] healthObject=concat(hex("0a10 000102030405060708090a0b0c0d0e0f"),tagBytes(2,metadataDict));
+        byte[] sample=concat(tagBytes(1,healthObject),hex("104f 190000000000000000 21000000000000f03f"));
+        // HDCodableWorkout: sample(1), type=52 Walking(2), duration=120.0(4), energy=100.0(5), distance=500.0(6), basal=25.0(9)
+        byte[] workout=concat(tagBytes(1,sample),
+                hex("1034 210000000000005e40 290000000000005940 310000000000407f40 490000000000003940"));
+        byte[] collectionWire=tagBytes(5,workout);
+        try(var collection=NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.OBJECT_COLLECTION,collectionWire)) {
+            var counts=NativeHealthObjectCodec.counts(collection);
+            assertEquals(1,counts.workoutSamples());
+            assertEquals(1,counts.completeSampleHeaders());
+            assertEquals(0,counts.opaqueChildren());
+            assertEquals(0,counts.unknownFields());
+            var summary=NativeHealthWorkoutCatalog.summarize(collection.children(5).get(0));
+            assertEquals(Long.valueOf(52L),summary.activityType());
+            assertEquals("Indoor Walk",summary.activityLabel());
+            assertEquals(Double.valueOf(120.0),summary.durationSeconds());
+            assertEquals(Double.valueOf(100.0),summary.totalEnergyBurnedKcal());
+            assertEquals(Double.valueOf(500.0),summary.totalDistanceMeters());
+            assertEquals(Double.valueOf(25.0),summary.totalBasalEnergyBurnedKcal());
+            assertEquals("Health workout summary (values withheld)",summary.toString());
+        }
+        // Outdoor Walk (HKIndoorWorkout=0) and other standard/unknown activity labels
+        byte[] outdoorDict=tagBytes(1,hex("0a0f 484b496e646f6f72576f726b6f7574 2000"));
+        try(var dict=NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.METADATA_DICTIONARY,outdoorDict)) {
+            assertEquals("Outdoor Walk",NativeHealthWorkoutCatalog.label(52L,dict));
+            assertEquals("Running",NativeHealthWorkoutCatalog.label(37L,dict));
+            assertEquals("Other",NativeHealthWorkoutCatalog.label(3000L,null));
+            assertEquals("Type 999",NativeHealthWorkoutCatalog.label(999L,null));
+            assertEquals("Not reported",NativeHealthWorkoutCatalog.label(null,null));
+        }
+        // Negative workout duration rejected
+        try(var bad=read(NativeHealthChangesCodec.Schema.WORKOUT,"1025 21000000000000f0bf")) {
+            assertThrows(IllegalArgumentException.class,()->NativeHealthWorkoutCatalog.summarize(bad));
+        }
+    }
+    private static byte[] tagBytes(int field,byte[] payload) {
+        ByteArrayOutputStream out=new ByteArrayOutputStream();
+        out.write((field<<3)|2);
+        int len=payload.length;
+        do {
+            int b=len&0x7f;len>>>=7;
+            out.write(len==0 ? b : (b|0x80));
+        } while(len!=0);
+        out.writeBytes(payload);
+        return out.toByteArray();
+    }
+    private static byte[] concat(byte[]... parts) {
+        ByteArrayOutputStream out=new ByteArrayOutputStream();
+        for(byte[] p:parts)out.writeBytes(p);
+        return out.toByteArray();
     }
     @Test public void wrongWireAndDuplicateMetadataRejectWithoutCoercion() {
         for(String fixture:new String[]{"0a00 0a00","1900","1202c328","2200"}) {

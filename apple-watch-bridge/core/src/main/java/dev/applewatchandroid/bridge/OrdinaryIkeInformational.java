@@ -20,7 +20,10 @@ final class OrdinaryIkeInformational {
     static final int MAXIMUM_PACKET_SIZE = 1280;
 
     private static final int NOTIFY_ALWAYS_ON_WIFI = 0xc8c9;
+    static final int NOTIFY_PROXY_NOTIFY = 0xc60d;
     private static final int NOTIFY_LINK_DIRECTOR_MESSAGE = 0xc60e;
+    static final int PROXY_CRITERIA_TLV_TYPE = 51;
+    static final long PROXY_FLAG_FORWARD_NON_MATCHING = 1L;
     private static final int CURRENT_TERMINUS_VERSION = 24;
     private static final int LINK_DIRECTOR_VERSION = 2;
     private static final int LINK_DIRECTOR_HEADER_LENGTH = 16;
@@ -272,6 +275,53 @@ final class OrdinaryIkeInformational {
         requireUnlockState(random, localRole, keys, messageId);
         return createEncodedLinkDirectorRequest(random, localRole, keys, messageId, 20,
                 LinkDirectorMessageCodec.applicationServiceRequest(identifier, value));
+    }
+
+    /**
+     * Announces the companion Shoes proxy endpoint (IKE Notify {@code 0xC60D})
+     * carrying the 16-byte local IPv6 address, 2-byte big-endian port, and
+     * NRTLV tag 51 ({@code forwardNonMatchingTraffic = 1}).
+     */
+    static ProxyNotifyRequest createProxyNotifyRequest(
+            SecureRandom random,
+            NrLinkBluetoothPrelude.LocalRole localRole,
+            IkeV2SessionCrypto.IkeSaKeys keys,
+            int messageId,
+            byte[] ipv6Address,
+            int port) {
+        requireUnlockState(random, localRole, keys, messageId);
+        if (ipv6Address == null || ipv6Address.length != 16 || port < 1 || port > 65535) {
+            throw new IllegalArgumentException("Invalid ProxyNotify endpoint");
+        }
+        ByteBuffer bodyBuffer = ByteBuffer.allocate(16 + 2 + 11);
+        bodyBuffer.put(ipv6Address);
+        bodyBuffer.putShort((short) port);
+        bodyBuffer.put((byte) PROXY_CRITERIA_TLV_TYPE);
+        bodyBuffer.putShort((short) 8);
+        bodyBuffer.putLong(PROXY_FLAG_FORWARD_NON_MATCHING);
+        byte[] body = bodyBuffer.array();
+        byte[] plaintext = genericPayload(IkeV2Codec.PAYLOAD_NONE,
+                notifyBody(NOTIFY_PROXY_NOTIFY, body));
+        List<byte[]> packets = null;
+        try {
+            boolean initiator = localRole == NrLinkBluetoothPrelude.LocalRole.INITIATOR;
+            packets = IkeV2SessionCrypto.encryptProtectedPayloadWithDirectionFlags(
+                    random, keys.initiatorSpi, keys.responderSpi,
+                    initiator ? keys.skEi : keys.skEr,
+                    initiator ? IkeV2Codec.IKE_FLAG_INITIATOR : 0,
+                    IkeV2SessionCrypto.EXCHANGE_INFORMATIONAL, messageId,
+                    plaintext, IkeV2Codec.PAYLOAD_NOTIFY, MAXIMUM_PACKET_SIZE);
+            if (packets.size() != 1) {
+                throw new IllegalStateException("ProxyNotify announcement fragmented");
+            }
+            return new ProxyNotifyRequest(packets.get(0), messageId, port);
+        } finally {
+            wipe(body);
+            wipe(plaintext);
+            if (packets != null) {
+                for (byte[] packet : packets) wipe(packet);
+            }
+        }
     }
 
     private static LinkDirectorRequest createEncodedLinkDirectorRequest(SecureRandom random,
@@ -1106,6 +1156,16 @@ final class OrdinaryIkeInformational {
         final int type;
         LinkDirectorRequest(byte[] packet, int messageId, int type) {
             this.packet = packet.clone(); this.messageId = messageId; this.type = type;
+        }
+        void destroy() { wipe(packet); }
+    }
+
+    static final class ProxyNotifyRequest {
+        final byte[] packet;
+        final int messageId;
+        final int port;
+        ProxyNotifyRequest(byte[] packet, int messageId, int port) {
+            this.packet = packet.clone(); this.messageId = messageId; this.port = port;
         }
         void destroy() { wipe(packet); }
     }

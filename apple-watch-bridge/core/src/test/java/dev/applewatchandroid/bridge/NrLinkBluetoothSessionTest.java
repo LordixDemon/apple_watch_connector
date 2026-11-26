@@ -170,6 +170,46 @@ public final class NrLinkBluetoothSessionTest {
     }
 
     @Test
+    public void acceptsWatchOs27MultiplexedFlagAndRejectsUnknownBit() {
+        byte[] local = new byte[16];
+        byte[] remote = new byte[16];
+        remote[15] = 1;
+
+        NrLinkBluetoothSession watch27 =
+                NrLinkBluetoothSession.withLocalUuidForTest(local);
+        try {
+            int watch27Flags = NrLinkBluetoothPrelude.FLAG_COMPANION_APL
+                    | NrLinkBluetoothPrelude.FLAG_MULTIPLEXED_AS_FOR_NWSC;
+            NrLinkBluetoothSession.Negotiated negotiated =
+                    watch27.acceptRemotePrelude(
+                            NrLinkBluetoothPrelude.encode(
+                                    NrLinkBluetoothPrelude.PairingState
+                                            .MODERN_PAIRING_KEY_CONFIRMATION,
+                                    remote,
+                                    watch27Flags));
+            assertEquals(watch27Flags, negotiated.remoteFlags);
+            assertEquals(NrLinkBluetoothPrelude.LocalRole.INITIATOR, negotiated.localRole);
+        } finally {
+            watch27.close();
+        }
+
+        NrLinkBluetoothSession unknown =
+                NrLinkBluetoothSession.withLocalUuidForTest(local);
+        try {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> unknown.acceptRemotePrelude(
+                            NrLinkBluetoothPrelude.encode(
+                                    NrLinkBluetoothPrelude.PairingState
+                                            .MODERN_PAIRING_KEY_CONFIRMATION,
+                                    remote,
+                                    1 << 3)));
+        } finally {
+            unknown.close();
+        }
+    }
+
+    @Test
     public void mirrorsAppleRoleControlledUuidPrefixes() {
         NrLinkBluetoothSession initiator =
                 NrLinkBluetoothSession

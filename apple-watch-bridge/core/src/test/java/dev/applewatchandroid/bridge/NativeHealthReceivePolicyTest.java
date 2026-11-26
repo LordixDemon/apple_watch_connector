@@ -14,7 +14,7 @@ public final class NativeHealthReceivePolicyTest {
     }
     private static NativeHealthReceivePolicy.Plan range(String wire,long last) { return plan(QUANTITY+wire,0L,entity->last); }
     @Test public void finalChunkUsesReceived3AndValidated5OnlyAfterDataApplied() {
-        var result=range("1000 180a 3001 3800 520408001000",0);
+        var result=range("1000 180a 4001 3800 520408001000",0);
         assertEquals(NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION,result.outcome());
         assertEquals(Long.valueOf(0),result.afterDataApplied().expectedSequence());
         assertEquals(Long.valueOf(10),result.afterDataApplied().receivedAnchor());
@@ -22,7 +22,7 @@ public final class NativeHealthReceivePolicyTest {
         assertEquals(Long.valueOf(0),result.version().minimum());assertEquals(Long.valueOf(0),result.version().current());
     }
     @Test public void intermediateSequenceNeverAdvancesEitherAnchorEvenWithDoneAbsent() {
-        var absent=range("1000 180a 3800",0);var falseDone=range("1000 180a 3000 3800",0);
+        var absent=range("1000 180a 3800",0);var falseDone=range("1000 180a 4000 3800",0);
         for(var result:new NativeHealthReceivePolicy.Plan[]{absent,falseDone}) {
             assertEquals(Long.valueOf(1),result.afterDataApplied().expectedSequence());
             assertNull(result.afterDataApplied().receivedAnchor());assertNull(result.afterDataApplied().validatedAnchor());
@@ -36,22 +36,22 @@ public final class NativeHealthReceivePolicyTest {
         assertEquals(0,result.version().projectedCurrent());
     }
     @Test public void zeroSequenceRestartsAnyExpectedSequenceAndNonzeroMustMatch() {
-        assertEquals(NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION,plan(QUANTITY+"4001 3800",99L,e->null).outcome());
-        var mismatch=plan(QUANTITY+"4001 3802",1L,e->null);
+        assertEquals(NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION,plan(QUANTITY+"3001 3800",99L,e->null).outcome());
+        var mismatch=plan(QUANTITY+"3001 3802",1L,e->null);
         assertEquals(NativeHealthReceivePolicy.Reason.OUT_OF_ORDER,mismatch.reason());assertEquals(Integer.valueOf(0x57a),mismatch.nativeError());
         assertNull(mismatch.afterDataApplied());
-        assertEquals(NativeHealthReceivePolicy.Reason.SEQUENCE_STATE_UNAVAILABLE,plan(QUANTITY+"4001 3802",null,e->null).reason());
-        assertEquals(Long.valueOf(3),plan(QUANTITY+"4001 3802",2L,e->null).afterDataApplied().expectedSequence());
+        assertEquals(NativeHealthReceivePolicy.Reason.SEQUENCE_STATE_UNAVAILABLE,plan(QUANTITY+"3001 3802",null,e->null).reason());
+        assertEquals(Long.valueOf(3),plan(QUANTITY+"3001 3802",2L,e->null).afterDataApplied().expectedSequence());
     }
     @Test public void fullWidthSequenceUsesNativeSignedBitsAndAddWrap() {
-        var max=plan(QUANTITY+"4001 38ffffffffffffffff7f",Long.MAX_VALUE,e->null);
+        var max=plan(QUANTITY+"3001 38ffffffffffffffff7f",Long.MAX_VALUE,e->null);
         assertEquals(Long.valueOf(Long.MIN_VALUE),max.afterDataApplied().expectedSequence());
-        var negative=plan(QUANTITY+"4001 38ffffffffffffffffff01",-1L,e->null);
+        var negative=plan(QUANTITY+"3001 38ffffffffffffffffff01",-1L,e->null);
         assertEquals(Long.valueOf(0),negative.afterDataApplied().expectedSequence());
     }
     @Test public void speculativeSupportedBranchesSkipAllAnchorLookupsAndNeverAdvanceAnchors() {
         for(String wire:new String[]{QUANTITY,"0801 4a021002 ","0810 4a021010 ","0811 4a021011 "}) {
-            var result=plan(wire+"4001 3001 3800 2a02080a",null,e->{throw new AssertionError("Native speculative branch queried anchors");});
+            var result=plan(wire+"3001 4001 3800 2a02080a",null,e->{throw new AssertionError("Native speculative branch queried anchors");});
             assertEquals(NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION,result.outcome());
             assertEquals(Long.valueOf(0),result.afterDataApplied().expectedSequence());
             assertNull(result.afterDataApplied().receivedAnchor());assertNull(result.afterDataApplied().validatedAnchor());
@@ -59,9 +59,19 @@ public final class NativeHealthReceivePolicyTest {
     }
     @Test public void sourceAndDeviceHaveNoNativeSpeculativeSelectorAndRejectWithCode100() {
         for(String wire:new String[]{"080a 4a02100b ","080c 4a02100d "}) {
-            var result=plan(wire+"4001",null,e->{throw new AssertionError("Unsupported speculative branch queried anchors");});
+            var result=plan(wire+"3001",null,e->{throw new AssertionError("Unsupported speculative branch queried anchors");});
             assertEquals(NativeHealthReceivePolicy.Reason.UNSUPPORTED_SPECULATIVE,result.reason());
             assertEquals(Integer.valueOf(100),result.nativeError());assertNull(result.afterDataApplied());
+        }
+    }
+    @Test public void completedNonSpeculativeSourceAndDeviceChangesAreAccepted() {
+        for(String wire:new String[]{"080a 4a02100b ","080c 4a02100d "}) {
+            var result=plan(wire+"1000 180a 3800 4001",0L,e->0L);
+            assertEquals(NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION,result.outcome());
+            assertEquals(NativeHealthReceivePolicy.Reason.CONTROL_VALID,result.reason());
+            assertEquals(Long.valueOf(0),result.afterDataApplied().expectedSequence());
+            assertEquals(Long.valueOf(10),result.afterDataApplied().receivedAnchor());
+            assertEquals(Long.valueOf(10),result.afterDataApplied().validatedAnchor());
         }
     }
     @Test public void unavailableReceivedStateIsHeldAndNeverFilledWithRemoteReportedAnchors() {
@@ -70,7 +80,7 @@ public final class NativeHealthReceivePolicyTest {
         assertEquals(NativeHealthReceivePolicy.Reason.RECEIVED_STATE_UNAVAILABLE,result.reason());assertNull(result.nativeError());
     }
     @Test public void coveredRangeIsStrictOnStartAndReturnsNoSequenceOrAnchorEffect() {
-        var covered=range("1000 180a 3001 3800",10);
+        var covered=range("1000 180a 4001 3800",10);
         assertEquals(NativeHealthReceivePolicy.Outcome.ALREADY_APPLIED,covered.outcome());assertNull(covered.afterDataApplied());
         assertEquals(NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION,range("100a 180a",10).outcome());
         assertEquals(NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION,range("1000 180b",10).outcome());
@@ -111,10 +121,10 @@ public final class NativeHealthReceivePolicyTest {
         assertEquals(Long.valueOf(10),result.afterDataApplied().validatedAnchor());
     }
     @Test public void unknownNamespaceEntityMalformedVersionOrForeignBuildHoldWithoutFallback() {
-        for(String wire:new String[]{"0802 4a06108480808010 4001","0802 4a040a001004 4001",QUANTITY+"4001 52021080",QUANTITY+"4001 52021800"}) {
+        for(String wire:new String[]{"0802 4a06108480808010 3001","0802 4a040a001004 3001",QUANTITY+"3001 52021080",QUANTITY+"3001 52021800"}) {
             assertEquals(NativeHealthReceivePolicy.Outcome.HELD,plan(wire,null,e->null).outcome());
         }
-        try(var change=NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.CHANGE,hex(QUANTITY+"4001"))) {
+        try(var change=NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.CHANGE,hex(QUANTITY+"3001"))) {
             assertEquals(NativeHealthReceivePolicy.Reason.FOREIGN_BUILD,NativeHealthReceivePolicy.prepare(change,"23S304",null,e->null).reason());
         }
     }
@@ -127,7 +137,7 @@ public final class NativeHealthReceivePolicyTest {
             assertThrows(IllegalArgumentException.class,()->NativeHealthChangesCodec.decode(NativeHealthChangesCodec.Schema.VERSION_RANGE,hex(wire)));
     }
     @Test public void plansAndEffectsNeverExposeSequencesAnchorsVersionsInStringification() {
-        var result=range("1000 180a 3001 3800",0);
+        var result=range("1000 180a 4001 3800",0);
         assertEquals("Health receive plan (values withheld)",result.toString());
         assertEquals("Post-apply Health effect (values withheld)",result.afterDataApplied().toString());
         assertEquals("Native Health version (values withheld)",result.version().toString());

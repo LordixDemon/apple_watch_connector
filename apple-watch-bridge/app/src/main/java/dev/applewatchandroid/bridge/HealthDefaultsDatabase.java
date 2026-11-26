@@ -40,7 +40,7 @@ final class HealthDefaultsDatabase {
                   NativeHealthChangesCodec.Node change,Callable<Boolean> stillEligible) throws Exception {
         validateScope(pair,local,peer,identity);
         var plan=NativeHealthReceivePolicy.prepare(change,build,null,entity->null);
-        if(!Boolean.TRUE.equals(change.bool(8)) || plan.outcome()!=NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION
+        if(!Boolean.TRUE.equals(change.bool(6)) || plan.outcome()!=NativeHealthReceivePolicy.Outcome.REQUIRES_DATA_TRANSACTION
                 || plan.entity()!=NativeHealthReceivePolicy.Entity.DEFAULTS && plan.entity()!=NativeHealthReceivePolicy.Entity.PROTECTED_DEFAULTS)
             throw new IllegalArgumentException("Health defaults mirror requires eligible speculative values");
         synchronized(LOCK) {
