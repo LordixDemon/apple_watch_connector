@@ -158,6 +158,10 @@ impl LinuxBackend {
             let mut state = self.state.lock().unwrap();
             state.ready = false;
             state.ids_ready = false;
+            state.about = None;
+            state.watch_settings.clear();
+            state.activation_challenge = None;
+            state.pending_initial_about_epoch = None;
             state.adapter = "UNKNOWN".into();
             if state.phase == "DISCONNECTING" {
                 state.phase = "IDLE".into();
@@ -316,8 +320,26 @@ impl LinuxBackend {
         self.input = None;
         self.stop_deadline = Some(Instant::now() + Duration::from_secs(5));
     }
+    fn maybe_request_initial_about(&mut self) {
+        if self.child.is_none() {
+            return;
+        }
+        let epoch = {
+            let mut state = self.state.lock().unwrap();
+            if !state.ready {
+                return;
+            }
+            let pending = state.pending_initial_about_epoch.take();
+            match (pending, state.transport_epoch.as_deref()) {
+                (Some(epoch), Some(current)) if epoch == current => epoch,
+                _ => return,
+            }
+        };
+        let _ = self.send(&format!("DESKTOP_COMMAND_V1:{epoch}:REQUEST_DEVICE_ABOUT"));
+    }
     fn snapshot(&mut self) -> Value {
         self.reap();
+        self.maybe_request_initial_about();
         let adapters = self.adapters.snapshot(self.child.is_some());
         let available = self.available();
         let mut state = self.state.lock().unwrap();
@@ -342,8 +364,49 @@ impl LinuxBackend {
             "pairingStage":state.phase,"error":state.error,"journal":state.journal.iter().cloned().collect::<Vec<_>>().join("\n"),
             "capabilities":{"platform":if cfg!(target_os="windows") {"windows"} else {"linux"},"backend":if cfg!(target_os="windows") {"usb_hci_shared_protocol"} else {"hci_user_channel_shared_protocol"},
                 "adapterSelection":true,"discovery":available,"bluetoothLink":available,"fixedL2cap":available,"pairing":available,
-                "features":{"softwareUpdates":available},
+                "features":{"softwareUpdates":available,"telemetry":available,"watchSettings":available},
                 "operationalIds":available,"ownerConfirmation":true,"wifi":false,"pairingUnavailableReason":if available {None} else {Some(if cfg!(target_os="windows") {"WINDOWS_RAW_HCI_REQUIRED"} else {"LINUX_BACKEND_NOT_INSTALLED"})}}});
+        if let Some(obj) = snapshot.as_object_mut() {
+            if let Some(ch) = &state.activation_challenge {
+                obj.insert("activationChallengeId".into(), json!(ch.id));
+                obj.insert("activationTitle".into(), json!(ch.title));
+                obj.insert("activationMessage".into(), json!(ch.message));
+                obj.insert("activationFields".into(), json!(ch.fields));
+            }
+            if state.ready {
+                if let Some(about) = &state.about {
+                    if let Some(observed_at) = about.get("observedAt") {
+                        obj.insert("aboutObservedAt".into(), observed_at.clone());
+                    }
+                    for key in [
+                        "batteryLevel",
+                        "isCharging",
+                        "chargingObserved",
+                        "availableStorageBytes",
+                        "numberOfApps",
+                        "numberOfSongs",
+                        "numberOfPhotos",
+                        "purgeableSpaceBytes",
+                        "userDeletableSpaceBytes",
+                    ] {
+                        if let Some(value) = about.get(key) {
+                            obj.insert(key.into(), value.clone());
+                        }
+                    }
+                }
+                for (name, entry) in &state.watch_settings {
+                    if let Some(val) = entry.get("value") {
+                        obj.insert(format!("watchSetting_{name}"), val.clone());
+                    }
+                    if let Some(observed_at) = entry.get("observedAt") {
+                        obj.insert(
+                            format!("watchSetting_{name}_observedAt"),
+                            observed_at.clone(),
+                        );
+                    }
+                }
+            }
+        }
         snapshot
             .as_object_mut()
             .unwrap()
@@ -459,6 +522,98 @@ impl LinuxBackend {
                 }
                 result
             }
+            Some("refreshWatchState") => {
+                let state = self.state.lock().unwrap();
+                let Some(epoch) = state.transport_epoch.as_deref() else {
+                    return json!({"status":"UNAVAILABLE"});
+                };
+                if !state.ready {
+                    return json!({"status":"UNAVAILABLE"});
+                }
+                let envelope = format!("DESKTOP_COMMAND_V1:{epoch}:REQUEST_DEVICE_ABOUT");
+                drop(state);
+                self.send(&envelope)
+            }
+            Some("pingWatch") => {
+                let state = self.state.lock().unwrap();
+                let Some(epoch) = state.transport_epoch.as_deref() else {
+                    return json!({"status":"UNAVAILABLE"});
+                };
+                if !state.ready {
+                    return json!({"status":"UNAVAILABLE"});
+                }
+                let envelope = format!("DESKTOP_COMMAND_V1:{epoch}:PING_WATCH");
+                drop(state);
+                self.send(&envelope)
+            }
+            Some("setWatchSetting") => {
+                let Some(setting) = request["setting"]
+                    .as_str()
+                    .filter(|s| ["RIGHT_WRIST", "INVERT_SCREEN", "TIME_24_HOUR"].contains(s))
+                else {
+                    return json!({"status":"REJECTED"});
+                };
+                let Some(value) = request["value"].as_bool() else {
+                    return json!({"status":"REJECTED"});
+                };
+                let state = self.state.lock().unwrap();
+                let Some(epoch) = state.transport_epoch.as_deref() else {
+                    return json!({"status":"UNAVAILABLE"});
+                };
+                if !state.ready {
+                    return json!({"status":"UNAVAILABLE"});
+                }
+                let envelope =
+                    format!("DESKTOP_COMMAND_V1:{epoch}:SET_WATCH_SETTING:{setting}:{value}");
+                drop(state);
+                self.send(&envelope)
+            }
+            Some("activationResponse") => {
+                let envelope = {
+                    let state = self.state.lock().unwrap();
+                    let Some(ch) = state.activation_challenge.as_ref() else {
+                        return json!({"status":"REJECTED"});
+                    };
+                    if request["challengeId"].as_i64() != Some(i64::from(ch.id)) {
+                        return json!({"status":"REJECTED"});
+                    }
+                    match request["action"].as_str() {
+                        Some("cancel") => format!("ACTIVATION-CANCEL-V1:{}", ch.id),
+                        Some("retry") => format!("ACTIVATION-RETRY-V1:{}", ch.id),
+                        Some("submit") => {
+                            let Some(credentials) = request["credentials"].as_object() else {
+                                return json!({"status":"REJECTED"});
+                            };
+                            if ch.fields.is_empty() {
+                                return json!({"status":"REJECTED"});
+                            }
+                            let mut line = format!("ACTIVATION-CREDENTIALS-V1:{}", ch.id);
+                            for field in &ch.fields {
+                                let Some(val) = credentials
+                                    .get(field)
+                                    .and_then(Value::as_str)
+                                    .filter(|v| !v.is_empty() && v.len() <= 4096)
+                                else {
+                                    return json!({"status":"REJECTED"});
+                                };
+                                line.push(':');
+                                line.push_str(field);
+                                line.push('=');
+                                line.push_str(&crate::b64::encode(val.as_bytes()));
+                            }
+                            line
+                        }
+                        _ => return json!({"status":"REJECTED"}),
+                    }
+                };
+                let result = self.send(&envelope);
+                if result["status"] == "QUEUED" {
+                    let mut state = self.state.lock().unwrap();
+                    state.activation_challenge = None;
+                    state.phase = "ACTIVATING".into();
+                }
+                result
+            }
             Some("retryActivation") => {
                 let state = self.state.lock().unwrap();
                 if state.pair_id.is_none()
@@ -570,5 +725,87 @@ mod tests {
         backend.reap();
         assert!(backend.child.is_none() && backend.input.is_none());
         assert_eq!(backend.state.lock().unwrap().phase, "IDLE");
+    }
+
+    #[test]
+    fn desktop_commands_and_activation_response_encode_valid_stdin_lines() {
+        let out_file =
+            std::env::temp_dir().join(format!("watch-desktop-cmd-{}.txt", std::process::id()));
+        let mut backend = with_child(Command::new("/bin/sh").args([
+            "-c",
+            &format!("cat > \"{}\"", out_file.display()),
+        ]));
+        let epoch = "22222222-2222-4222-8222-222222222222";
+        {
+            let mut state = backend.state.lock().unwrap();
+            state.transport_epoch = Some(epoch.into());
+            state.pending_initial_about_epoch = Some(epoch.into());
+            state.activation_challenge = Some(crate::state::ActivationChallenge {
+                id: 11,
+                title: "Apple Watch activation".into(),
+                message: "Enter credentials".into(),
+                fields: vec!["login".into(), "password".into()],
+            });
+            state.about = Some({
+                let mut m = serde_json::Map::new();
+                m.insert("observedAt".into(), json!(1750000000123_i64));
+                m.insert("batteryLevel".into(), json!(77));
+                m
+            });
+            state.watch_settings.insert(
+                "RIGHT_WRIST".into(),
+                json!({"value": true, "observedAt": 1750000000200_i64}),
+            );
+        }
+
+        let snap = backend.command(json!({"method":"snapshot"}));
+        assert_eq!(snap["activationChallengeId"], 11);
+        assert_eq!(snap["batteryLevel"], 77);
+        assert_eq!(snap["aboutObservedAt"], 1750000000123_i64);
+        assert_eq!(snap["watchSetting_RIGHT_WRIST"], true);
+
+        assert_eq!(backend.command(json!({"method":"refreshWatchState"}))["status"], "QUEUED");
+        assert_eq!(backend.command(json!({"method":"pingWatch"}))["status"], "QUEUED");
+        assert_eq!(
+            backend.command(json!({"method":"setWatchSetting","setting":"RIGHT_WRIST","value":true}))["status"],
+            "QUEUED"
+        );
+        assert_eq!(
+            backend.command(json!({"method":"setWatchSetting","setting":"BAD","value":true}))["status"],
+            "REJECTED"
+        );
+        assert_eq!(
+            backend.command(json!({
+                "method":"activationResponse",
+                "challengeId": 999,
+                "action":"cancel"
+            }))["status"],
+            "REJECTED"
+        );
+        assert_eq!(
+            backend.command(json!({
+                "method":"activationResponse",
+                "challengeId": 11,
+                "action":"submit",
+                "credentials":{"login":"user@icloud.com","password":"secret-value"}
+            }))["status"],
+            "QUEUED"
+        );
+        assert!(backend.state.lock().unwrap().activation_challenge.is_none());
+
+        backend.input = None;
+        let _ = crate::worker::finish_child(&mut backend.child.take().unwrap(), Duration::from_secs(2));
+        let recorded = std::fs::read_to_string(&out_file).unwrap();
+        let _ = std::fs::remove_file(&out_file);
+        assert!(recorded.contains(&format!("DESKTOP_COMMAND_V1:{epoch}:REQUEST_DEVICE_ABOUT")));
+        assert!(recorded.contains(&format!("DESKTOP_COMMAND_V1:{epoch}:PING_WATCH")));
+        assert!(recorded.contains(&format!(
+            "DESKTOP_COMMAND_V1:{epoch}:SET_WATCH_SETTING:RIGHT_WRIST:true"
+        )));
+        let expected_login = crate::b64::encode(b"user@icloud.com");
+        let expected_pw = crate::b64::encode(b"secret-value");
+        assert!(recorded.contains(&format!(
+            "ACTIVATION-CREDENTIALS-V1:11:login={expected_login}:password={expected_pw}"
+        )));
     }
 }

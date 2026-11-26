@@ -145,6 +145,43 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
         'connected': ready,
         'softwareUpdate': snapshot['softwareUpdate'],
         'faceCollectionEpoch': (snapshot['softwareUpdate'] as Map?)?['epoch'],
+        if (snapshot['activationChallengeId'] != null)
+          'activationChallengeId': snapshot['activationChallengeId'],
+        if (snapshot['activationTitle'] != null)
+          'activationTitle': snapshot['activationTitle'],
+        if (snapshot['activationMessage'] != null)
+          'activationMessage': snapshot['activationMessage'],
+        if (snapshot['activationFields'] != null)
+          'activationFields': snapshot['activationFields'],
+        if (snapshot.containsKey('aboutObservedAt'))
+          'aboutObservedAt': snapshot['aboutObservedAt'],
+        if (snapshot.containsKey('batteryLevel'))
+          'batteryLevel': snapshot['batteryLevel'],
+        if (snapshot.containsKey('isCharging'))
+          'isCharging': snapshot['isCharging'],
+        if (snapshot.containsKey('chargingObserved'))
+          'chargingObserved': snapshot['chargingObserved'],
+        if (snapshot.containsKey('availableStorageBytes'))
+          'availableStorageBytes': snapshot['availableStorageBytes'],
+        if (snapshot.containsKey('numberOfApps'))
+          'numberOfApps': snapshot['numberOfApps'],
+        if (snapshot.containsKey('numberOfSongs'))
+          'numberOfSongs': snapshot['numberOfSongs'],
+        if (snapshot.containsKey('numberOfPhotos'))
+          'numberOfPhotos': snapshot['numberOfPhotos'],
+        if (snapshot.containsKey('purgeableSpaceBytes'))
+          'purgeableSpaceBytes': snapshot['purgeableSpaceBytes'],
+        if (snapshot.containsKey('userDeletableSpaceBytes'))
+          'userDeletableSpaceBytes': snapshot['userDeletableSpaceBytes'],
+        for (final key in const [
+          'watchSetting_RIGHT_WRIST',
+          'watchSetting_RIGHT_WRIST_observedAt',
+          'watchSetting_INVERT_SCREEN',
+          'watchSetting_INVERT_SCREEN_observedAt',
+          'watchSetting_TIME_24_HOUR',
+          'watchSetting_TIME_24_HOUR_observedAt',
+        ])
+          if (snapshot.containsKey(key)) key: snapshot[key],
         'operationalEligible':
             snapshot['operationalEligible'] == true && pairId.isNotEmpty,
         'activationConfirmed':
@@ -321,7 +358,46 @@ final class RustBridgeTransport implements OwnedBridgeTransport {
           request = {'method': 'pair', 'mode': 'code'};
         }
       case 'refreshWatchState':
-        return {'status': 'OBSERVED'};
+        if (_connection['connected'] != true ||
+            (_connection['features'] as Map?)?['telemetry'] != true) {
+          return {'status': 'OBSERVED'};
+        }
+        request = {'method': 'refreshWatchState'};
+      case 'setWatchSetting':
+        if (_connection['connected'] != true ||
+            (_connection['features'] as Map?)?['watchSettings'] != true) {
+          return {'status': 'UNAVAILABLE'};
+        }
+        final setting = arguments?['setting'];
+        final settingValue = arguments?['value'];
+        if (setting is! String || settingValue is! bool) {
+          return {'status': 'REJECTED'};
+        }
+        request = {
+          'method': 'setWatchSetting',
+          'setting': setting,
+          'value': settingValue,
+        };
+      case 'pingWatch':
+        if (_connection['connected'] != true) {
+          return {'status': 'UNAVAILABLE'};
+        }
+        request = {'method': 'pingWatch'};
+      case 'activationResponse':
+        final challengeId = arguments?['challengeId'];
+        final action = arguments?['action'];
+        if (challengeId is! int ||
+            challengeId != _connection['activationChallengeId'] ||
+            !const {'submit', 'retry', 'cancel'}.contains(action)) {
+          return {'status': 'REJECTED'};
+        }
+        final credentials = arguments?['credentials'];
+        request = {
+          'method': 'activationResponse',
+          'challengeId': challengeId,
+          'action': action,
+          if (credentials is Map) 'credentials': credentials,
+        };
       case 'connectWatch':
       case 'resumeSetup':
         if (_connection['hasPair'] != true) {

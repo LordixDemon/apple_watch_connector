@@ -207,12 +207,14 @@ final class WatchConnectionState {
         'STOPPED',
         'BLUETOOTH_LINK',
       }.contains(effectiveSetupPhase);
+  bool get _bluetoothReady =>
+      adapterSelectionAvailable ? adapterConnectionAllowed : bluetoothPermission;
   bool get needsWatchConfirmation =>
       hasPair && activationConfirmed && !operationalEligible;
   bool get canConfirmSetup =>
       bridgeAvailable &&
       identityKnown &&
-      bluetoothPermission &&
+      _bluetoothReady &&
       needsWatchConfirmation &&
       setupPhase != 'STOPPING' &&
       status != 'STOPPING' &&
@@ -220,7 +222,7 @@ final class WatchConnectionState {
   bool get canResumeSetup =>
       bridgeAvailable &&
       identityKnown &&
-      bluetoothPermission &&
+      _bluetoothReady &&
       hasPair &&
       !operationalEligible &&
       !busy &&

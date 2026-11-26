@@ -22,6 +22,7 @@ final class LinuxProtocolOutput implements AutoCloseable {
     private final PrintStream previous;
     private final PrintStream filtered;
     private final Journal journal;
+    private final DesktopApplicationEventProjector projector = new DesktopApplicationEventProjector();
 
     LinuxProtocolOutput(Path path, DesktopSecretStore secrets, BlockingQueue<Boolean> bonds,
                         BlockingQueue<Boolean> records, AtomicBoolean stop) throws IOException {
@@ -57,6 +58,20 @@ final class LinuxProtocolOutput implements AutoCloseable {
             if (text.startsWith(LOCAL_IDENTITY_PREFIX) || text.startsWith(LOCAL_IDS_PUBLIC_PREFIX)
                     || text.startsWith(RESTORED_PAIRING_SESSION_PREFIX)) {
                 throw new IOException("Unexpected private output envelope");
+            }
+            if ("BRIDGE_TRANSPORT_V1:DOWN".equals(text)) {
+                projector.reset();
+            }
+            if (text.startsWith(BridgeApplicationEventCodec.PREFIX)) {
+                var projected = projector.project(
+                        text.substring(BridgeApplicationEventCodec.PREFIX.length()),
+                        System.currentTimeMillis());
+                for (String wireLine : projected.wireLines()) {
+                    previous.write((wireLine + "\n").getBytes(StandardCharsets.UTF_8));
+                }
+                previous.flush();
+                journal.append(projected.logSummary());
+                return;
             }
             int preview = text.indexOf(" bodyPreview=");
             String visible = preview < 0 ? text : text.substring(0, preview) + "; body logged=false.";

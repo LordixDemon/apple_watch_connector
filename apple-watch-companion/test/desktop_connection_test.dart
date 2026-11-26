@@ -659,4 +659,123 @@ void main() {
       },
     );
   }
+
+  test(
+    'Desktop forwards telemetry, watch settings, pingWatch, and activation challenges',
+    () async {
+      api.state.addAll({
+        'phase': 'OPERATIONAL',
+        'watchReady': true,
+        'pairId': _token,
+        'capabilities': {
+          'platform': 'windows',
+          'adapterSelection': true,
+          'discovery': true,
+          'pairing': true,
+          'operationalIds': true,
+          'features': {
+            'softwareUpdates': true,
+            'telemetry': true,
+            'watchSettings': true,
+          },
+        },
+        'aboutObservedAt': 1750000000123,
+        'batteryLevel': 88,
+        'isCharging': true,
+        'chargingObserved': true,
+        'availableStorageBytes': 123456789,
+        'watchSetting_RIGHT_WRIST': true,
+        'watchSetting_RIGHT_WRIST_observedAt': 1750000000200,
+      });
+      await observe();
+      expect(connection.state.connected, isTrue);
+      expect(connection.state.features.telemetry, isTrue);
+      expect(connection.state.features.watchSettings, isTrue);
+      expect(bridge.currentDevice.batteryLevel, 88);
+      expect(bridge.currentDevice.isCharging, isTrue);
+      expect(bridge.currentDevice.telemetry.availableStorageBytes, 123456789);
+      expect(
+        bridge.nativeSettings.values.keys
+            .map((k) => k.wireName)
+            .toList(),
+        ['RIGHT_WRIST'],
+      );
+
+      expect(await bridge.invokeBridgeMethod('refreshWatchState'), {
+        'status': 'QUEUED',
+      });
+      expect(api.commands.last, {'method': 'refreshWatchState'});
+      expect(
+        await bridge.invokeBridgeMethod('setWatchSetting', {
+          'setting': 'RIGHT_WRIST',
+          'value': false,
+        }),
+        {'status': 'QUEUED'},
+      );
+      expect(api.commands.last, {
+        'method': 'setWatchSetting',
+        'setting': 'RIGHT_WRIST',
+        'value': false,
+      });
+      expect(await bridge.invokeBridgeMethod('pingWatch'), {
+        'status': 'QUEUED',
+      });
+      expect(api.commands.last, {'method': 'pingWatch'});
+
+      api.state.addAll({
+        'phase': 'ACTIVATION_INPUT',
+        'watchReady': false,
+        'activationChallengeId': 42,
+        'activationTitle': 'Apple Watch activation',
+        'activationMessage': 'Enter credentials',
+        'activationFields': ['login', 'password'],
+      });
+      await observe();
+      expect(connection.state.challengeId, 42);
+      expect(connection.state.challengeFields, ['login', 'password']);
+      expect(
+        await bridge.invokeBridgeMethod('activationResponse', {
+          'challengeId': 7,
+          'action': 'cancel',
+        }),
+        {'status': 'REJECTED'},
+      );
+      expect(
+        await connection.respond('submit', {
+          'login': 'owner@icloud.com',
+          'password': 'secret',
+        }),
+        'QUEUED',
+      );
+      expect(api.commands.last['method'], 'activationResponse');
+      expect(api.commands.last['challengeId'], 42);
+      expect(api.commands.last['action'], 'submit');
+    },
+  );
+
+  test(
+    'Desktop adapter readiness enables canResumeSetup and canConfirmSetup with adapterState UNKNOWN',
+    () async {
+      adapters(status: 'READY');
+      api.state['capabilities'] = {
+        'platform': 'windows',
+        'adapterSelection': true,
+        'ownerConfirmation': true,
+        'discovery': true,
+        'pairing': true,
+        'operationalIds': true,
+      };
+      api.state.addAll({
+        'phase': 'IDLE',
+        'adapterState': 'UNKNOWN',
+        'pairId': _token,
+        'activationConfirmed': true,
+        'operationalEligible': false,
+      });
+      await observe();
+      expect(connection.state.bluetoothPermission, isFalse);
+      expect(connection.state.canConfirmSetup, isTrue);
+      expect(connection.state.canResumeSetup, isTrue);
+    },
+  );
 }

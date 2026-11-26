@@ -44,3 +44,39 @@ function Select-WatchController {
     # Revalidate presence and driver immediately before starting the lease.
     Get-WatchController -InstanceId $controllers[$choice-1].InstanceId
 }
+
+function Resolve-WatchControllerRecovery {
+    param(
+        [Parameter(Mandatory=$true)][string]$InstanceId,
+        [Parameter(Mandatory=$true)][string]$Service,
+        [string]$CurrentInf,
+        $CurrentGuids,
+        [string]$LeasesRoot,
+        [string]$ExplicitRecoveryRecord
+    )
+    if($ExplicitRecoveryRecord){
+        $recovery=Get-Content -LiteralPath $ExplicitRecoveryRecord -Raw | ConvertFrom-Json
+        if($recovery.instance -ne $InstanceId){throw 'Recovery record belongs to another device'}
+        if($recovery.inf -notmatch '^(oem[0-9]+|bth)\.inf$'){throw 'Unexpected original Bluetooth INF'}
+        return [pscustomobject]@{inf=$recovery.inf;guids=$recovery.guids;restore=$true;recoveredFrom=$null}
+    }
+    if($Service -eq 'BTHUSB'){
+        if($CurrentInf -notmatch '^(oem[0-9]+|bth)\.inf$'){throw 'Unexpected original Bluetooth INF'}
+        return [pscustomobject]@{inf=$CurrentInf;guids=$CurrentGuids;restore=$true;recoveredFrom=$null}
+    }
+    if($LeasesRoot -and (Test-Path -LiteralPath $LeasesRoot)){
+        $leaseDirs=Get-ChildItem -LiteralPath $LeasesRoot -Directory | Sort-Object LastWriteTimeUtc -Descending
+        foreach($dir in $leaseDirs){
+            if(Test-Path -LiteralPath (Join-Path $dir.FullName 'restored')){continue}
+            $origFile=Join-Path $dir.FullName 'original.json'
+            if(-not (Test-Path -LiteralPath $origFile)){continue}
+            try {
+                $prior=Get-Content -LiteralPath $origFile -Raw | ConvertFrom-Json
+                if($prior.instance -eq $InstanceId -and $prior.restore -eq $true -and $prior.inf -match '^(oem[0-9]+|bth)\.inf$'){
+                    return [pscustomobject]@{inf=$prior.inf;guids=$prior.guids;restore=$true;recoveredFrom=$dir.FullName}
+                }
+            } catch {}
+        }
+    }
+    [pscustomobject]@{inf=$CurrentInf;guids=$CurrentGuids;restore=$false;recoveredFrom=$null}
+}

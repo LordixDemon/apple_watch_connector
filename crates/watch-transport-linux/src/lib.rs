@@ -5,6 +5,7 @@ mod adapters;
 #[cfg(target_os = "windows")]
 #[path = "windows_adapters.rs"]
 mod adapters;
+mod b64;
 mod backend;
 mod state;
 #[cfg(all(test, not(target_os = "windows")))]

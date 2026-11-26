@@ -71,4 +71,38 @@ Assert-Fails {Select-WatchController} 'Cancelled controller choice succeeded'
 $script:devices=@()
 Assert-Fails {Select-WatchController} 'Absent controllers were accepted'
 Assert-Fails {Select-WatchController -InstanceId $first.InstanceId} 'An unplugged controller was accepted'
+
+# Recovery resolution tests
+$stock=Resolve-WatchControllerRecovery -InstanceId $first.InstanceId -Service 'BTHUSB' -CurrentInf 'oem14.inf' -CurrentGuids @('{AAA}')
+Assert-Equal $stock.restore $true 'Stock BTHUSB should enable restore'
+Assert-Equal $stock.inf 'oem14.inf' 'Stock BTHUSB INF mismatch'
+Assert-Equal $stock.recoveredFrom $null 'Stock BTHUSB should not reference prior lease'
+
+$leasesRoot=Join-Path ([IO.Path]::GetTempPath()) ('watch-lease-test-'+[guid]::NewGuid().ToString())
+$unrestoredDir=Join-Path $leasesRoot 'lease-crashed'
+$restoredDir=Join-Path $leasesRoot 'lease-clean'
+$otherDir=Join-Path $leasesRoot 'lease-other'
+try {
+    New-Item -ItemType Directory -Path $unrestoredDir,$restoredDir,$otherDir -Force | Out-Null
+    @{instance=$second.InstanceId;inf='oem14.inf';hadGuids=$true;guids=@('{BBB}');restore=$true} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $unrestoredDir 'original.json') -Encoding UTF8
+    @{instance=$second.InstanceId;inf='oem99.inf';hadGuids=$false;guids=$null;restore=$true} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $restoredDir 'original.json') -Encoding UTF8
+    Set-Content -LiteralPath (Join-Path $restoredDir 'restored') -Value 'RESTORED' -Encoding ASCII
+    @{instance=$first.InstanceId;inf='oem55.inf';hadGuids=$false;guids=$null;restore=$true} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $otherDir 'original.json') -Encoding UTF8
+
+    $recovered=Resolve-WatchControllerRecovery -InstanceId $second.InstanceId -Service 'WINUSB' -CurrentInf 'oem88.inf' -LeasesRoot $leasesRoot
+    Assert-Equal $recovered.restore $true 'WINUSB with crashed prior lease should recover restore=$true'
+    Assert-Equal $recovered.inf 'oem14.inf' 'Should recover oem14.inf from crashed lease'
+    Assert-Equal $recovered.recoveredFrom $unrestoredDir 'Should report recovered lease directory'
+
+    # Marking crashed lease restored leaves no unrestored lease for $second
+    Set-Content -LiteralPath (Join-Path $unrestoredDir 'restored') -Value 'RESTORED' -Encoding ASCII
+    $noneLeft=Resolve-WatchControllerRecovery -InstanceId $second.InstanceId -Service 'WINUSB' -CurrentInf 'oem88.inf' -LeasesRoot $leasesRoot
+    Assert-Equal $noneLeft.restore $false 'Restored leases must not be reused'
+
+    $explicitFile=Join-Path $leasesRoot 'explicit.json'
+    @{instance=$first.InstanceId;inf='oem14.inf';guids=$null;restore=$true} | ConvertTo-Json | Set-Content -LiteralPath $explicitFile -Encoding UTF8
+    Assert-Fails {Resolve-WatchControllerRecovery -InstanceId $second.InstanceId -Service 'WINUSB' -ExplicitRecoveryRecord $explicitFile} 'Explicit recovery for wrong device succeeded'
+} finally {
+    Remove-Item -LiteralPath $leasesRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
 Write-Output 'Windows controller selection: all behavioral checks passed'

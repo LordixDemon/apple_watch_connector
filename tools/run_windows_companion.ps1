@@ -57,14 +57,11 @@ Start-Transcript -Path (Join-Path $LeaseDirectory 'controller.log') -Force | Out
 Add-Type -Path (Join-Path $PSScriptRoot 'windows_controller_driver.cs')
 $parameters='HKLM:\SYSTEM\CurrentControlSet\Enum\'+$InstanceId+'\Device Parameters'
 $originalInf=(Get-PnpDeviceProperty -InstanceId $InstanceId -KeyName DEVPKEY_Device_DriverInfPath).Data
-$oldGuids=(Get-ItemProperty -LiteralPath $parameters).DeviceInterfaceGUIDs
-$restore=$service -eq 'BTHUSB'
-if($RecoveryRecord){
-    $recovery=Get-Content -LiteralPath $RecoveryRecord -Raw | ConvertFrom-Json
-    if($recovery.instance -ne $InstanceId){throw 'Recovery record belongs to another device'}
-    $originalInf=$recovery.inf;$oldGuids=$recovery.guids;$restore=$true
-}
-if($restore -and $originalInf -notmatch '^(oem[0-9]+|bth)\.inf$'){throw 'Unexpected original Bluetooth INF'}
+$oldGuids=(Get-ItemProperty -LiteralPath $parameters -ErrorAction SilentlyContinue).DeviceInterfaceGUIDs
+$resolved=Resolve-WatchControllerRecovery -InstanceId $InstanceId -Service $service -CurrentInf $originalInf -CurrentGuids $oldGuids -LeasesRoot (Split-Path -LiteralPath $LeaseDirectory -Parent) -ExplicitRecoveryRecord $RecoveryRecord
+$originalInf=$resolved.inf
+$oldGuids=$resolved.guids
+$restore=$resolved.restore
 $record=@{instance=$InstanceId;inf=$originalInf;hadGuids=$null -ne $oldGuids;guids=$oldGuids;restore=$restore}
 $record | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $LeaseDirectory 'original.json') -Encoding UTF8
 try {
@@ -102,5 +99,8 @@ try {
         if((Get-PnpDeviceProperty -InstanceId $InstanceId -KeyName DEVPKEY_Device_Service).Data -ne 'BTHUSB'){throw 'Original Bluetooth driver did not resume'}
     }
     Set-Content -LiteralPath (Join-Path $LeaseDirectory 'restored') -Value 'RESTORED' -Encoding ASCII
+    if($restore -and $resolved.recoveredFrom){
+        Set-Content -LiteralPath (Join-Path $resolved.recoveredFrom 'restored') -Value 'RESTORED' -Encoding ASCII
+    }
     Stop-Transcript | Out-Null
 }

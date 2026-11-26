@@ -118,6 +118,27 @@ final class HalCommandReader {
                         }
                         continue;
                     }
+                    if (line.startsWith("DESKTOP_COMMAND_V1:")) {
+                        try {
+                            String[] fields = line.substring("DESKTOP_COMMAND_V1:".length()).split(":", 2);
+                            if (fields.length != 2) throw new IllegalArgumentException();
+                            java.util.UUID epoch = java.util.UUID.fromString(fields[0]);
+                            if (!epoch.toString().equals(fields[0])) throw new IllegalArgumentException();
+                            String command = fields[1];
+                            boolean allowed = "REQUEST_DEVICE_ABOUT".equals(command)
+                                    || "PING_WATCH".equals(command);
+                            if (!allowed && command.startsWith(WatchSettingsCodec.COMMAND_PREFIX)) {
+                                WatchSettingsCodec.parseCommand(command);
+                                allowed = true;
+                            }
+                            if (!allowed) throw new IllegalArgumentException();
+                            queueStructuredRequest(new BridgeCommandCodec.Request(java.util.UUID.randomUUID(), epoch,
+                                    BridgeClock.elapsedRealtime() + 20_000, command), outboundAppMessages);
+                        } catch (IllegalArgumentException invalid) {
+                            log("DESKTOP command rejected: invalid session envelope.");
+                        }
+                        continue;
+                    }
                     if (line.startsWith(BridgeCommandCodec.REQUEST_PREFIX)) {
                         byte[] frame = null;
                         try {
